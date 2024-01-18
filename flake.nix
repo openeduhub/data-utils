@@ -20,6 +20,11 @@
             setuptools
           ];
 
+        python-packages-test = py-pkgs:
+          with py-pkgs; [
+            hypothesis
+          ];
+
         ### create the python installation for development
         # the development installation contains all build packages,
         # plus some additional ones we do not need to include in production.
@@ -28,8 +33,11 @@
             black
             pyflakes
             isort
+            pytest
+            mypy
           ]
-          ++ (python-packages-build py-pkgs);
+          ++ (python-packages-build py-pkgs)
+          ++ (python-packages-test py-pkgs);
 
         ### create the python package
         get-data-utils = py-pkgs: py-pkgs.buildPythonPackage {
@@ -52,6 +60,9 @@
             exclude = [ (nix-filter.matchExt "pyc") ];
           };
           propagatedBuildInputs = (python-packages-build py-pkgs);
+          nativeCheckInputs = [
+            py-pkgs.pytestCheckHook
+          ] ++ (python-packages-test py-pkgs);
         };
 
       in
