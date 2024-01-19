@@ -41,6 +41,13 @@ def get_filter_with_basic_predicate(
     return get_filter(get_predicate_on_terminal(predicate_fun, list_semantics), key_seq)
 
 
+def negated(_filter: Filter) -> Filter:
+    def fun(entry: Nested_Dict) -> bool:
+        return not _filter(entry)
+
+    return fun
+
+
 def kibana_basic_filter(entry: Nested_Dict) -> bool:
     must_filters = [
         get_filter(
