@@ -34,6 +34,7 @@
             pyflakes
             isort
             pytest
+            pytest-cov
             mypy
           ]
           ++ (python-packages-build py-pkgs)
