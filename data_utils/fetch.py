@@ -5,7 +5,7 @@ import urllib.request
 from collections.abc import Sequence, Iterator, Iterable
 from pathlib import Path
 from typing import Any, Optional
-from data_utils.filters import Filter
+import data_utils.filters as filters
 from data_utils.utils import get_in, Terminal_Value, Nested_Dict, get_terminal_in
 
 import pandas as pd
@@ -142,13 +142,13 @@ def json_file_to_df(
     columns: Sequence[str] | dict[str, str],
     key_separator: str = ".",
     prefix: str = "_source",
-    filters: Iterable[Filter] = tuple(),
+    filters: Iterable[filters.Filter] = tuple(),
     max_len: Optional[int] = None,
     **kwargs,
 ) -> pd.DataFrame:
     return pd.DataFrame(
         json_file_to_dicts(
-            path,
+            path.expanduser(),
             columns,
             key_separator=key_separator,
             prefix=prefix,
