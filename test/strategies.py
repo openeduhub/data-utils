@@ -1,8 +1,9 @@
-from collections.abc import Callable, Sequence
-from typing import Any, Optional
+from collections.abc import Callable, Collection, Sequence
+from functools import partial
+from typing import Any, Optional, TypeVar
 
 import hypothesis.strategies as st
-from data_utils.utils import Nested_Dict
+from data_utils.utils import Nested_Dict, Terminal_Value
 
 # values that may be associated with any key / added to a list
 garbage = st.one_of(
@@ -11,6 +12,31 @@ garbage = st.one_of(
     st.floats(),
     st.none(),
 )
+nested_garbage = st.one_of(garbage, st.lists(garbage))
+
+T = TypeVar("T")
+
+
+@st.composite
+def filtered_strategy(
+    draw: st.DrawFn,
+    strategy: st.SearchStrategy[T],
+    blacklist: Collection[T] = frozenset(),
+    whitelist: Collection[T] = frozenset(),
+) -> T:
+    if len(whitelist) > 0:
+        strategy = st.sampled_from(list(whitelist))
+
+    return draw(
+        strategy.filter(
+            lambda x: x not in blacklist
+            if not isinstance(x, list)
+            else all(x_sub not in blacklist for x_sub in x)
+        )
+    )
+
+
+filtered_garbage = partial(filtered_strategy, strategy=nested_garbage)
 
 
 def cut_subtree(base_dict: Nested_Dict, key: str) -> Nested_Dict:
@@ -25,11 +51,16 @@ def cut_subtree(base_dict: Nested_Dict, key: str) -> Nested_Dict:
 
 
 @st.composite
-def replace_subtree(draw: st.DrawFn, base_dict: Nested_Dict, key: str) -> Nested_Dict:
+def replace_subtree(
+    draw: st.DrawFn,
+    base_dict: Nested_Dict,
+    key: str,
+    blacklist: Collection[Terminal_Value] = frozenset(),
+    whitelist: Collection[Terminal_Value] = frozenset(),
+) -> Nested_Dict:
     """Replace the value for the given key with a random new value."""
     # make sure that the new value does not equal the old one
-    while (new_value := draw(garbage)) == base_dict[key]:
-        pass
+    new_value = draw(filtered_garbage(blacklist=blacklist, whitelist=whitelist))
     return Nested_Dict(
         {
             base_key: base_value if base_key != key else new_value
@@ -39,12 +70,16 @@ def replace_subtree(draw: st.DrawFn, base_dict: Nested_Dict, key: str) -> Nested
 
 
 @st.composite
-def add_garbage(draw: st.DrawFn, base_dict: Nested_Dict) -> Nested_Dict:
+def add_garbage(
+    draw: st.DrawFn,
+    base_dict: Nested_Dict,
+    blacklist: Collection[Terminal_Value] = frozenset(),
+    whitelist: Collection[Terminal_Value] = frozenset(),
+) -> Nested_Dict:
     """Add a new key-value pair."""
-    while (key := draw(st.text())) in base_dict:
-        pass
+    key = draw(filtered_strategy(st.text(), blacklist=set(base_dict.keys())))
+    value = draw(filtered_garbage(blacklist=blacklist, whitelist=whitelist))
 
-    value = draw(garbage)
     return Nested_Dict(
         {base_key: base_value for base_key, base_value in base_dict.items()}
         | {key: value}
@@ -100,8 +135,8 @@ def mutated_nested_dict(
     allow_add_key=True,
     allow_add_to_list=True,
     allow_remove_from_list=True,
-    add_whitelist: Optional[Sequence[Any]] = None,
-    add_blacklist: Optional[Sequence[Any]] = None,
+    value_whitelist: Collection[Any] = frozenset(),
+    value_blacklist: Collection[Any] = frozenset(),
     min_iters: int = 1,
     max_iters: int = 1,
 ) -> Nested_Dict:
@@ -112,82 +147,94 @@ def mutated_nested_dict(
         "allow_add_key": allow_add_key,
         "allow_add_to_list": allow_add_to_list,
         "allow_remove_from_list": allow_remove_from_list,
-        "add_whitelist": add_whitelist,
-        "add_blacklist": add_blacklist,
+        "value_whitelist": value_whitelist,
+        "value_blacklist": value_blacklist,
     }
     iters = draw(st.integers(min_iters, max_iters))
     for _ in range(iters):
-        key = draw(st.sampled_from(list(base_dict.keys())))
-        value = base_dict[key]
         actions: list[Callable[[], Nested_Dict]] = list()
-
-        # remove this key and its value
-        if allow_cut:
-            actions.append(lambda: cut_subtree(base_dict, key))
-        # keep the key but replace its value with a random terminal value
-        if allow_replace:
-            actions.append(lambda: draw(replace_subtree(base_dict, key)))
         # add a random new key with a random terminal value
         if allow_add_key:
-            actions.append(lambda: draw(add_garbage(base_dict)))
-
-        # recursively mutate the underlying nested dictionary
-        if isinstance(value, dict):
             actions.append(
-                lambda: draw(recursively_mutated_dict(base_dict, key, **kwargs))
-            )
-
-        elif isinstance(value, list):
-            # add a random value to the list
-            if allow_add_to_list:
-                added_value = (
-                    draw(garbage)
-                    if add_whitelist is None
-                    else draw(st.sampled_from(add_whitelist))
-                )
-                if add_blacklist is not None:
-                    while added_value in add_blacklist:
-                        added_value = (
-                            draw(garbage)
-                            if add_whitelist is None
-                            else draw(st.sampled_from(add_whitelist))
-                        )
-
-                actions.append(
-                    lambda: Nested_Dict(
-                        {
-                            base_key: base_value
-                            if base_key != key
-                            else value + [added_value]
-                            for base_key, base_value in base_dict.items()
-                        }
+                lambda: draw(
+                    add_garbage(
+                        base_dict, blacklist=value_blacklist, whitelist=value_whitelist
                     )
                 )
+            )
 
-            if len(value) > 0:
-                index = draw(st.sampled_from(range(len(value))))
+        if base_dict:
+            key = draw(st.sampled_from(list(base_dict.keys())))
+            value = base_dict[key]
 
-                # remove a random value from the list
-                if allow_remove_from_list:
-                    value_without_index = [x for i, x in enumerate(value) if i != index]
+            # remove this key and its value
+            if allow_cut:
+                actions.append(lambda: cut_subtree(base_dict, key))
+            # keep the key but replace its value with a random terminal value
+            if allow_replace:
+                actions.append(
+                    lambda: draw(
+                        replace_subtree(
+                            base_dict,
+                            key,
+                            blacklist=value_blacklist,
+                            whitelist=value_whitelist,
+                        )
+                    )
+                )
+            # recursively mutate the underlying nested dictionary
+            if isinstance(value, dict):
+                actions.append(
+                    lambda: draw(recursively_mutated_dict(base_dict, key, **kwargs))
+                )
+
+            elif isinstance(value, list):
+                # add a random value to the list
+                if allow_add_to_list:
+                    added_value = draw(
+                        filtered_garbage(
+                            blacklist=value_blacklist, whitelist=value_whitelist
+                        )
+                    )
                     actions.append(
                         lambda: Nested_Dict(
                             {
                                 base_key: base_value
                                 if base_key != key
-                                else value_without_index
+                                else value + [added_value]
                                 for base_key, base_value in base_dict.items()
                             }
                         )
                     )
 
-                # recursively mutate a random subtree from the list
-                if isinstance(value[index], dict):
-                    actions.append(
-                        lambda: draw(
-                            recursively_mutated_dict(base_dict, key, index, **kwargs)
+                if len(value) > 0:
+                    index = draw(st.sampled_from(range(len(value))))
+
+                    # remove a random value from the list
+                    if allow_remove_from_list:
+                        value_without_index = [
+                            x for i, x in enumerate(value) if i != index
+                        ]
+                        actions.append(
+                            lambda: Nested_Dict(
+                                {
+                                    base_key: base_value
+                                    if base_key != key
+                                    else value_without_index
+                                    for base_key, base_value in base_dict.items()
+                                }
+                            )
                         )
-                    )
+
+                    # recursively mutate a random subtree from the list
+                    if isinstance(value[index], dict):
+                        actions.append(
+                            lambda: draw(
+                                recursively_mutated_dict(
+                                    base_dict, key, index, **kwargs
+                                )
+                            )
+                        )
 
         action = draw(st.sampled_from(actions))
         base_dict = action()
