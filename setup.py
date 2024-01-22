@@ -12,4 +12,9 @@ setup(
         d for d in open("requirements.txt").readlines() if not d.startswith("--")
     ],
     package_dir={"": "."},
+    entry_points={
+        "console_scripts": [
+            "download-data = data_utils.cli:main",
+        ]
+    },
 )
