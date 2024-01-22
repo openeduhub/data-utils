@@ -2,13 +2,16 @@ import gzip
 import json
 import shutil
 import urllib.request
-from collections.abc import Sequence, Iterator, Iterable
+from collections import defaultdict
+from collections.abc import Collection, Iterable, Iterator, Sequence
 from pathlib import Path
 from typing import Any, Optional
-import data_utils.filters as filters
-from data_utils.utils import get_in, Terminal_Value, Nested_Dict, get_terminal_in
 
 import pandas as pd
+import requests
+
+import data_utils.filters as filters
+from data_utils.utils import Nested_Dict, Terminal_Value, get_in, get_terminal_in
 
 
 def _download(url: str, target_path: Path, headers: Optional[dict[str, str]] = None):
@@ -167,4 +170,116 @@ def json_file_to_df(
     )
 
 
-filters.kibana_redaktionsbuffet
+cached_uris: dict[str, str | None] = dict()
+
+
+def labels_from_uris(
+    uris: Iterable[str | Iterable[str] | None],
+    multi_value: Optional[bool] = None,
+    label_seq: Sequence[str] = ("prefLabel", "de"),
+) -> list[str | None] | list[list[str | None] | None]:
+    """
+    Get labels for the given URIs by looking up each URI.
+
+    Note that this can be much slower than labels_from_skos,
+    as each URI requires its own separate HTTP request.
+
+    :param multi_value: Whether values in uris contain multiple URIs each.
+        If None, this is determined automatically.
+    :param label_seq: The sequence of fields to look up in the URI
+        in order to get to the label to return.
+    """
+    if multi_value is None:
+        for value in uris:
+            if value is not None:
+                multi_value = isinstance(value, Collection)
+                break
+
+    def uri_label(uri: str) -> Optional[str]:
+        """Look up a URI and return its preferred label"""
+        if not uri:
+            return None
+
+        # we want json, not html. some URIs default to html
+        if ".html" == uri[-5:]:
+            uri = uri[:-5]
+        if ".json" != uri[-5:]:
+            uri = uri + ".json"
+
+        try:
+            with requests.get(uri) as request:
+                if request.ok:
+                    concept = request.json()
+                else:
+                    return None
+
+        # catch URIs that are not prefixed with http / https
+        except requests.exceptions.MissingSchema:
+            return None
+
+        return get_in(concept, label_seq)  # type: ignore
+
+    def uri_to_label(uri: str) -> Optional[str]:
+        """Return the preferred label of a URI, looking it up if necessary"""
+        if uri in cached_uris:
+            return cached_uris[uri]
+
+        label = uri_label(uri)
+        cached_uris[uri] = label
+        return label
+
+    if multi_value:
+        return [
+            [uri_to_label(uri) for uri in uri_values]
+            if uri_values is not None
+            else None
+            for uri_values in uris
+        ]
+
+    return [
+        uri_to_label(uri) if uri is not None else None for uri in uris  # type: ignore
+    ]
+
+
+def labels_from_skos(
+    ids: Iterable[str | Iterable[str] | None],
+    url: str,
+    multi_value: Optional[bool] = None,
+    label_seq: Sequence[str] = ("prefLabel", "de"),
+    id_seq: Sequence[str] = ("id",),
+) -> list[str | None] | list[list[str | None] | None]:
+    """
+    Get URIs for the given IDs by first reading a SKOS vocabulary.
+
+    :param url: The URL of the SKOS vocabulary to read.
+    :param multi_value: Whether values in ids contain multiple IDs each.
+        If None, this is determined automatically.
+    :param label_seq: The sequence of fields to look up in the SKOS vocab
+        in order to get to the label to return.
+    :param id_seq: The sequence of fields to look up the ID in the SKOS vocab
+        in order to link to the given IDs.
+    """
+    with requests.get(url) as request:
+        concepts: list[dict[str, Any]] = request.json()["hasTopConcept"]
+
+    labels: dict[str, str | None] = defaultdict(lambda: None)
+    labels.update(
+        {
+            get_in(entry, id_seq): get_in(entry, label_seq)  # type: ignore
+            for entry in concepts
+        }
+    )
+
+    if multi_value is None:
+        for value in ids:
+            if value is not None:
+                multi_value = isinstance(value, Collection)
+                break
+
+    if multi_value:
+        fun = lambda x: [labels[value] for value in x] if x is not None else None
+        return [fun(id) for id in ids]
+
+    else:
+        fun = lambda x: labels[x] if x is not None else None
+        return [fun(id) for id in ids]

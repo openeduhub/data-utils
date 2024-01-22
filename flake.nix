@@ -15,9 +15,10 @@
         ### create the python installation for the package
         python-packages-build = py-pkgs:
           with py-pkgs; [
+            setuptools
             pandas
             numpy
-            setuptools
+            requests
           ];
 
         python-packages-test = py-pkgs:
