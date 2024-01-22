@@ -29,7 +29,8 @@ def _download(url: str, target_path: Path, headers: Optional[dict[str, str]] = N
 def fetch(
     base_url: str,
     target_file: str = "workspace_data-public-only.json.gz",
-    target_dir: str | Path = Path("/tmp"),
+    output_dir: str | Path = Path("/tmp"),
+    output_file: Optional[str | Path] = None,
     username: Optional[str] = None,
     password: Optional[str] = None,
     encoded_auth: Optional[str] = None,
@@ -38,27 +39,33 @@ def fetch(
 ) -> Path:
     """Download the latest data dump and save it to the given directory"""
     # convert to pathlib.Path if the path was given as a string
-    if isinstance(target_dir, str):
-        target_dir = Path(target_dir)
+    if isinstance(output_dir, str):
+        output_dir = Path(output_dir)
 
     # expand the home user directory path, if it was given symbolically
-    target_dir = target_dir.expanduser()
+    output_dir = output_dir.expanduser()
 
-    download_path = target_dir / target_file
-    if ".gz" == download_path.__str__()[-3:]:
-        final_path = download_path.with_suffix(download_path.suffix[:-3])
-    else:
-        final_path = download_path
+    download_file = output_dir / target_file
 
-    if skip_if_exists and final_path.exists():
-        print(f"File at {final_path} already exists.")
+    if output_file is None:
+        if ".gz" == download_file.__str__()[-3:]:
+            output_file = download_file.with_suffix(download_file.suffix[:-3])
+        else:
+            output_file = download_file
+    elif isinstance(output_file, str):
+        output_file = output_dir / output_file
+
+    if skip_if_exists and output_file.exists():
+        print(f"File at {output_file} already exists.")
         print("Set skip_if_exists to False to force re-download.")
-        return final_path
+        return output_file
 
-    if skip_if_exists and download_path.exists():
-        print(f"File at {download_path} already exists.")
+    if skip_if_exists and download_file.exists():
+        print(f"File at {download_file} already exists.")
         print("Set skip_if_exists to False to force re-download.")
+
     else:
+        # remove trailing / from url
         if "/" == base_url[-1]:
             base_url = base_url[:-1]
 
@@ -77,20 +84,20 @@ def fetch(
             headers = {"Authorization": f"Basic {encoded_auth}"}
 
         print("Downloading data...")
-        _download(url=url, target_path=download_path, headers=headers)
+        _download(url=url, target_path=download_file, headers=headers)
 
     # if the file was gzipped, decompress it
     # act on the file on disk to avoid loading the entire file to RAM
-    if final_path != download_path:
+    if output_file != download_file:
         print("Decompressing data...")
-        with gzip.open(download_path, "rb") as f_in:
-            with open(final_path, "wb") as f_out:
+        with gzip.open(download_file, "rb") as f_in:
+            with open(output_file, "wb") as f_out:
                 shutil.copyfileobj(f_in, f_out)
 
         if delete_compressed_archive:
-            download_path.unlink()
+            download_file.unlink()
 
-    return final_path
+    return output_file
 
 
 def json_entry_to_dict(
@@ -114,7 +121,7 @@ def json_file_to_dicts(
     columns: Iterable[str] | dict[str, str],
     key_separator: str = ".",
     prefix: str = "_source",
-    filters: Iterable[Filter] = tuple(),
+    filters: Iterable[filters.Filter] = tuple(),
     max_len: Optional[int] = None,
     **kwargs,
 ) -> Iterator[dict[str, Any]]:
@@ -158,3 +165,6 @@ def json_file_to_df(
         ),
         columns=list(columns.keys() if isinstance(columns, dict) else columns),
     )
+
+
+filters.kibana_redaktionsbuffet
