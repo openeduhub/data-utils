@@ -40,7 +40,9 @@ def fetch(
     skip_if_exists: bool = True,
     delete_compressed_archive: bool = True,
 ) -> Path:
-    """Download the latest data dump and save it to the given directory"""
+    """
+    Download the latest data dump and save it to the given directory.
+    """
     # convert to pathlib.Path if the path was given as a string
     if isinstance(output_dir, str):
         output_dir = Path(output_dir)
@@ -103,7 +105,7 @@ def fetch(
     return output_file
 
 
-def json_entry_to_dict(
+def _dict_from_json_entry(
     raw_entry: Nested_Dict,
     columns: Iterable[str] | dict[str, str],
     key_separator: str = ".",
@@ -119,14 +121,13 @@ def json_entry_to_dict(
     return entry
 
 
-def json_file_to_dicts(
+def _dicts_from_json_file(
     path: Path,
     columns: Iterable[str] | dict[str, str],
     key_separator: str = ".",
     prefix: str = "_source",
     filters: Iterable[filters.Filter] = tuple(),
     max_len: Optional[int] = None,
-    **kwargs,
 ) -> Iterator[dict[str, Any]]:
     with open(path) as f:
         # because we are dealing with line-separated jsons,
@@ -142,29 +143,45 @@ def json_file_to_dicts(
                 )
 
             if all(fun(raw_entry) for fun in filters):
-                yield json_entry_to_dict(
-                    raw_entry, columns=columns, key_separator=key_separator, **kwargs
+                yield _dict_from_json_entry(
+                    raw_entry, columns=columns, key_separator=key_separator
                 )
 
 
-def json_file_to_df(
+def df_from_json_file(
     path: Path,
     columns: Sequence[str] | dict[str, str],
-    key_separator: str = ".",
     prefix: str = "_source",
+    key_separator: str = ".",
     filters: Iterable[filters.Filter] = tuple(),
     max_len: Optional[int] = None,
-    **kwargs,
 ) -> pd.DataFrame:
+    """
+    Read the given line separated json file and turn it into a data frame.
+
+    :param columns: The fields to keep from the json.
+        If given as a dictionary, use the keys as the column names
+        in the final data frame.
+        Individual fields are split by the key separator for nested accesses.
+    :param prefix: The fields to prefix any access with.
+        Useful when all interesting data is contained within a nested object.
+        Split by the key separator for nested accesses.
+    :param key_separator: The sub string that denotes that we are accessing
+        a nested json object.
+        Example: With '.', a.b gets turned into a nested access
+                 of first field a and then field b
+    :param filters: Filter functions to be applied to individual
+        entries of the json file before they are collected.
+    :param max_len: The maximum number of entries to read from the json.
+    """
     return pd.DataFrame(
-        json_file_to_dicts(
+        _dicts_from_json_file(
             path.expanduser(),
             columns,
             key_separator=key_separator,
             prefix=prefix,
             filters=filters,
             max_len=max_len,
-            **kwargs,
         ),
         columns=list(columns.keys() if isinstance(columns, dict) else columns),
     )
