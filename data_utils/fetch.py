@@ -231,7 +231,7 @@ def labels_from_uris(
                     return None
 
         # catch URIs that are not prefixed with http / https
-        except requests.exceptions.MissingSchema:
+        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
             return None
 
         return get_in(concept, label_seq)  # type: ignore
