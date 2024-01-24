@@ -8,8 +8,7 @@ def main():
     # define CLI arguments
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-u",
-        "--url",
+        "url",
         action="store",
         help="The (base) URL from which to download the data dump.",
     )
@@ -20,12 +19,14 @@ def main():
         help="The name of the file from the URL to be downloaded. It is assumed that this file is accessible through <url/target-file>.",
     )
     parser.add_argument(
+        "-u",
         "--username",
         action="store",
         default=None,
         help="The username to use when providing authentication details. Optional unless a password is provided.",
     )
     parser.add_argument(
+        "-p",
         "--password",
         action="store",
         default=None,
