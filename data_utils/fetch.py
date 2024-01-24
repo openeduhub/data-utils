@@ -129,11 +129,12 @@ def _dicts_from_json_file(
     filters: Iterable[filt.Filter] = tuple(),
     max_len: Optional[int] = None,
 ) -> Iterator[dict[str, Any]]:
+    hits = 0
     with open(path) as f:
         # because we are dealing with line-separated jsons,
         # read the file one line at a time
-        for index, line in enumerate(f):
-            if max_len is not None and index >= max_len:
+        for line in f:
+            if max_len is not None and hits >= max_len:
                 return
 
             raw_entry = get_in(json.loads(line), prefix.split(key_separator))
@@ -143,6 +144,7 @@ def _dicts_from_json_file(
                 )
 
             if all(fun(raw_entry) for fun in filters):
+                hits += 1
                 yield _dict_from_json_entry(
                     raw_entry, columns=columns, key_separator=key_separator
                 )
