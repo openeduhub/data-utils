@@ -82,6 +82,12 @@
             data-utils = get-data-utils pkgs.python310Packages;
             default = data-utils;
           };
+        apps = {
+          download-data = {
+            type = "app";
+            program = "${self.outputs.packages.${system}.data-utils}/bin/download-data";
+          };
+        };
         # the development environment
         devShells.default =
           let
