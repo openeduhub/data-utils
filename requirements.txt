@@ -1,2 +1,4 @@
+setuptools
 pandas
 numpy
+requests
