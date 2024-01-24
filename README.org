@@ -13,7 +13,7 @@ There are two primary modules of this library:
 
 For the purposes of downloading data dumps, this library also offers a CLI tool: ~download-data~.
 
-* Usage / Installation
+* Installation
 
 ** Nix Flakes (recommended)
 
@@ -135,3 +135,109 @@ This library should also be installable through Python's ~pip~. Simply running ~
 pip install <this repository>
 #+end_src
 should be sufficient. However, this method of installation is untested.
+
+* Usage
+
+** Default Pipelines
+
+The default pipelines are intended to immediately obtain all relevant, lightly pre-processed data in formats that make sense for the given information. They remove a lot of redundant work, such as converting labels into boolean arrays or pulling labels from controlled vocabularies / URIs.
+
+*** Basic Example: Non-Hierarchical Metadata
+
+The ~data_utils.default_pipelines.flat_classification.generate_data~ function is intended to obtain data together with any number of metadata fields that are not hierarchically organized (note that we can still apply it on hierarchical data, but the hierarchy will be discarded in the process).
+
+After having downloaded the elasticdump json file to =/tmp/data.json= we can directly use the ~generate_data~ function:
+#+begin_src python :session demo.py :results silent
+from pathlib import Path
+from data_utils.default_pipelines.flat_classification import generate_data
+
+data = generate_data(
+    json_file=Path("/tmp/data.json"),
+    target_fields=[
+        "properties.ccm:educationalcontext",
+        "properties.ccm:taxonid",
+    ],
+)
+#+end_src
+
+The object ~data~ now contains all of the commonly used information we may need for classification tasks or their evaluation:
+- =raw_texts=: The title, concatenated with the description (and separated by a =\n=).
+- =ids=: The internal unique identifiers of the materials.
+- =redaktion_arr=: A Boolean array containing information about whether each material belongs to the "Redaktionsbuffet" (i.e. its quality has been confirmed by an editor).
+- =target_data=: Information about each selected metadata field:
+  - =arr=: The Boolean matrix mapping each material to all of its relevant categories.
+    When multiple assignment per material is not possible, this is equivalent to a one-hot-encoding.
+  - =uris=: The URIs that correspond to each matrix column.
+  - =labels=: The labels of the URIs.
+    
+#+begin_src python :session demo.py :exports both :results output
+print(f"{data.raw_texts[0]=}\n")
+print(f"{data.ids=}\n")
+print(f"{data.redaktion_arr.shape=}\n")
+print(f"{data.target_data.keys()=}\n")
+print(f"{data.target_data['properties.ccm:taxonid'].uris[:5]=}\n")
+print(f"{data.target_data['properties.ccm:taxonid'].labels[:5]=}\n")
+print(f"{data.target_data['properties.ccm:taxonid'].arr.shape=}\n")
+#+end_src
+
+#+RESULTS:
+#+begin_example
+data.raw_texts[0]='Animation zu Covid-19: Wie das Coronavirus angreift \nDieser Beitrag aus "Spektrum der Wissenschaft" erklärt in Text und Animationen, wie Sars-CoV-2 aussieht und wirkt.'
+
+data.ids=array(['42b412c5-6aa6-45ac-bb6a-da23f231bb15',
+       '48b63221-904f-4438-a6c0-37f37d98947a',
+       '91aba013-36f2-4306-9b0b-540b525520f4', ...,
+       '22b12d09-602d-47eb-8a72-154593ccba0e',
+       '007fdf7b-53bd-4cb8-9ac9-1e2549a67bb4',
+       '251b5839-6acb-4289-9a38-54f433cbc052'], dtype=object)
+
+data.redaktion_arr.shape=(127571,)
+
+data.target_data.keys()=dict_keys(['properties.ccm:educationalcontext', 'properties.ccm:taxonid'])
+
+data.target_data['properties.ccm:taxonid'].uris[:5]=['http://w3id.org/openeduhub/vocabs/discipline/020', 'http://w3id.org/openeduhub/vocabs/discipline/040', 'http://w3id.org/openeduhub/vocabs/discipline/04001', 'http://w3id.org/openeduhub/vocabs/discipline/04002', 'http://w3id.org/openeduhub/vocabs/discipline/04003']
+
+data.target_data['properties.ccm:taxonid'].labels[:5]=['Arbeitslehre', 'Berufliche Bildung', 'Agrarwirtschaft', 'Bautechnik', 'MINT']
+
+data.target_data['properties.ccm:taxonid'].arr.shape=(127571, 66)
+#+end_example
+
+*** Additional Options
+
+In addition to extracting and transforming data, the default pipeline also automates various common data wrangling tasks.
+
+**** Fixing Inconsistent Categories
+
+The =remapped_values= argument allows us to provide a dictionary for any number of selected metadata fields, defining which original values shall be mapped to which new ones. For example, this may be used to unify the language codes:
+
+#+begin_src python
+example_remapped_values = {
+    "properties.cclom:general_language": {
+        "de_DE": "de",
+        "de_AT": "de",
+        "DE": "de",
+        "de-DE": "de",
+        "Deutsch": "de",
+        "en-US-LEARN": "en",
+        "en_US": "en",
+        "en_GB": "en",
+        "hu_HU": "hu",
+        "es_CR": "es",
+        "es_ES": "es",
+        "es_AR": "es",
+        "fr_FR": "fr",
+        "tr_TR": "tr",
+        "latin": "la",
+    }
+}
+#+end_src
+
+Additionally, specific values can be dropped entirely (but not the corresponding entry) with the =dropped_values= argument, which takes a dictionary mapping metadata field to a collection of strings that shall be dropped.
+
+Note that for some metadata fields, there already exists some defaults that may be used (see [[file:data_utils/default_pipelines/defaults.py][defaults.py]]). These are loaded automatically when the =use_defaults= argument is set to =True= (default).
+
+**** Removing Categories with Low Support
+
+**** Getting Readable Category Labels
+
+**** Filtering out Entries
