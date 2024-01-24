@@ -8,7 +8,7 @@ dropped_values: dict[str, Collection[str]] = {
     "properties.cclom:general_language": set(),
 }
 
-merged_values: dict[str, dict[str, str]] = {
+remapped_values: dict[str, dict[str, str]] = {
     "properties.ccm:taxonid": {
         "http://w3id.org/openeduhub/vocabs/discipline/Darstellendes-Spiel": "http://w3id.org/openeduhub/vocabs/discipline/12002",
         "http://w3id.org/openeduhub/vocabs/discipline/Deutsch": "http://w3id.org/openeduhub/vocabs/discipline/120",
@@ -27,7 +27,7 @@ merged_values: dict[str, dict[str, str]] = {
         "http://w3id.org/openeduhub/vocabs/discipline/Physik": "http://w3id.org/openeduhub/vocabs/discipline/460",
         "http://w3id.org/openeduhub/vocabs/discipline/Mathematik": "http://w3id.org/openeduhub/vocabs/discipline/380",
     },
-    "properties.cclom:general_language_drop_region": {
+    "properties.cclom:general_language": {
         "de_DE": "de",
         "de_AT": "de",
         "DE": "de",
