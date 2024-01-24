@@ -1,6 +1,6 @@
 from test.strategies import mutated_nested_dict
 
-import data_utils.filters as filters
+import data_utils.filters as filt
 from data_utils.utils import Nested_Dict
 from hypothesis import given
 
@@ -21,7 +21,7 @@ from hypothesis import given
     )
 )
 def test_kibana_basic_filter_accepts_from_minimal(entry: Nested_Dict):
-    assert filters.kibana_basic_filter(entry)
+    assert filt.kibana_basic_filter(entry)
 
 
 @given(
@@ -37,7 +37,7 @@ def test_kibana_basic_filter_accepts_from_minimal(entry: Nested_Dict):
     )
 )
 def test_kibana_basic_filter_rejects_from_minimal(entry: Nested_Dict):
-    assert not filters.kibana_basic_filter(entry)
+    assert not filt.kibana_basic_filter(entry)
 
 
 @given(
@@ -57,7 +57,7 @@ def test_kibana_basic_filter_rejects_from_minimal(entry: Nested_Dict):
     )
 )
 def test_kibana_basic_filter_rejects_with_bad_aspect(entry: Nested_Dict):
-    assert not filters.kibana_basic_filter(entry)
+    assert not filt.kibana_basic_filter(entry)
 
 
 @given(
@@ -68,7 +68,7 @@ def test_kibana_basic_filter_rejects_with_bad_aspect(entry: Nested_Dict):
     )
 )
 def test_kibana_basic_filter_rejects_without_workspace(entry: Nested_Dict):
-    assert not filters.kibana_basic_filter(entry)
+    assert not filt.kibana_basic_filter(entry)
 
 
 @given(
@@ -79,7 +79,7 @@ def test_kibana_basic_filter_rejects_without_workspace(entry: Nested_Dict):
     )
 )
 def test_kibana_basic_filter_rejects_without_ccm_io(entry: Nested_Dict):
-    assert not filters.kibana_basic_filter(entry)
+    assert not filt.kibana_basic_filter(entry)
 
 
 @given(
@@ -90,7 +90,7 @@ def test_kibana_basic_filter_rejects_without_ccm_io(entry: Nested_Dict):
     )
 )
 def test_kibana_basic_filter_rejects_without_mds_oeh(entry: Nested_Dict):
-    assert not filters.kibana_basic_filter(entry)
+    assert not filt.kibana_basic_filter(entry)
 
 
 @given(
@@ -105,7 +105,7 @@ def test_kibana_basic_filter_rejects_without_mds_oeh(entry: Nested_Dict):
     )
 )
 def test_kibana_publicly_visible_accepts_from_minimal_self(entry: Nested_Dict):
-    assert filters.kibana_publicly_visible(entry)
+    assert filt.kibana_publicly_visible(entry)
 
 
 @given(
@@ -120,7 +120,7 @@ def test_kibana_publicly_visible_accepts_from_minimal_self(entry: Nested_Dict):
     )
 )
 def test_kibana_publicly_visible_accepts_from_minimal_collection(entry: Nested_Dict):
-    assert filters.kibana_publicly_visible(entry)
+    assert filt.kibana_publicly_visible(entry)
 
 
 @given(
@@ -134,7 +134,7 @@ def test_kibana_publicly_visible_accepts_from_minimal_collection(entry: Nested_D
     )
 )
 def test_kibana_publicly_visible_rejects_from_minimal_self(entry: Nested_Dict):
-    assert not filters.kibana_publicly_visible(entry)
+    assert not filt.kibana_publicly_visible(entry)
 
 
 @given(
@@ -148,7 +148,7 @@ def test_kibana_publicly_visible_rejects_from_minimal_self(entry: Nested_Dict):
     )
 )
 def test_kibana_publicly_visible_rejects_from_minimal_collection(entry: Nested_Dict):
-    assert not filters.kibana_publicly_visible(entry)
+    assert not filt.kibana_publicly_visible(entry)
 
 
 @given(
@@ -159,7 +159,7 @@ def test_kibana_publicly_visible_rejects_from_minimal_collection(entry: Nested_D
     )
 )
 def test_kibana_publicly_visible_rejects_stays(entry: Nested_Dict):
-    assert not filters.kibana_publicly_visible(entry)
+    assert not filt.kibana_publicly_visible(entry)
 
 
 @given(
@@ -172,7 +172,7 @@ def test_kibana_publicly_visible_rejects_stays(entry: Nested_Dict):
 def test_kibana_publicly_visible_rejects_without_adding_correct_value(
     entry: Nested_Dict,
 ):
-    assert not filters.kibana_publicly_visible(entry)
+    assert not filt.kibana_publicly_visible(entry)
 
 
 @given(
@@ -185,7 +185,7 @@ def test_kibana_publicly_visible_rejects_without_adding_correct_value(
     )
 )
 def test_kibana_redaktionsbuffet_accepts_from_minimal(entry: Nested_Dict):
-    assert filters.kibana_redaktionsbuffet(entry)
+    assert filt.kibana_redaktionsbuffet(entry)
 
 
 @given(
@@ -197,7 +197,7 @@ def test_kibana_redaktionsbuffet_accepts_from_minimal(entry: Nested_Dict):
     )
 )
 def test_kibana_redaktionsbuffet_rejects_from_minimal(entry: Nested_Dict):
-    assert not filters.kibana_redaktionsbuffet(entry)
+    assert not filt.kibana_redaktionsbuffet(entry)
 
 
 @given(
@@ -208,4 +208,4 @@ def test_kibana_redaktionsbuffet_rejects_from_minimal(entry: Nested_Dict):
     )
 )
 def test_kibana_redaktionsbuffet_rejects_stays(entry: Nested_Dict):
-    assert not filters.kibana_redaktionsbuffet(entry)
+    assert not filt.kibana_redaktionsbuffet(entry)

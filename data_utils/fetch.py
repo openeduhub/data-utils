@@ -10,7 +10,7 @@ from typing import Any, Optional
 import pandas as pd
 import requests
 
-import data_utils.filters as filters
+import data_utils.filters as filt
 from data_utils.utils import Nested_Dict, Terminal_Value, get_in, get_terminal_in
 
 
@@ -126,7 +126,7 @@ def _dicts_from_json_file(
     columns: Iterable[str] | dict[str, str],
     key_separator: str = ".",
     prefix: str = "_source",
-    filters: Iterable[filters.Filter] = tuple(),
+    filters: Iterable[filt.Filter] = tuple(),
     max_len: Optional[int] = None,
 ) -> Iterator[dict[str, Any]]:
     with open(path) as f:
@@ -153,7 +153,7 @@ def df_from_json_file(
     columns: Sequence[str] | dict[str, str],
     prefix: str = "_source",
     key_separator: str = ".",
-    filters: Iterable[filters.Filter] = tuple(),
+    filters: Iterable[filt.Filter] = tuple(),
     max_len: Optional[int] = None,
 ) -> pd.DataFrame:
     """
