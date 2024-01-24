@@ -27,10 +27,8 @@ class Data(NamedTuple):
 
 
 def generate_data(
-    output_dir: Path,
+    json_file: Path,
     target_fields: Collection[str],
-    target_file: str = "workspace_data-public-only.json",
-    base_url: str = "https://elasticdump.prod.openeduhub.net",
     dropped_targets: dict[str, Collection[str]] = dict(),
     merged_targets: dict[str, dict[str, str]] = dict(),
     dropped_language_ids: Collection[str] = tuple(),
@@ -38,8 +36,6 @@ def generate_data(
     skos_urls: dict[str, str] = dict(),
     filters: Collection[filt.Filter] = tuple(),
     use_defaults: bool = True,
-    username: Optional[str] = None,
-    password: Optional[str] = None,
     allowed_languages: Optional[Iterable[str]] = None,
     keep_docs_that_contain: Literal["any_target", "all_targets"] = "any_target",
     min_category_support: Optional[int] = None,
@@ -62,16 +58,12 @@ def generate_data(
         } | set(filters)
 
     df = get_basic_df(
-        output_dir=output_dir,
-        base_url=base_url,
-        target_file=target_file,
+        json_file=json_file,
         target_fields=target_fields,
         dropped_values=dropped_targets,
         merged_values=merged_targets,
         dropped_languages=dropped_language_ids,
         merged_languages=merged_language_ids,
-        username=username,
-        password=password,
         filters=filters,
         **kwargs,
     )
@@ -132,28 +124,16 @@ def generate_data(
 
 
 def get_basic_df(
-    output_dir: Path,
-    base_url: str,
-    target_file: str,
+    json_file: Path,
     target_fields: Collection[str],
     dropped_values: dict[str, Collection[str]] = dict(),
     merged_values: dict[str, dict[str, str]] = dict(),
     dropped_languages: Collection[str] = tuple(),
     merged_languages: dict[str, str] = dict(),
-    username: Optional[str] = None,
-    password: Optional[str] = None,
     **kwargs,
 ) -> pd.DataFrame:
     df = fetch.df_from_json_file(
-        path=fetch.fetch(
-            base_url=base_url,
-            target_file=target_file,
-            output_dir=output_dir,
-            username=username,
-            password=password,
-            skip_if_exists=True,
-            delete_compressed_archive=True,
-        ),
+        json_file,
         columns={
             "title": "properties.cclom:title",
             "description": "properties.cclom:general_description",
