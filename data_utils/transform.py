@@ -25,8 +25,10 @@ def as_boolean_array(
     if sort_fn is not None:
         unique_values_list = sort_fn(unique_values_list)
 
+    value_indices = {value: index for index, value in enumerate(unique_values_list)}
+
     def set_to_bool_array(x: set[T]) -> np.ndarray:
-        found_indices = [unique_values_list.index(value) for value in x]
+        found_indices = [value_indices[value] for value in x]
         res = np.zeros(len(unique_values_list), dtype=bool)
         for found_index in found_indices:
             res[found_index] = True
