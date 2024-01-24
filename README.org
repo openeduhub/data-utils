@@ -23,13 +23,14 @@ When using / installing this library through ~Nix Flakes~, the only requirement 
 
 The CLI can be run directly through ~Nix~'s CLI:
 #+begin_src shell
-nix run github:openeduhub/data-utils#download-data -- <optional arguments> <url>
+nix run "github:openeduhub/data-utils#download-data" -- <optional arguments> <url>
 #+end_src
 
 Example:
 #+begin_src shell
-nix run github:openeduhub/data-utils#download-data -- --help
+nix run "github:openeduhub/data-utils#download-data" -- --help
 #+end_src
+
 #+RESULTS:
 #+begin_example
 usage: download-data [-h] [-i INPUT_FILE] [-u USERNAME] [-p PASSWORD]
