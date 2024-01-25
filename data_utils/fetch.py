@@ -179,7 +179,7 @@ def _dicts_from_json_file(
 
 def df_from_json_file(
     path: Path,
-    columns: Sequence[str] | dict[str, str],
+    columns: Iterable[str] | dict[str, str],
     prefix: str = "_source",
     key_separator: str = ".",
     filters: Collection[filt.Filter] = tuple(),
