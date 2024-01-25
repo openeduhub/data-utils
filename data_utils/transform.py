@@ -40,7 +40,7 @@ def as_boolean_array(
 
     values_as_sets = [to_set(value) for value in values]
 
-    unique_values_list = list(reduce(op.or_, values_as_sets))
+    unique_values_list = list(reduce(op.or_, values_as_sets, set()))
     if sort_fn is not None:
         unique_values_list = sort_fn(unique_values_list)
 
