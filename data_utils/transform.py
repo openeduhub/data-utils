@@ -19,12 +19,12 @@ def fix_entry_single_value(
 
 def fix_entry_multi_value(
     x: Iterable[T], to_drop: Collection[T], to_remap: dict[T, T]
-) -> set[T]:
-    return {
+) -> list[T]:
+    return [
         fixed_val
         for val in x
         if (fixed_val := fix_entry_single_value(val, to_drop, to_remap)) is not None
-    }
+    ]
 
 
 def as_boolean_array(
@@ -40,7 +40,7 @@ def as_boolean_array(
 
     values_as_sets = [to_set(value) for value in values]
 
-    unique_values_list = list(reduce(op.or_, values_as_sets, set()))
+    unique_values_list: list[T] = list(reduce(op.or_, values_as_sets, set()))
     if sort_fn is not None:
         unique_values_list = sort_fn(unique_values_list)
 

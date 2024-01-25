@@ -327,9 +327,9 @@ def labels_from_skos(
                 break
 
     if multi_value:
-        fun = lambda x: [labels[value] for value in x] if x is not None else None
-        return [fun(id) for id in ids]
+        fun_multi = lambda x: [labels[value] for value in x] if x is not None else None
+        return [fun_multi(id) for id in ids]
 
     else:
-        fun = lambda x: labels[x] if x is not None else None
-        return [fun(id) for id in ids]
+        fun_single = lambda x: labels[x] if x is not None else None
+        return [fun_single(id) for id in ids]
