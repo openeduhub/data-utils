@@ -5,11 +5,14 @@ from pathlib import Path
 from typing import Any, Literal, NamedTuple, Optional
 
 import data_utils.default_pipelines.defaults as defaults
+from data_utils.default_pipelines.defaults import Fields
 import data_utils.fetch as fetch
 import data_utils.filters as filt
 import data_utils.transform as trans
 import numpy as np
 import pandas as pd
+
+from data_utils.utils import Terminal_Value
 
 
 class Target_Data(NamedTuple):
@@ -28,12 +31,12 @@ class Data(NamedTuple):
 def generate_data(
     json_file: Path,
     target_fields: Collection[str],
-    dropped_values: dict[str, Collection[str]] = dict(),
-    remapped_values: dict[str, dict[str, str]] = dict(),
+    dropped_values: dict[str, Collection[Terminal_Value]] = dict(),
+    remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]] = dict(),
     skos_urls: dict[str, str] = dict(),
     filters: Collection[filt.Filter] = tuple(),
     use_defaults: bool = True,
-    min_category_support: Optional[int] = None,
+    min_category_support: int = 0,
     **kwargs,
 ) -> Data:
     if use_defaults:
@@ -41,8 +44,9 @@ def generate_data(
         remapped_values = defaults.remapped_values | remapped_values
         skos_urls = defaults.skos_urls | skos_urls
         filters = {
-            filt.kibana_basic_filter,
             filt.kibana_publicly_visible,
+            filt.kibana_basic_filter,
+            filt.existing_text_filter,
         } | set(filters)
 
     df = get_basic_df(
@@ -54,26 +58,6 @@ def generate_data(
         **kwargs,
     )
 
-    # drop entries with no description or no title
-    def empty_str(x: str | None) -> bool:
-        return x is None or len(x) == 0
-
-    df: pd.DataFrame = df[
-        df.apply(
-            lambda x: not empty_str(x["description"]) and not empty_str(x["title"]),
-            axis=1,
-        )
-    ]  # type: ignore
-
-    # drop any entry that contains a language that is not allowed
-    # if allowed_languages is not None:
-    #     kept_docs = (
-    #         df["properties.cclom:general_language"]
-    #         .apply(lambda x: not x - frozenset(allowed_languages))
-    #         .to_numpy()
-    #     )
-    #     df = df.iloc[kept_docs]
-
     # get data for targets
     target_data = {
         target: _values_to_target_data(
@@ -84,27 +68,21 @@ def generate_data(
         for target in target_fields
     }
 
-    # drop any document that contains no data for any / all target(s)
-    # kept_docs: np.ndarray[Any, np.dtypes.BoolDType] = reduce(
-    #     np.logical_or if keep_docs_that_contain == "any_target" else np.logical_and,
-    #     (data.arr.sum(-1) > 0 for data in target_data.values()),
-    # )
-    # df = df.iloc[kept_docs]
-    # for target in target_fields:
-    #     target_data[target] = subset_target_array(
-    #         target_data[target],
-    #         kept_docs,  # type: ignore
-    #     )
-
     # concatenate title and description
-    raw_texts = df.apply(lambda x: x["title"] + "\n" + x["description"], axis=1)
+    raw_texts = df.apply(
+        lambda x: x[Fields.TITLE.value] + "\n" + x[Fields.DESCRIPTION.value],
+        axis=1,
+    )
+
     # determine whether documents belong to the redaktionsbuffet
-    redaktion_arr = df["collections"].apply(lambda x: "Redaktionsbuffet" in x)
+    redaktion_series = df[Fields.COLLECTIONS.value].apply(
+        lambda x: "Redaktionsbuffet" in x
+    )
 
     return Data(
         raw_texts=raw_texts.to_numpy(),
-        ids=df["id"].to_numpy(),
-        redaktion_arr=redaktion_arr.to_numpy(dtype=bool),
+        ids=df[Fields.ID.value].to_numpy(),
+        redaktion_arr=redaktion_series.to_numpy(dtype=bool),
         target_data=target_data,
     )
 
@@ -115,24 +93,18 @@ def get_basic_df(
     df = fetch.df_from_json_file(
         json_file,
         columns={
-            "title": "properties.cclom:title",
-            "description": "properties.cclom:general_description",
-            "id": "nodeRef.id",
-            "collections": "collections.properties.cm:title",
-            "properties.cclom:general_language": "properties.cclom:general_language",
+            Fields.TITLE.value,
+            Fields.DESCRIPTION.value,
+            Fields.ID.value,
+            Fields.COLLECTIONS.value,
+            Fields.LANGUAGE.value,
         }
-        | {target: target for target in target_fields},
+        | set(target_fields),
         **kwargs,
     )
 
-    # transform multi value fields to sets
-    for column in ["collections", "properties.cclom:general_language"] + list(
-        target_fields
-    ):
-        df[column] = df[column].fillna("").apply(list).apply(frozenset)
-
     # unnest description field
-    df["description"] = df["description"].apply(
+    df[Fields.DESCRIPTION.value] = df[Fields.DESCRIPTION.value].apply(
         lambda x: x[0] if x is not None else None
     )
 
@@ -140,9 +112,7 @@ def get_basic_df(
 
 
 def _values_to_target_data(
-    values: Collection[str],
-    skos_url: Optional[str] = None,
-    min_category_support: Optional[int] = None,
+    values: Collection[str], skos_url: Optional[str], min_category_support: int
 ) -> Target_Data:
     # transform the entries into boolean arrays
     arr, uris = trans.as_boolean_array(values, sort_fn=lambda x: sorted(x))
