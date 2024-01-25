@@ -10,7 +10,6 @@ import data_utils.filters as filt
 import data_utils.transform as trans
 import numpy as np
 import pandas as pd
-from data_utils.default_pipelines.utils import fix_entry_multi_value
 
 
 class Target_Data(NamedTuple):
@@ -29,28 +28,17 @@ class Data(NamedTuple):
 def generate_data(
     json_file: Path,
     target_fields: Collection[str],
-    dropped_targets: dict[str, Collection[str]] = dict(),
-    merged_targets: dict[str, dict[str, str]] = dict(),
-    dropped_language_ids: Collection[str] = tuple(),
-    merged_language_ids: dict[str, str] = dict(),
+    dropped_values: dict[str, Collection[str]] = dict(),
+    remapped_values: dict[str, dict[str, str]] = dict(),
     skos_urls: dict[str, str] = dict(),
     filters: Collection[filt.Filter] = tuple(),
     use_defaults: bool = True,
-    allowed_languages: Optional[Iterable[str]] = None,
-    keep_docs_that_contain: Literal["any_target", "all_targets"] = "any_target",
     min_category_support: Optional[int] = None,
     **kwargs,
 ) -> Data:
     if use_defaults:
-        dropped_targets = defaults.dropped_values | dropped_targets
-        merged_targets = defaults.merged_values | merged_targets
-        dropped_language_ids = set(
-            defaults.dropped_values["properties.cclom:general_language"]
-        ) | set(dropped_language_ids)
-        merged_language_ids = (
-            defaults.merged_values["properties.cclom:general_language_drop_region"]
-            | merged_language_ids
-        )
+        dropped_values = defaults.dropped_values | dropped_values
+        remapped_values = defaults.remapped_values | remapped_values
         skos_urls = defaults.skos_urls | skos_urls
         filters = {
             filt.kibana_basic_filter,
@@ -60,10 +48,8 @@ def generate_data(
     df = get_basic_df(
         json_file=json_file,
         target_fields=target_fields,
-        dropped_values=dropped_targets,
-        merged_values=merged_targets,
-        dropped_languages=dropped_language_ids,
-        merged_languages=merged_language_ids,
+        dropped_values=dropped_values,
+        remapped_values=remapped_values,
         filters=filters,
         **kwargs,
     )
@@ -80,13 +66,13 @@ def generate_data(
     ]  # type: ignore
 
     # drop any entry that contains a language that is not allowed
-    if allowed_languages is not None:
-        kept_docs = (
-            df["properties.cclom:general_language"]
-            .apply(lambda x: not x - frozenset(allowed_languages))
-            .to_numpy()
-        )
-        df = df.iloc[kept_docs]
+    # if allowed_languages is not None:
+    #     kept_docs = (
+    #         df["properties.cclom:general_language"]
+    #         .apply(lambda x: not x - frozenset(allowed_languages))
+    #         .to_numpy()
+    #     )
+    #     df = df.iloc[kept_docs]
 
     # get data for targets
     target_data = {
@@ -99,16 +85,16 @@ def generate_data(
     }
 
     # drop any document that contains no data for any / all target(s)
-    kept_docs: np.ndarray[Any, np.dtypes.BoolDType] = reduce(
-        np.logical_or if keep_docs_that_contain == "any_target" else np.logical_and,
-        (data.arr.sum(-1) > 0 for data in target_data.values()),
-    )
-    df = df.iloc[kept_docs]
-    for target in target_fields:
-        target_data[target] = subset_target_array(
-            target_data[target],
-            kept_docs,  # type: ignore
-        )
+    # kept_docs: np.ndarray[Any, np.dtypes.BoolDType] = reduce(
+    #     np.logical_or if keep_docs_that_contain == "any_target" else np.logical_and,
+    #     (data.arr.sum(-1) > 0 for data in target_data.values()),
+    # )
+    # df = df.iloc[kept_docs]
+    # for target in target_fields:
+    #     target_data[target] = subset_target_array(
+    #         target_data[target],
+    #         kept_docs,  # type: ignore
+    #     )
 
     # concatenate title and description
     raw_texts = df.apply(lambda x: x["title"] + "\n" + x["description"], axis=1)
@@ -124,13 +110,7 @@ def generate_data(
 
 
 def get_basic_df(
-    json_file: Path,
-    target_fields: Collection[str],
-    dropped_values: dict[str, Collection[str]] = dict(),
-    merged_values: dict[str, dict[str, str]] = dict(),
-    dropped_languages: Collection[str] = tuple(),
-    merged_languages: dict[str, str] = dict(),
-    **kwargs,
+    json_file: Path, target_fields: Collection[str], **kwargs
 ) -> pd.DataFrame:
     df = fetch.df_from_json_file(
         json_file,
@@ -154,27 +134,6 @@ def get_basic_df(
     # unnest description field
     df["description"] = df["description"].apply(
         lambda x: x[0] if x is not None else None
-    )
-
-    # fix target values
-    for target in target_fields:
-        df[target] = df[target].apply(
-            partial(
-                fix_entry_multi_value,
-                to_drop=dropped_values.get(target, tuple()),
-                to_merge=merged_values.get(target, dict()),
-            )
-        )
-
-    # fix incorrect language IDs
-    df["properties.cclom:general_language"] = df[
-        "properties.cclom:general_language"
-    ].apply(
-        partial(
-            fix_entry_multi_value,
-            to_drop=dropped_languages,
-            to_merge=merged_languages,
-        )
     )
 
     return df

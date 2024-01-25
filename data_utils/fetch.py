@@ -11,7 +11,14 @@ import pandas as pd
 import requests
 
 import data_utils.filters as filt
-from data_utils.utils import Nested_Dict, Terminal_Value, get_in, get_terminal_in
+import data_utils.transform as trans
+from data_utils.utils import (
+    Basic_Value,
+    Nested_Dict,
+    Terminal_Value,
+    get_in,
+    get_terminal_in,
+)
 
 
 def _download(url: str, target_path: Path, headers: Optional[dict[str, str]] = None):
@@ -124,12 +131,15 @@ def _dict_from_json_entry(
 def _dicts_from_json_file(
     path: Path,
     columns: Iterable[str] | dict[str, str],
-    key_separator: str = ".",
-    prefix: str = "_source",
-    filters: Iterable[filt.Filter] = tuple(),
-    max_len: Optional[int] = None,
-) -> Iterator[dict[str, Any]]:
+    key_separator: str,
+    prefix: str,
+    filters: Collection[filt.Filter],
+    dropped_values: dict[str, Collection[Terminal_Value]],
+    remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]],
+    max_len: Optional[int],
+) -> Iterator[dict[str, Terminal_Value]]:
     hits = 0
+    modified_fields = set(dropped_values.keys()) | set(remapped_values.keys())
     with open(path) as f:
         # because we are dealing with line-separated jsons,
         # read the file one line at a time
@@ -143,6 +153,23 @@ def _dicts_from_json_file(
                     f"The given prefix key {prefix} does not exists for all entries or does not point to a map!"
                 )
 
+            for field in modified_fields:
+                value = get_terminal_in(raw_entry, field.split(key_separator))
+                if value is None:
+                    continue
+                if isinstance(value, list):
+                    value = trans.fix_entry_multi_value(
+                        value,
+                        dropped_values.get(field, tuple()),
+                        remapped_values.get(field, dict()),
+                    )
+                else:
+                    value = trans.fix_entry_single_value(
+                        value,
+                        dropped_values.get(field, tuple()),
+                        remapped_values.get(field, dict()),
+                    )
+
             if all(fun(raw_entry) for fun in filters):
                 hits += 1
                 yield _dict_from_json_entry(
@@ -155,7 +182,9 @@ def df_from_json_file(
     columns: Sequence[str] | dict[str, str],
     prefix: str = "_source",
     key_separator: str = ".",
-    filters: Iterable[filt.Filter] = tuple(),
+    filters: Collection[filt.Filter] = tuple(),
+    dropped_values: dict[str, Collection[Terminal_Value]] = dict(),
+    remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]] = dict(),
     max_len: Optional[int] = None,
 ) -> pd.DataFrame:
     """
@@ -183,6 +212,8 @@ def df_from_json_file(
             key_separator=key_separator,
             prefix=prefix,
             filters=filters,
+            dropped_values=dropped_values,
+            remapped_values=remapped_values,
             max_len=max_len,
         ),
         columns=list(columns.keys() if isinstance(columns, dict) else columns),

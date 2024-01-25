@@ -1,11 +1,30 @@
 import operator as op
-from collections.abc import Callable, Collection, Sequence
+from collections.abc import Callable, Collection, Iterable
 from functools import reduce
 from typing import Any, Optional, TypeVar
 
 import numpy as np
 
 T = TypeVar("T")
+
+
+def fix_entry_single_value(
+    x: T, to_drop: Collection[T], to_remap: dict[T, T]
+) -> T | None:
+    if x in to_drop:
+        return None
+
+    return to_remap.get(x, x)
+
+
+def fix_entry_multi_value(
+    x: Iterable[T], to_drop: Collection[T], to_remap: dict[T, T]
+) -> set[T]:
+    return {
+        fixed_val
+        for val in x
+        if (fixed_val := fix_entry_single_value(val, to_drop, to_remap)) is not None
+    }
 
 
 def as_boolean_array(
