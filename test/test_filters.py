@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from test.strategies import garbage, mutated_nested_dict
+from test.strategies import basic_values, mutated_nested_dict
 
 import data_utils.filters as filt
 import hypothesis.strategies as st
@@ -289,7 +289,7 @@ def test_labeled_filter_accepts_with_any(data, fields: list[str]):
     )
 
     for field in data.draw(st.lists(st.sampled_from(fields), min_size=1, unique=True)):
-        entry[field] = data.draw(garbage.filter(bool))
+        entry[field] = data.draw(basic_values.filter(bool))
 
     fun = filt.get_labeled_filter(fields, multi_field_semantics=any)
     assert fun(entry)
@@ -312,7 +312,7 @@ def test_labeled_filter_accepts_with_all(data, fields: list[str]):
     )
 
     for field in fields:
-        entry[field] = data.draw(garbage.filter(bool))
+        entry[field] = data.draw(basic_values.filter(bool))
 
     fun = filt.get_labeled_filter(fields, multi_field_semantics=all)
     assert fun(entry)
@@ -388,7 +388,7 @@ def test_labeled_filter_rejects_all_one_missing(data, fields: list[str]):
     for field in data.draw(
         st.lists(st.sampled_from(fields), min_size=0, max_size=len(fields) - 1)
     ):
-        entry[field] = data.draw(garbage)
+        entry[field] = data.draw(basic_values)
 
     fun = filt.get_labeled_filter(fields, multi_field_semantics=all)
     assert not fun(entry)

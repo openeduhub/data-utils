@@ -3,16 +3,16 @@ from functools import partial
 from typing import Any, Optional, TypeVar
 
 import hypothesis.strategies as st
-from data_utils.utils import Nested_Dict, Terminal_Value
+from data_utils.utils import Basic_Value, Nested_Dict, Terminal_Value
 
 # values that may be associated with any key / added to a list
-garbage = st.one_of(
+basic_values = st.one_of(
     st.text(),
     st.integers(),
     st.floats(),
     st.none(),
 )
-nested_garbage = st.one_of(garbage, st.lists(garbage))
+nested_basic_values = st.one_of(basic_values, st.lists(basic_values))
 
 T = TypeVar("T")
 
@@ -36,7 +36,7 @@ def filtered_strategy(
     )
 
 
-filtered_garbage = partial(filtered_strategy, strategy=nested_garbage)
+filtered_nested_basic_values = partial(filtered_strategy, strategy=nested_basic_values)
 
 
 def cut_subtree(base_dict: Nested_Dict, key: str) -> Nested_Dict:
@@ -55,12 +55,14 @@ def replace_subtree(
     draw: st.DrawFn,
     base_dict: Nested_Dict,
     key: str,
-    blacklist: Collection[Terminal_Value] = frozenset(),
-    whitelist: Collection[Terminal_Value] = frozenset(),
+    blacklist: Collection[Basic_Value] = frozenset(),
+    whitelist: Collection[Basic_Value] = frozenset(),
 ) -> Nested_Dict:
     """Replace the value for the given key with a random new value."""
     # make sure that the new value does not equal the old one
-    new_value = draw(filtered_garbage(blacklist=blacklist, whitelist=whitelist))
+    new_value = draw(
+        filtered_nested_basic_values(blacklist=blacklist, whitelist=whitelist)
+    )
     return Nested_Dict(
         {
             base_key: base_value if base_key != key else new_value
@@ -73,8 +75,8 @@ def replace_subtree(
 def add_garbage(
     draw: st.DrawFn,
     base_dict: Nested_Dict,
-    value_blacklist: Collection[Terminal_Value] = frozenset(),
-    value_whitelist: Collection[Terminal_Value] = frozenset(),
+    value_blacklist: Collection[Basic_Value] = frozenset(),
+    value_whitelist: Collection[Basic_Value] = frozenset(),
     key_blacklist: Collection[str] = frozenset(),
     key_whitelist: Collection[str] = frozenset(),
 ) -> Nested_Dict:
@@ -86,7 +88,11 @@ def add_garbage(
             whitelist=key_whitelist,
         )
     )
-    value = draw(filtered_garbage(blacklist=value_blacklist, whitelist=value_whitelist))
+    value = draw(
+        filtered_nested_basic_values(
+            blacklist=value_blacklist, whitelist=value_whitelist
+        )
+    )
 
     return Nested_Dict(
         {base_key: base_value for base_key, base_value in base_dict.items()}
@@ -214,7 +220,7 @@ def mutated_nested_dict(
                 # add a random value to the list
                 if allow_add_to_list:
                     added_value = draw(
-                        filtered_garbage(
+                        filtered_nested_basic_values(
                             blacklist=value_blacklist, whitelist=value_whitelist
                         )
                     )
