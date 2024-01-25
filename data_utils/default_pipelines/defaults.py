@@ -1,15 +1,30 @@
 from collections.abc import Collection
+from enum import Enum
 
-dropped_values: dict[str, Collection[str]] = {
-    "properties.ccm:taxonid": {
+from data_utils.utils import Terminal_Value
+
+
+class Fields(Enum):
+    ID = "nodeRef.id"
+    TITLE = "properties.cclom:title"
+    DESCRIPTION = "properties.cclom:general_description"
+    LANGUAGE = "properties.cclom:general_language"
+    TAXONID = "properties.ccm:taxonid"
+    EDUCATIONAL_CONTEXT = "properties.ccm:educationalcontext"
+    FSK_RATING = "properties.ccm:fskRating"
+    COLLECTIONS = "collections.properties.cm:title"
+
+
+dropped_values: dict[str, Collection[Terminal_Value]] = {
+    Fields.TAXONID.value: {
         "",
         "http://w3id.org/openeduhub/vocabs/discipline/Pädagogik",  # ambiguous
     },
-    "properties.cclom:general_language": set(),
+    Fields.LANGUAGE.value: set(),
 }
 
-remapped_values: dict[str, dict[str, str]] = {
-    "properties.ccm:taxonid": {
+remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]] = {
+    Fields.TAXONID.value: {
         "http://w3id.org/openeduhub/vocabs/discipline/Darstellendes-Spiel": "http://w3id.org/openeduhub/vocabs/discipline/12002",
         "http://w3id.org/openeduhub/vocabs/discipline/Deutsch": "http://w3id.org/openeduhub/vocabs/discipline/120",
         "http://w3id.org/openeduhub/vocabs/discipline/Deutsch als Zweitsprache": "http://w3id.org/openeduhub/vocabs/discipline/28002",
@@ -27,7 +42,7 @@ remapped_values: dict[str, dict[str, str]] = {
         "http://w3id.org/openeduhub/vocabs/discipline/Physik": "http://w3id.org/openeduhub/vocabs/discipline/460",
         "http://w3id.org/openeduhub/vocabs/discipline/Mathematik": "http://w3id.org/openeduhub/vocabs/discipline/380",
     },
-    "properties.cclom:general_language": {
+    Fields.LANGUAGE.value: {
         "de_DE": "de",
         "de_AT": "de",
         "DE": "de",
@@ -46,8 +61,8 @@ remapped_values: dict[str, dict[str, str]] = {
     },
 }
 
-skos_urls = {
-    "properties.ccm:taxonid": "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json",
-    "properties.ccm:educationalcontext": "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json",
-    "properties.ccm:fskRating": "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json",
+skos_urls: dict[str, str] = {
+    Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json",
+    Fields.EDUCATIONAL_CONTEXT.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json",
+    Fields.FSK_RATING.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json",
 }
