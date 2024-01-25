@@ -78,7 +78,7 @@ def generate_data(
 
     # determine whether documents belong to the redaktionsbuffet
     redaktion_series = df[Fields.COLLECTIONS.value].apply(
-        lambda x: "Redaktionsbuffet" in x
+        lambda x: x is not None and "Redaktionsbuffet" in x
     )
 
     return Data(
