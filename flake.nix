@@ -36,6 +36,8 @@
           pytest
           pytest-cov
           mypy
+          types-requests
+          pandas-stubs
         ]
         ++ (python-packages-build py-pkgs)
         ++ (python-packages-test py-pkgs);
