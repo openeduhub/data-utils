@@ -73,12 +73,20 @@ def replace_subtree(
 def add_garbage(
     draw: st.DrawFn,
     base_dict: Nested_Dict,
-    blacklist: Collection[Terminal_Value] = frozenset(),
-    whitelist: Collection[Terminal_Value] = frozenset(),
+    value_blacklist: Collection[Terminal_Value] = frozenset(),
+    value_whitelist: Collection[Terminal_Value] = frozenset(),
+    key_blacklist: Collection[str] = frozenset(),
+    key_whitelist: Collection[str] = frozenset(),
 ) -> Nested_Dict:
     """Add a new key-value pair."""
-    key = draw(filtered_strategy(st.text(), blacklist=set(base_dict.keys())))
-    value = draw(filtered_garbage(blacklist=blacklist, whitelist=whitelist))
+    key = draw(
+        filtered_strategy(
+            st.text(),
+            blacklist=set(base_dict.keys()) | set(key_blacklist),
+            whitelist=key_whitelist,
+        )
+    )
+    value = draw(filtered_garbage(blacklist=value_blacklist, whitelist=value_whitelist))
 
     return Nested_Dict(
         {base_key: base_value for base_key, base_value in base_dict.items()}
@@ -137,6 +145,10 @@ def mutated_nested_dict(
     allow_remove_from_list=True,
     value_whitelist: Collection[Any] = frozenset(),
     value_blacklist: Collection[Any] = frozenset(),
+    mod_key_whitelist: Collection[str] = frozenset(),
+    mod_key_blacklist: Collection[str] = frozenset(),
+    add_key_whitelist: Collection[str] = frozenset(),
+    add_key_blacklist: Collection[str] = frozenset(),
     min_iters: int = 1,
     max_iters: int = 1,
 ) -> Nested_Dict:
@@ -158,13 +170,23 @@ def mutated_nested_dict(
             actions.append(
                 lambda: draw(
                     add_garbage(
-                        base_dict, blacklist=value_blacklist, whitelist=value_whitelist
+                        base_dict,
+                        value_blacklist=value_blacklist,
+                        value_whitelist=value_whitelist,
+                        key_blacklist=add_key_blacklist,
+                        key_whitelist=add_key_whitelist,
                     )
                 )
             )
 
         if base_dict:
-            key = draw(st.sampled_from(list(base_dict.keys())))
+            key = draw(
+                st.sampled_from(
+                    list(base_dict.keys())
+                    if len(mod_key_whitelist) == 0
+                    else list(mod_key_whitelist)
+                ).filter(lambda x: x not in mod_key_blacklist)
+            )
             value = base_dict[key]
 
             # remove this key and its value
