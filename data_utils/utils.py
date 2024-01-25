@@ -67,3 +67,53 @@ def get_terminal_in(
 ) -> Terminal_Value:
     """Like get_in, but replace non-terminal results with None."""
     return _to_terminal(get_in(nested_dict, keys, catch_errors))
+
+
+def _with_new_value(
+    nested_dict: Nested_Dict | Terminal_Value | list[Any],
+    keys: Sequence[str],
+    value: Terminal_Value,
+    replace_lists=False,
+) -> Nested_Dict | Terminal_Value:
+    # base case
+    if len(keys) == 0:
+        return value
+
+    key = keys[0]
+    keys = keys[1:]
+
+    # if we have reached a list and we are not replacing lists,
+    # create a new sub-dictionary with the current key and append it
+    if not replace_lists and isinstance(nested_dict, list):
+        return nested_dict + [
+            {key: _with_new_value(dict(), keys, value, replace_lists)}
+        ]
+    # if we have reached a dictionary, update its value for the current key,
+    # keeping the previous value, if it existed
+    if isinstance(nested_dict, dict):
+        return nested_dict | {
+            key: _with_new_value(
+                nested_dict.get(key, dict()), keys, value, replace_lists
+            )
+        }
+
+    # if we have reached a terminal value, but still have keys
+    # to assign, replace the value with a new dictionary
+    return {key: _with_new_value(dict(), keys, value, replace_lists)}
+
+
+def with_new_value(
+    nested_dict: Nested_Dict,
+    keys: Sequence[str],
+    value: Terminal_Value,
+    replace_lists=False,
+) -> Nested_Dict:
+    if len(keys) == 0:
+        return nested_dict
+
+    key = keys[0]
+    keys = keys[1:]
+
+    return nested_dict | {
+        key: _with_new_value(nested_dict.get(key, dict()), keys, value, replace_lists)
+    }

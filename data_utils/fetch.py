@@ -18,6 +18,7 @@ from data_utils.utils import (
     Terminal_Value,
     get_in,
     get_terminal_in,
+    with_new_value,
 )
 
 
@@ -170,6 +171,8 @@ def _dicts_from_json_file(
                         remapped_values.get(field, dict()),
                     )
 
+                raw_entry = with_new_value(raw_entry, field.split(key_separator), value)
+
             if all(fun(raw_entry) for fun in filters):
                 hits += 1
                 yield _dict_from_json_entry(
@@ -263,8 +266,8 @@ def labels_from_uris(
                 else:
                     return None
 
-        # catch URIs that are not prefixed with http / https
-        except (requests.exceptions.MissingSchema, requests.exceptions.InvalidURL):
+        # catch invalid results
+        except Exception:
             return None
 
         return get_in(concept, label_seq)  # type: ignore
