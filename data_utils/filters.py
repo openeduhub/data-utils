@@ -2,6 +2,7 @@ import operator as op
 from collections.abc import Callable, Collection, Sequence
 from functools import partial
 from typing import Iterable
+from data_utils.default_pipelines.defaults import Fields
 
 from data_utils.utils import Basic_Value, Nested_Dict, Terminal_Value, get_terminal_in
 
@@ -10,7 +11,7 @@ Filter = Callable[[Nested_Dict], bool]
 
 def get_predicate_on_terminal(
     simple_predicate: Callable[[Basic_Value], bool],
-    list_semantics: Callable[[Collection[bool]], bool],
+    multi_value_semantics: Callable[[Iterable[bool]], bool],
 ) -> Callable[[Terminal_Value], bool]:
     """
     Create a predicate function that acts on a terminal value from one
@@ -19,7 +20,7 @@ def get_predicate_on_terminal(
 
     def fun(comp_value: Terminal_Value) -> bool:
         if isinstance(comp_value, list):
-            return list_semantics([fun(sub_value) for sub_value in comp_value])
+            return multi_value_semantics([fun(sub_value) for sub_value in comp_value])
 
         return simple_predicate(comp_value)
 
@@ -27,7 +28,7 @@ def get_predicate_on_terminal(
 
 
 def get_filter(
-    predicate_fun: Callable[[Terminal_Value], bool], key_seq: Sequence[str]
+    predicate_fun: Callable[[Terminal_Value], bool], key: str, key_separator: str = "."
 ) -> Callable[[Nested_Dict], bool]:
     """
     Create a filter that returns true iff the given predicate function
@@ -35,7 +36,9 @@ def get_filter(
     """
 
     def fun(entry: Nested_Dict) -> bool:
-        value = get_terminal_in(entry, key_seq, catch_errors=(KeyError, TypeError))
+        value = get_terminal_in(
+            entry, key.split(key_separator), catch_errors=(KeyError, TypeError)
+        )
         return predicate_fun(value)
 
     return fun
@@ -43,13 +46,18 @@ def get_filter(
 
 def get_filter_with_basic_predicate(
     predicate_fun: Callable[[Basic_Value], bool],
-    key_seq: Sequence[str],
-    list_semantics: Callable[[Collection[bool]], bool],
+    key: str,
+    multi_value_semantics: Callable[[Iterable[bool]], bool],
+    key_separator: str = ".",
 ) -> Callable[[Nested_Dict], bool]:
     """
     Convenience function to create filters from predicate functions on basic values.
     """
-    return get_filter(get_predicate_on_terminal(predicate_fun, list_semantics), key_seq)
+    return get_filter(
+        get_predicate_on_terminal(predicate_fun, multi_value_semantics),
+        key=key,
+        key_separator=key_separator,
+    )
 
 
 def negated(_filter: Filter) -> Filter:
@@ -69,9 +77,7 @@ def kibana_basic_filter(entry: Nested_Dict) -> bool:
     e.g. those that are in another dataset or do not represent a material.
     """
     must_filters = [
-        get_filter(
-            get_predicate_on_terminal(partial(op.eq, value), any), field.split(".")
-        )
+        get_filter(get_predicate_on_terminal(partial(op.eq, value), any), field)
         for field, value in [
             ("nodeRef.storeRef.protocol", "workspace"),
             ("type", "ccm:io"),
@@ -83,7 +89,7 @@ def kibana_basic_filter(entry: Nested_Dict) -> bool:
             get_predicate_on_terminal(
                 partial(op.ne, "ccm:collection_io_reference"), all
             ),
-            ["aspects"],
+            "aspects",
         )
     )
 
@@ -98,7 +104,7 @@ def kibana_publicly_visible(entry: Nested_Dict) -> bool:
     or because it is contained within a collection that is public.
     """
     should_filters = [
-        get_filter_with_basic_predicate(partial(op.eq, value), field.split("."), any)
+        get_filter_with_basic_predicate(partial(op.eq, value), field, any)
         for field, value in [
             ("permissions.Read", "GROUP_EVERYONE"),
             ("collections.permissions.Read", "GROUP_EVERYONE"),
@@ -110,8 +116,8 @@ def kibana_publicly_visible(entry: Nested_Dict) -> bool:
 
 kibana_redaktionsbuffet = get_filter_with_basic_predicate(
     predicate_fun=partial(op.eq, "Redaktionsbuffet"),
-    key_seq="collections.properties.cm:title".split("."),
-    list_semantics=any,
+    key=Fields.COLLECTIONS.value,
+    multi_value_semantics=any,
 )
 
 
@@ -122,3 +128,72 @@ def get_test_data_filter(included_labels: Iterable[str]) -> Filter:
     return get_filter_with_basic_predicate(
         lambda x: any(x == label for label in included_labels), "test_data", any
     )
+
+
+def get_language_filter(accepted_languages: Collection[str]) -> Filter:
+    if len(accepted_languages) == 0:
+        return lambda x: True
+
+    def fun(entry: Nested_Dict) -> bool:
+        langs = get_terminal_in(entry, Fields.LANGUAGE.value.split("."))
+
+        if langs is None:
+            return True
+
+        if not isinstance(langs, list):
+            return langs in accepted_languages
+
+        unaccepted_langs = set(langs) - set(accepted_languages)
+        return not unaccepted_langs
+
+    return fun
+
+
+german_filter = get_language_filter(["de", "de_DE", "de-DE"])
+
+
+def get_labeled_filter(
+    fields: Collection[str],
+    key_separator: str = ".",
+    multi_field_semantics: Callable[[Iterable[bool]], bool] = any,
+) -> Filter:
+    def fun(entry: Nested_Dict) -> bool:
+        found_values = (
+            get_terminal_in(entry, field.split(key_separator)) for field in fields
+        )
+        return multi_field_semantics(bool(value) for value in found_values)
+
+    return fun
+
+
+def get_len_filter(
+    fields: Collection[str],
+    min_lengths: int | Collection[int],
+    key_separator: str = ".",
+    multi_field_semantics: Callable[[Iterable[bool]], bool] = any,
+) -> Filter:
+    if len(fields) == 0:
+        return lambda x: True
+
+    if not isinstance(min_lengths, Collection):
+        min_lengths = [min_lengths for _ in fields]
+
+    def fun(entry: Nested_Dict) -> bool:
+        found_values = (
+            get_terminal_in(entry, field.split(key_separator)) for field in fields
+        )
+        lengths = (
+            len(value) if isinstance(value, Collection) else 0 for value in found_values
+        )
+        return multi_field_semantics(
+            length >= min_length for length, min_length in zip(lengths, min_lengths)
+        )
+
+    return fun
+
+
+existing_text_filter = get_len_filter(
+    [Fields.TITLE.value, Fields.DESCRIPTION.value],
+    min_lengths=1,
+    multi_field_semantics=all,
+)
