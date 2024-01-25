@@ -32,10 +32,10 @@ def as_boolean_array(
     values: Collection[Collection[T]],
     sort_fn: Optional[Callable[[list[T]], list[T]]] = None,
 ) -> tuple[np.ndarray[Any, np.dtypes.BoolDType], list[T]]:
-    if not values:
+    if len(values) == 0:
         return np.array([]), []
 
-    values_as_sets = [set(value) for value in values]
+    values_as_sets = [set(value) if value is not None else set() for value in values]
 
     unique_values_list: list[T] = list(reduce(op.or_, values_as_sets, set()))
     if sort_fn is not None:

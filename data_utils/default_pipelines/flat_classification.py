@@ -70,7 +70,9 @@ def generate_data(
 
     # concatenate title and description
     raw_texts = df.apply(
-        lambda x: x[Fields.TITLE.value] + "\n" + x[Fields.DESCRIPTION.value],
+        lambda x: (x[Fields.TITLE.value] or "")
+        + "\n"
+        + (x[Fields.DESCRIPTION.value] or ""),
         axis=1,
     )
 
