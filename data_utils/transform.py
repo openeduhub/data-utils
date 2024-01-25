@@ -11,10 +11,11 @@ T = TypeVar("T")
 def fix_entry_single_value(
     x: T, to_drop: Collection[T], to_remap: dict[T, T]
 ) -> T | None:
+    x = to_remap.get(x, x)
     if x in to_drop:
         return None
 
-    return to_remap.get(x, x)
+    return x
 
 
 def fix_entry_multi_value(
@@ -28,17 +29,13 @@ def fix_entry_multi_value(
 
 
 def as_boolean_array(
-    values: Collection[None | T | Collection[T]],
+    values: Collection[Collection[T]],
     sort_fn: Optional[Callable[[list[T]], list[T]]] = None,
 ) -> tuple[np.ndarray[Any, np.dtypes.BoolDType], list[T]]:
-    def to_set(x: None | T | Collection[T]) -> set[T]:
-        if x is None:
-            return set()
-        if isinstance(x, Collection):
-            return set(x)
-        return {x}
+    if not values:
+        return np.array([]), []
 
-    values_as_sets = [to_set(value) for value in values]
+    values_as_sets = [set(value) for value in values]
 
     unique_values_list: list[T] = list(reduce(op.or_, values_as_sets, set()))
     if sort_fn is not None:
