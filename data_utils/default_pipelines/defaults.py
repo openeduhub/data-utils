@@ -18,6 +18,7 @@ class Fields(Enum):
 dropped_values: dict[str, Collection[Terminal_Value]] = {
     Fields.TAXONID.value: {
         "",
+        "http://w3id.org/openeduhub/vocabs/discipline/???",
         "http://w3id.org/openeduhub/vocabs/discipline/Pädagogik",  # ambiguous
     },
     Fields.LANGUAGE.value: set(),
