@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
-from typing import Any
+from typing import Union
 
 Basic_Value = str | int | float | None
-Terminal_Value = Basic_Value | list["Terminal_Value"]
+Terminal_Value = Basic_Value | list[Basic_Value]
 
 
-Nested_Dict = dict[str, Any]
+Nested_Dict = dict[
+    str, Union[Basic_Value, "Nested_Dict", list[Union["Nested_Dict", Basic_Value]]]
+]
 Query_Result = Terminal_Value | Nested_Dict | list["Query_Result"]
 
 
@@ -23,6 +25,7 @@ def _nested_get_in(
     keys = keys[1:]
 
     try:
+        # type errors are expected here
         val = nested_dict[key]  # type: ignore
     except catch_errors as e:
         return None
@@ -55,7 +58,16 @@ def _to_terminal(result: Query_Result) -> Terminal_Value:
         return None
 
     if isinstance(result, list):
-        return [_to_terminal(x) for x in result]
+        to_ret: list[Basic_Value] = list()
+        for x in result:
+            x_terminal = _to_terminal(x)
+            # ensure that we are returning a flat list
+            if isinstance(x_terminal, list):
+                to_ret.extend(x_terminal)
+            else:
+                to_ret.append(x_terminal)
+
+        return to_ret
 
     return result
 
@@ -65,55 +77,7 @@ def get_terminal_in(
     keys: Sequence[str],
     catch_errors: tuple[type[Exception], ...] = (KeyError, TypeError),
 ) -> Terminal_Value:
-    """Like get_in, but replace non-terminal results with None."""
+    """
+    Like get_in, but replace non-terminal results with None and flatten nested lists.
+    """
     return _to_terminal(get_in(nested_dict, keys, catch_errors))
-
-
-def _with_new_value(
-    nested_dict: Nested_Dict | Terminal_Value | list[Any],
-    keys: Sequence[str],
-    value: Terminal_Value,
-    replace_lists=False,
-) -> Nested_Dict | Terminal_Value:
-    # base case
-    if len(keys) == 0:
-        return value
-
-    key = keys[0]
-    keys = keys[1:]
-
-    # if we have reached a list and we are not replacing lists,
-    # create a new sub-dictionary with the current key and append it
-    if not replace_lists and isinstance(nested_dict, list):
-        return nested_dict + [
-            {key: _with_new_value(dict(), keys, value, replace_lists)}
-        ]
-    # if we have reached a dictionary, update its value for the current key,
-    # keeping the previous value, if it existed
-    if isinstance(nested_dict, dict):
-        return nested_dict | {
-            key: _with_new_value(
-                nested_dict.get(key, dict()), keys, value, replace_lists
-            )
-        }
-
-    # if we have reached a terminal value, but still have keys
-    # to assign, replace the value with a new dictionary
-    return {key: _with_new_value(dict(), keys, value, replace_lists)}
-
-
-def with_new_value(
-    nested_dict: Nested_Dict,
-    keys: Sequence[str],
-    value: Terminal_Value,
-    replace_lists=False,
-) -> Nested_Dict:
-    if len(keys) == 0:
-        return nested_dict
-
-    key = keys[0]
-    keys = keys[1:]
-
-    return nested_dict | {
-        key: _with_new_value(nested_dict.get(key, dict()), keys, value, replace_lists)
-    }
