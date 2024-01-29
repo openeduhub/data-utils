@@ -11,19 +11,7 @@ import numpy as np
 import pandas as pd
 from data_utils.default_pipelines.defaults import Fields
 from data_utils.utils import Basic_Value, Basic_Value_Not_None
-
-
-class Target_Data(NamedTuple):
-    arr: np.ndarray[Any, np.dtypes.BoolDType]
-    uris: list[str]
-    labels: list[str | None]
-
-
-class Data(NamedTuple):
-    raw_texts: np.ndarray[Any, np.dtypes.StrDType]
-    ids: np.ndarray[Any, np.dtypes.StrDType]
-    target_data: dict[str, Target_Data]
-    redaktion_arr: np.ndarray[Any, np.dtypes.BoolDType]
+from data_utils.data import Data, Target_Data
 
 
 def generate_data(
@@ -35,7 +23,6 @@ def generate_data(
     uri_label_fields: dict[str, str] = dict(),
     filters: Collection[filt.Filter] = tuple(),
     use_defaults: bool = True,
-    min_category_support: int = 0,
     **kwargs,
 ) -> Data:
     if use_defaults:
@@ -63,7 +50,6 @@ def generate_data(
             df[target],
             skos_url=skos_urls.get(target, None),
             uri_label_field=uri_label_fields.get(target, ("prefLabel", "de")),
-            min_category_support=min_category_support,
         )
         for target in target_fields
     }
@@ -117,7 +103,6 @@ def _values_to_target_data(
     values: Collection[str],
     skos_url: Optional[str],
     uri_label_field: Sequence[str],
-    min_category_support: int,
 ) -> Target_Data:
     # transform the entries into boolean arrays
     arr, uris = trans.as_boolean_array(values, sort_fn=lambda x: sorted(x))
@@ -132,34 +117,4 @@ def _values_to_target_data(
             uris=uris, label_seq=uri_label_field, multi_value=False
         )  # type: ignore
 
-    data = Target_Data(arr, uris, labels)
-
-    # drop all categories with too little support
-    if min_category_support:
-        data = subset_target_categories(
-            data,
-            arr.sum(-2) > min_category_support,
-        )
-
     return Target_Data(arr, uris, labels)
-
-
-def subset_target_array(data: Target_Data, subset_mask: Sequence[bool]) -> Target_Data:
-    data = Target_Data(arr=data.arr[subset_mask], uris=data.uris, labels=data.labels)
-
-    return data
-
-
-def subset_target_categories(
-    data: Target_Data, subset_mask: Sequence[bool]
-) -> Target_Data:
-    subset_indices = np.where(subset_mask)[0]
-    data = Target_Data(
-        arr=data.arr[:, subset_mask],
-        uris=[uri for i, uri in enumerate(data.uris) if i in subset_indices],
-        labels=[label for i, label in enumerate(data.labels) if i in subset_indices],
-    )
-
-    assert len(data.uris) == len(data.labels) == data.arr.shape[-1]
-
-    return data
