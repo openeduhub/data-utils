@@ -1,3 +1,4 @@
+from __future__ import annotations
 import operator as op
 from collections.abc import Callable, Collection
 from functools import partial

@@ -9,10 +9,12 @@ Default pipeline for classification tasks on non-hierarchical labels
    :undoc-members:
    :show-inheritance:
 
-Defaults that can be used in any pipeline
------------------------------------------
+      
+Data structure returned by pipelines and utilities for acting on them
+--------------------------------------------------------------------
 
-.. automodule:: data_utils.default_pipelines.defaults
+.. automodule:: data_utils.default_pipelines.data
    :members:
    :undoc-members:
    :show-inheritance:
+      

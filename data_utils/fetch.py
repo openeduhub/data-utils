@@ -1,4 +1,8 @@
-"""Module for downloading content from the internet."""
+"""
+Module for downloading content from the internet.
+"""
+from __future__ import annotations
+
 import gzip
 import json
 import shutil
@@ -11,6 +15,7 @@ from typing import Any, Optional
 import pandas as pd
 import requests
 
+from data_utils.filters import Filter
 import data_utils.filters as filt
 import data_utils.transform as trans
 from data_utils.data import (
@@ -21,21 +26,6 @@ from data_utils.data import (
     get_in,
     get_terminal_in,
 )
-
-
-def _download(url: str, target_path: Path, headers: Optional[dict[str, str]] = None):
-    print("Downloading data...")
-    with urllib.request.urlopen(
-        urllib.request.Request(
-            url,
-            headers=headers,
-        )
-        if headers is not None
-        else url
-    ) as r:
-        with open(target_path, "wb") as f:
-            # use shutil.copyfileobj to avoid loading the entire file to RAM
-            shutil.copyfileobj(r, f)
 
 
 def fetch(
@@ -51,6 +41,26 @@ def fetch(
 ) -> Path:
     """
     Download the latest data dump and save it to the given directory.
+
+    :param base_url: The base URL from which to download the data.
+    :param target_file: The file from the base URL to download.
+
+      - Assumption: the file is located at `base_url/target_file`
+    :param output_dir: The directory in which to save the downloaded file.
+    :param output_file: The name of the file to download.
+      By default, this is equal to `target_file` (without `.gz`, if applicable).
+    :param username: The (Basic Auth) username to use for authorization.
+    :param password: The (Basic Auth) password to use for authorization.
+    :param encoded_auth: The already encoded username+password combination.
+      If set, `username` and `password` are ignored.
+    :param skip_if_exists:
+
+      - If set to True, skip download if the output file
+        already exists.
+      - If set to False, always override any already present files.
+    :param delete_compressed_archive: Whether to delete the compressed archive
+      after it has been decompressed.
+    :returns: The path to the (decompressed) downloaded file.
     """
     # convert to pathlib.Path if the path was given as a string
     if isinstance(output_dir, str):
@@ -114,6 +124,21 @@ def fetch(
     return output_file
 
 
+def _download(url: str, target_path: Path, headers: Optional[dict[str, str]] = None):
+    print("Downloading data...")
+    with urllib.request.urlopen(
+        urllib.request.Request(
+            url,
+            headers=headers,
+        )
+        if headers is not None
+        else url
+    ) as r:
+        with open(target_path, "wb") as f:
+            # use shutil.copyfileobj to avoid loading the entire file to RAM
+            shutil.copyfileobj(r, f)
+
+
 def _dict_from_json_entry(
     raw_entry: Nested_Dict,
     columns: Iterable[str] | dict[str, str],
@@ -135,7 +160,7 @@ def _dicts_from_json_file(
     columns: Iterable[str] | dict[str, str],
     key_separator: str,
     prefix: str,
-    filters: Collection[filt.Filter],
+    filters: Collection[Filter],
     dropped_values: dict[str, Collection[Basic_Value_Not_None]],
     remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]],
     max_len: Optional[int],
@@ -175,7 +200,7 @@ def df_from_json_file(
     columns: Iterable[str] | dict[str, str],
     prefix: str = "_source",
     key_separator: str = ".",
-    filters: Collection[filt.Filter] = tuple(),
+    filters: Collection[Filter] = tuple(),
     dropped_values: dict[str, Collection[Basic_Value_Not_None]] = dict(),
     remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]] = dict(),
     max_len: Optional[int] = None,
@@ -183,20 +208,27 @@ def df_from_json_file(
     """
     Read the given line separated json file and turn it into a data frame.
 
+    :param path: The path to the json file to process.
     :param columns: The fields to keep from the json.
-        If given as a dictionary, use the keys as the column names
-        in the final data frame.
-        Individual fields are split by the key separator for nested accesses.
+      If given as a dictionary, use the keys as the column names
+      in the final data frame.
+      Individual fields are split by the key separator for nested accesses.
     :param prefix: The fields to prefix any access with.
-        Useful when all interesting data is contained within a nested object.
-        Split by the key separator for nested accesses.
+      Useful when all interesting data is contained within a nested object.
+      Split by the key separator for nested accesses.
     :param key_separator: The sub string that denotes that we are accessing
-        a nested json object.
-        Example: With '.', a.b gets turned into a nested access
-                 of first field a and then field b
+      a nested json object.
+
+      - Example: With \".\", \"a.b\" gets turned into a nested access
+        of first field `a` and then field `b`.
     :param filters: Filter functions to be applied to individual
-        entries of the json file before they are collected.
+      entries of the json file before they are collected.
+    :param dropped_values: A mapping from field name to a collection of
+      values that shall be dropped from entries with that field.
+    :param remapped_values: A mapping from field name to a dictionary
+      that describes re-mappings of values within that field.
     :param max_len: The maximum number of entries to read from the json.
+    :returns: The resulting data, as a pandas DataFrame.
     """
     return pd.DataFrame(
         _dicts_from_json_file(
@@ -227,6 +259,7 @@ def labels_from_uris(
     Note that this can be much slower than labels_from_skos,
     as each URI requires its own separate HTTP request.
 
+    :param uris: The URIs to process.
     :param multi_value: Whether values in uris contain multiple URIs each.
         If None, this is determined automatically.
     :param label_seq: The sequence of fields to look up in the URI
@@ -294,6 +327,7 @@ def labels_from_skos(
     """
     Get URIs for the given IDs by first reading a SKOS vocabulary.
 
+    :param ids: The IDs within the vocabulary to look up.
     :param url: The URL of the SKOS vocabulary to read.
     :param multi_value: Whether values in ids contain multiple IDs each.
         If None, this is determined automatically.

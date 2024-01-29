@@ -1,10 +1,19 @@
 Core functionality
-==============
+==================
+
 
 Downloading content from the internet
-------------------
-
+-------------------------------------
 .. automodule:: data_utils.fetch
+   :members:
+   :undoc-members:
+   :show-inheritance:
+      
+      
+Useful defaults, e.g. for metadata fields
+-----------------------------------------
+
+.. automodule:: data_utils.defaults
    :members:
    :undoc-members:
    :show-inheritance:

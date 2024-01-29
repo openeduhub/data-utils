@@ -29,7 +29,6 @@
         with py-pkgs; [
           sphinx
           sphinx-rtd-theme
-          sphinx-autodoc-typehints
         ];
 
       ### create the python installation for development

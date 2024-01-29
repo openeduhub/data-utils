@@ -4,11 +4,17 @@ from __future__ import annotations
 import operator as op
 from collections.abc import Iterable, Sequence
 from functools import reduce
-from typing import Union
+from typing import Union, Annotated
 
-Basic_Value_Not_None = str | int | float
-Basic_Value = Basic_Value_Not_None | None
-Terminal_Value = Basic_Value | list[Basic_Value]
+Basic_Value_Not_None = Annotated[
+    str | int | float, "Atomic (non-nil) data contained within leaves"
+]
+Basic_Value = Annotated[
+    Basic_Value_Not_None | None, "Atomic data contained within leaves"
+]
+Terminal_Value = Annotated[
+    Basic_Value | list[Basic_Value], "Data contained within leaves"
+]
 
 
 Nested_Dict = dict[
@@ -55,10 +61,12 @@ def get_in(
     """
     Recursively access a nested dictionary.
 
-    :param catch_errors: Errors to catch when accessing the nested dictionary.
-      Catch KeyErrors to return None when a nested dictionary
+    :param catch_errors:
+      Errors to catch when accessing the nested dictionary.
+
+      - Add KeyError to return None when a nested dictionary
         does not contain the key sequence.
-      Catch TypeErrors to return None when a nested dictionary ends
+      - Add TypeError to return None when a nested dictionary ends
         before all keys have been used up.
     """
     return _get_in(nested_dict, keys, catch_errors)
