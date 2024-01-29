@@ -6,6 +6,11 @@ import hypothesis.strategies as st
 from data_utils.utils import Basic_Value, Nested_Dict, Terminal_Value
 
 # values that may be associated with any key / added to a list
+basic_values_not_none = st.one_of(
+    st.text(),
+    st.integers(),
+    st.floats(),
+)
 basic_values = st.one_of(
     st.text(),
     st.integers(),
@@ -67,7 +72,7 @@ def replace_subtree(
         {
             base_key: base_value if base_key != key else new_value
             for base_key, base_value in base_dict.items()
-        }
+        }  # type: ignore
     )
 
 
@@ -96,7 +101,7 @@ def add_garbage(
 
     return Nested_Dict(
         {base_key: base_value for base_key, base_value in base_dict.items()}
-        | {key: value}
+        | {key: value}  # type: ignore
     )
 
 
@@ -220,8 +225,10 @@ def mutated_nested_dict(
                 # add a random value to the list
                 if allow_add_to_list:
                     added_value = draw(
-                        filtered_nested_basic_values(
-                            blacklist=value_blacklist, whitelist=value_whitelist
+                        filtered_strategy(
+                            basic_values,
+                            blacklist=value_blacklist,
+                            whitelist=value_whitelist,
                         )
                     )
                     actions.append(
@@ -229,7 +236,7 @@ def mutated_nested_dict(
                             {
                                 base_key: base_value
                                 if base_key != key
-                                else value + [added_value]
+                                else value + [added_value]  # type: ignore
                                 for base_key, base_value in base_dict.items()
                             }
                         )

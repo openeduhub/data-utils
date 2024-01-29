@@ -1,31 +1,114 @@
 import operator as op
-from collections.abc import Callable, Collection, Iterable
+from collections.abc import Callable, Collection, Iterable, Sequence
 from functools import reduce
 from typing import Any, Optional, TypeVar
 
 import numpy as np
 
+from data_utils.utils import (
+    Basic_Value,
+    Basic_Value_Not_None,
+    Nested_Dict,
+    Nested_Dict_Subtree,
+    Terminal_Value,
+)
+
 T = TypeVar("T")
 
 
-def fix_entry_single_value(
-    x: T, to_drop: Collection[T], to_remap: dict[T, T]
-) -> T | None:
-    x = to_remap.get(x, x)
+def with_changed_value(
+    entry: Nested_Dict,
+    keys: Sequence[str],
+    to_drop: Collection[Basic_Value_Not_None],
+    to_remap: dict[Basic_Value_Not_None, Basic_Value],
+) -> Nested_Dict:
+    if None in to_drop or None in to_remap:
+        raise ValueError(
+            "Dropping or remapping from None is not supported, as this can, and will, result in unexpected behavior."
+        )
+
+    if len(keys) == 0:
+        return entry
+
+    key = keys[0]
+    keys = keys[1:]
+
+    # nothing to fix
+    if key not in entry:
+        return entry
+
+    return entry | {key: _with_changed_value(entry[key], keys, to_drop, to_remap)}
+
+
+def _with_changed_value(
+    subtree: Nested_Dict_Subtree,
+    keys: Sequence[str],
+    to_drop: Collection[Basic_Value_Not_None],
+    to_remap: dict[Basic_Value_Not_None, Basic_Value],
+) -> Nested_Dict_Subtree:
+    # we have reached the subtree we need to modify
+    if len(keys) == 0:
+        if isinstance(subtree, Basic_Value):
+            return change_single_value(subtree, to_drop, to_remap)
+
+        if isinstance(subtree, list):
+            return change_multi_value(subtree, to_drop, to_remap)
+
+        return subtree  # do not touch nested dictionaries
+
+    key = keys[0]
+    keys = keys[1:]
+
+    if isinstance(subtree, Basic_Value):
+        return subtree
+
+    if isinstance(subtree, list):
+        return [
+            subtree_value
+            | {key: _with_changed_value(subtree_value[key], keys, to_drop, to_remap)}
+            if isinstance(subtree_value, dict) and key in subtree_value
+            else subtree_value  # nothing to fix here
+            for subtree_value in subtree
+        ]
+
+    # nothing to fix here
+    if key not in subtree:
+        return subtree
+
+    return subtree | {key: _with_changed_value(subtree[key], keys, to_drop, to_remap)}
+
+
+def change_single_value(
+    x: Basic_Value,
+    to_drop: Collection[Basic_Value_Not_None],
+    to_remap: dict[Basic_Value_Not_None, Basic_Value],
+) -> Basic_Value:
+    x = to_remap.get(x, x)  # type: ignore
     if x in to_drop:
         return None
 
     return x
 
 
-def fix_entry_multi_value(
-    x: Iterable[T], to_drop: Collection[T], to_remap: dict[T, T]
-) -> list[T]:
-    return [
-        fixed_val
-        for val in x
-        if (fixed_val := fix_entry_single_value(val, to_drop, to_remap)) is not None
-    ]
+def change_multi_value(
+    subtree: Iterable[Basic_Value | Nested_Dict],
+    to_drop: Collection[Basic_Value_Not_None],
+    to_remap: dict[Basic_Value_Not_None, Basic_Value],
+) -> list[Basic_Value | Nested_Dict]:
+    to_ret: list[Basic_Value | Nested_Dict] = list()
+    for subtree_value in subtree:
+        # do not touch nested dictionaries
+        if isinstance(subtree_value, dict):
+            to_ret.append(subtree_value)
+            continue
+
+        remapped_value = to_remap.get(subtree_value, subtree_value)  # type: ignore
+        if remapped_value in to_drop:
+            continue
+
+        to_ret.append(remapped_value)
+
+    return to_ret
 
 
 def as_boolean_array(
