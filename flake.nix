@@ -25,6 +25,13 @@
           hypothesis
         ];
 
+      python-packages-docs = py-pkgs:
+        with py-pkgs; [
+          sphinx
+          sphinx-rtd-theme
+          sphinx-autodoc-typehints
+        ];
+
       ### create the python installation for development
       # the development installation contains all build packages,
       # plus some additional ones we do not need to include in production.
@@ -40,7 +47,8 @@
           pandas-stubs
         ]
         ++ (python-packages-build py-pkgs)
-        ++ (python-packages-test py-pkgs);
+        ++ (python-packages-test py-pkgs)
+        ++ (python-packages-docs py-pkgs);
 
       ### create the python package
       get-data-utils = py-pkgs: py-pkgs.buildPythonPackage {
