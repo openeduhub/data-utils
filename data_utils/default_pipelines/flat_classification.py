@@ -1,18 +1,16 @@
 import operator as op
-from collections.abc import Collection, Iterable, Sequence
-from functools import partial, reduce
+from collections.abc import Collection, Sequence
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, Optional
+from typing import Any, NamedTuple, Optional
 
 import data_utils.default_pipelines.defaults as defaults
-from data_utils.default_pipelines.defaults import Fields
 import data_utils.fetch as fetch
 import data_utils.filters as filt
 import data_utils.transform as trans
 import numpy as np
 import pandas as pd
-
-from data_utils.utils import Terminal_Value
+from data_utils.default_pipelines.defaults import Fields
+from data_utils.utils import Basic_Value, Basic_Value_Not_None
 
 
 class Target_Data(NamedTuple):
@@ -31,8 +29,8 @@ class Data(NamedTuple):
 def generate_data(
     json_file: Path,
     target_fields: Collection[str],
-    dropped_values: dict[str, Collection[Terminal_Value]] = dict(),
-    remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]] = dict(),
+    dropped_values: dict[str, Collection[Basic_Value_Not_None]] = dict(),
+    remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]] = dict(),
     skos_urls: dict[str, str] = dict(),
     filters: Collection[filt.Filter] = tuple(),
     use_defaults: bool = True,

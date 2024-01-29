@@ -14,11 +14,11 @@ import data_utils.filters as filt
 import data_utils.transform as trans
 from data_utils.utils import (
     Basic_Value,
+    Basic_Value_Not_None,
     Nested_Dict,
     Terminal_Value,
     get_in,
     get_terminal_in,
-    with_new_value,
 )
 
 
@@ -135,8 +135,8 @@ def _dicts_from_json_file(
     key_separator: str,
     prefix: str,
     filters: Collection[filt.Filter],
-    dropped_values: dict[str, Collection[Terminal_Value]],
-    remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]],
+    dropped_values: dict[str, Collection[Basic_Value_Not_None]],
+    remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]],
     max_len: Optional[int],
 ) -> Iterator[dict[str, Terminal_Value]]:
     hits = 0
@@ -155,23 +155,12 @@ def _dicts_from_json_file(
                 )
 
             for field in modified_fields:
-                value = get_terminal_in(raw_entry, field.split(key_separator))
-                if value is None:
-                    continue
-                if isinstance(value, list):
-                    value = trans.fix_entry_multi_value(
-                        value,
-                        dropped_values.get(field, tuple()),
-                        remapped_values.get(field, dict()),
-                    )
-                else:
-                    value = trans.fix_entry_single_value(
-                        value,
-                        dropped_values.get(field, tuple()),
-                        remapped_values.get(field, dict()),
-                    )
-
-                raw_entry = with_new_value(raw_entry, field.split(key_separator), value)
+                raw_entry = trans.with_changed_value(
+                    raw_entry,
+                    field.split(key_separator),
+                    dropped_values[field],
+                    remapped_values[field],
+                )
 
             if all(fun(raw_entry) for fun in filters):
                 hits += 1
@@ -186,8 +175,8 @@ def df_from_json_file(
     prefix: str = "_source",
     key_separator: str = ".",
     filters: Collection[filt.Filter] = tuple(),
-    dropped_values: dict[str, Collection[Terminal_Value]] = dict(),
-    remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]] = dict(),
+    dropped_values: dict[str, Collection[Basic_Value_Not_None]] = dict(),
+    remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]] = dict(),
     max_len: Optional[int] = None,
 ) -> pd.DataFrame:
     """

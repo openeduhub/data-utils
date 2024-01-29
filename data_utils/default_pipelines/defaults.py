@@ -1,7 +1,7 @@
 from collections.abc import Collection
 from enum import Enum
 
-from data_utils.utils import Terminal_Value
+from data_utils.utils import Basic_Value, Basic_Value_Not_None
 
 
 class Fields(Enum):
@@ -15,7 +15,7 @@ class Fields(Enum):
     COLLECTIONS = "collections.properties.cm:title"
 
 
-dropped_values: dict[str, Collection[Terminal_Value]] = {
+dropped_values: dict[str, Collection[Basic_Value_Not_None]] = {
     Fields.TAXONID.value: {
         "",
         "http://w3id.org/openeduhub/vocabs/discipline/???",
@@ -24,7 +24,7 @@ dropped_values: dict[str, Collection[Terminal_Value]] = {
     Fields.LANGUAGE.value: set(),
 }
 
-remapped_values: dict[str, dict[Terminal_Value, Terminal_Value]] = {
+remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]] = {
     Fields.TAXONID.value: {
         "http://w3id.org/openeduhub/vocabs/discipline/Darstellendes-Spiel": "http://w3id.org/openeduhub/vocabs/discipline/12002",
         "http://w3id.org/openeduhub/vocabs/discipline/Deutsch": "http://w3id.org/openeduhub/vocabs/discipline/120",
