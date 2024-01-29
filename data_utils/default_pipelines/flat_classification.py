@@ -10,8 +10,8 @@ import data_utils.transform as trans
 import numpy as np
 import pandas as pd
 from data_utils.default_pipelines.defaults import Fields
-from data_utils.utils import Basic_Value, Basic_Value_Not_None
-from data_utils.data import Data, Target_Data
+from data_utils.data import Basic_Value, Basic_Value_Not_None
+from data_utils.default_pipelines.data import Data, Target_Data
 
 
 def generate_data(

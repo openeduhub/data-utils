@@ -3,7 +3,7 @@ from test.strategies import basic_values, mutated_nested_dict
 
 import data_utils.filters as filt
 import hypothesis.strategies as st
-from data_utils.utils import Nested_Dict
+from data_utils.data import Nested_Dict
 from hypothesis import given
 
 

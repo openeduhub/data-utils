@@ -1,3 +1,4 @@
+"""Module for downloading content from the internet."""
 import gzip
 import json
 import shutil
@@ -12,7 +13,7 @@ import requests
 
 import data_utils.filters as filt
 import data_utils.transform as trans
-from data_utils.utils import (
+from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
     Nested_Dict,

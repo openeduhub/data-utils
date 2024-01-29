@@ -5,7 +5,7 @@ from typing import Any, Optional, TypeVar
 
 import numpy as np
 
-from data_utils.utils import (
+from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
     Nested_Dict,

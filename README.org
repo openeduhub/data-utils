@@ -148,7 +148,8 @@ from pathlib import Path
 from pprint import pprint
 
 import data_utils.default_pipelines.defaults as defaults
-from data_utils.data import subset_categories, subset_data_points
+from data_utils.default_pipelines.data import (subset_categories,
+                                               subset_data_points)
 from data_utils.default_pipelines.defaults import Fields
 from data_utils.default_pipelines.flat_classification import generate_data
 #+end_src

@@ -5,7 +5,7 @@ from functools import reduce
 
 import data_utils.transform as trans
 import hypothesis.strategies as st
-from data_utils.utils import (
+from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
     Nested_Dict,
