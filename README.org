@@ -153,6 +153,8 @@ from data_utils.default_pipelines.defaults import Fields
 from data_utils.default_pipelines.flat_classification import generate_data
 #+end_src
 
+#+RESULTS: imports
+
 ** Default Pipelines
 
 The default pipelines are intended to immediately obtain all relevant, lightly pre-processed data in formats that make sense for the given information. They remove a lot of redundant work, such as converting labels into boolean arrays or pulling labels from controlled vocabularies / URIs.
@@ -183,7 +185,7 @@ The object ~data~ now contains all of the commonly used information we may need 
   - =uris=: The URIs that correspond to each matrix column.
   - =labels=: The labels of the URIs.
     
-#+begin_src python :session demo.py :exports both :results output
+#+begin_src python :session demo.py :exports results :results output
 print(f"{data.raw_texts[0]=}\n")
 print(f"{data.ids[:5]=}\n")
 print(f"{data.redaktion_arr.shape=}\n")
@@ -218,7 +220,7 @@ data.target_data['properties.ccm:educationalcontext'].arr.shape=(1000, 10)
 #+end_example
 
 In the long run, typing the full identifiers for the metadata fields can be error prone and tiring. Thus, we provide an ~Enum~ that contains the most common fields:
-#+begin_src python :results output
+#+begin_src python :results output :exports results
 print(f"{data.target_data[Fields.EDUCATIONAL_CONTEXT.value].uris[:5]=}\n")
 #+end_src
 
@@ -255,18 +257,24 @@ example_remapped_values = {
 }
 #+end_src
 
+#+RESULTS:
+
 Additionally, specific values can be dropped entirely (but not the corresponding entry) with the =dropped_values= argument, which takes a dictionary mapping metadata field to a collection of strings that shall be dropped.
 
 Note that for some metadata fields, there already exists some defaults that may be used (see [[file:data_utils/default_pipelines/defaults.py][defaults.py]]). These are loaded automatically when the =use_defaults= argument is set to =True= (default).
 
 Example without defaults:
-#+begin_src python :exports both :results output
+#+begin_src python
 data = generate_data(
     json_file=Path("~/data.json"),
     target_fields=[Fields.TAXONID.value],
     use_defaults=False,
 )
+#+end_src
 
+#+RESULTS:
+
+#+begin_src python :exports results :results output
 pprint(data.target_data[Fields.TAXONID.value].arr.shape)
 pprint(data.target_data[Fields.TAXONID.value].uris)
 #+end_src
@@ -363,13 +371,17 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
 #+end_example
 
 Example with defaults:
-#+begin_src python :exports both :results output
+#+begin_src python
 data = generate_data(
     json_file=Path("~/data.json"),
     target_fields=[Fields.TAXONID.value],
     use_defaults=True,
 )
+#+end_src
 
+#+RESULTS:
+
+#+begin_src python :exports results :results output
 pprint(data.target_data[Fields.TAXONID.value].arr.shape)
 pprint(data.target_data[Fields.TAXONID.value].uris)
 #+end_src
@@ -449,13 +461,18 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
 
 If the values assigned to a targeted field are URIs that link back to their controlled vocabularies, the ~generate_data~ function will automatically try to look up the preferred label (default: =prefLabel.de=):
 
-#+begin_src python :exports both :results output
+#+begin_src python
 data = generate_data(
     json_file=Path("~/data.json"),
     target_fields=[Fields.TAXONID.value],
     max_len=1000,
     use_defaults=False,
 )
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :exports results :results output
 pprint(
     {
         uri: label
@@ -484,7 +501,7 @@ pprint(
 
 Additionally, we can provide a map from metadata field to SKOS vocabulary. For all fields where this is provided, this vocabulary will be used instead of dynamically looking up the label.
 This has the advantage of being much faster (only one network access instead of one per unique value) and being able to support URIs that do not directly link back to their controlled vocabularies.
-#+begin_src python :exports both :results output
+#+begin_src python 
 data = generate_data(
     json_file=Path("~/data.json"),
     target_fields=[Fields.TAXONID.value],
@@ -492,6 +509,11 @@ data = generate_data(
     use_defaults=False,
     skos_urls={Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json"},
 )
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
 pprint(
     {
         uri: label
@@ -519,7 +541,7 @@ pprint(
 #+end_example
 
 Some controlled vocabularies are already defined in ~data_utils.default_pipelines.defaults.skos_urls~:
-#+begin_src python :exports both :results output
+#+begin_src python :results output :exports results 
 pprint(defaults.skos_urls)
 #+end_src
 
@@ -540,7 +562,7 @@ While the ~generate_data~ function does not directly support filtering mechanism
 *****  Example: Dropping Categories with low Support
 
 Load the data and calculate the initial support:
-#+begin_src python :results output :exports both
+#+begin_src python
 data = generate_data(
     json_file=Path("~/data.json"),
     target_fields=[
@@ -551,6 +573,11 @@ data = generate_data(
 )
 
 support = data.target_data[Fields.TAXONID.value].arr.sum(-2)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
 pprint({label: value for label, value in zip(data.target_data[Fields.TAXONID.value].labels, support)})
 #+end_src
 
@@ -605,10 +632,14 @@ pprint({label: value for label, value in zip(data.target_data[Fields.TAXONID.val
 #+end_example
 
 Only keep categories that have support of at least 10:
-#+begin_src python :results output :exports both
+#+begin_src python
 high_support = support >= 10
-
 filtered_data = subset_categories(data, subset_mask=high_support, field=Fields.TAXONID.value)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
 filtered_support = filtered_data.target_data[Fields.TAXONID.value].arr.sum(-2)
 pprint({label: value for label, value in zip(filtered_data.target_data[Fields.TAXONID.value].labels, filtered_support)})
 #+end_src
@@ -644,10 +675,13 @@ pprint({label: value for label, value in zip(filtered_data.target_data[Fields.TA
 ***** Example: Dropping Data with not Categories
 
 After having dropped categories with low support, we now may have data points that do not have any assigned taxonid. Indeed, if we check, we see that multiple points have no assignments:
-#+begin_src python :results output :exports both
+#+begin_src python
 empty_taxonid = filtered_data.target_data[Fields.TAXONID.value].arr.sum(-1) == 0
-empty_taxonid.sum()
+#+end_src
 
+#+RESULTS:
+
+#+begin_src python :results output :exports results
 print(
     "number of data points with no taxonid assignments before action:",
     empty_taxonid.sum(),
@@ -658,9 +692,13 @@ print(
 : number of data points with no taxonid assignments before action: 18
 
 To ensure that we only include data that actually has assignments, we can new use the ~data_utils.data.subset_data_poins~ function.
-#+begin_src python :results output :exports both
+#+begin_src python
 filtered2_data = subset_data_points(filtered_data, ~empty_taxonid)
+#+end_src
 
+#+RESULTS:
+
+#+begin_src python :results output :exports results
 print(
     "number of data points with no taxonid assignments after action:",
     (filtered2_data.target_data[Fields.TAXONID.value].arr.sum(-1) == 0).sum(),
@@ -671,7 +709,7 @@ print(
 : number of data points with no taxonid assignments after action: 0
 
 *Important*: In order to keep the data consistent, the ~subset_data_points~ function not only modifies the metadata field we worked with, but also all other metadata fields. /This is also why we did not need to provide a field name to the function./
-#+begin_src python :results output :exports both
+#+begin_src python :results output :exports results
 print(
     "shape of taxonid array before filtering:",
     data.target_data[Fields.TAXONID.value].arr.shape,
