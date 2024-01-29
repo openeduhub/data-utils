@@ -147,10 +147,10 @@ Imports of modules / functions that will be used further below.
 from pathlib import Path
 from pprint import pprint
 
-import data_utils.default_pipelines.defaults as defaults
+import data_utils.defaults as defaults
+from data_utils.defaults import Fields
 from data_utils.default_pipelines.data import (subset_categories,
                                                subset_data_points)
-from data_utils.default_pipelines.defaults import Fields
 from data_utils.default_pipelines.flat_classification import generate_data
 #+end_src
 
@@ -262,7 +262,7 @@ example_remapped_values = {
 
 Additionally, specific values can be dropped entirely (but not the corresponding entry) with the =dropped_values= argument, which takes a dictionary mapping metadata field to a collection of strings that shall be dropped.
 
-Note that for some metadata fields, there already exists some defaults that may be used (see [[file:data_utils/default_pipelines/defaults.py][defaults.py]]). These are loaded automatically when the =use_defaults= argument is set to =True= (default).
+Note that for some metadata fields, there already exists some defaults that may be used (see [[file:data_utils/defaults.py][defaults.py]]). These are loaded automatically when the =use_defaults= argument is set to =True= (default).
 
 Example without defaults:
 #+begin_src python
@@ -541,7 +541,7 @@ pprint(
  'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
 #+end_example
 
-Some controlled vocabularies are already defined in ~data_utils.default_pipelines.defaults.skos_urls~:
+Some controlled vocabularies are already defined in ~data_utils.defaults.skos_urls~:
 #+begin_src python :results output :exports results 
 pprint(defaults.skos_urls)
 #+end_src

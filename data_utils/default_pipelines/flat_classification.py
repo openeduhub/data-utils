@@ -3,13 +3,13 @@ from collections.abc import Collection, Iterable, Sequence
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
 
-import data_utils.default_pipelines.defaults as defaults
+import data_utils.defaults as defaults
 import data_utils.fetch as fetch
 import data_utils.filters as filt
 import data_utils.transform as trans
 import numpy as np
 import pandas as pd
-from data_utils.default_pipelines.defaults import Fields
+from data_utils.defaults import Fields
 from data_utils.data import Basic_Value, Basic_Value_Not_None
 from data_utils.default_pipelines.data import Data, Target_Data
 
