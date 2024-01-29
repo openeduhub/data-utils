@@ -1,22 +1,43 @@
-from test.strategies import basic_values, mutated_nested_dict
+import operator as op
+from functools import reduce
+import test.strategies as myst
 
-import data_utils.utils as utils
 import hypothesis.strategies as st
-from data_utils.utils import Basic_Value, Nested_Dict
+from data_utils.utils import (
+    Basic_Value,
+    Basic_Value_Not_None,
+    Nested_Dict,
+    Terminal_Value,
+)
+import data_utils.utils as utils
 from hypothesis import given, settings
 
 
-@given(
-    mutated_nested_dict(dict()), st.lists(st.text(min_size=1), min_size=1), basic_values
-)
-@settings(max_examples=500)
-def test_with_new_value(entry: Nested_Dict, fields: list[str], value: Basic_Value):
-    new_entry = utils.with_new_value(entry, fields, value)
+def test_get_leaves_static():
+    entry = Nested_Dict(
+        {
+            "a": 1,
+            "b": [1, 2, 3],
+            "c": {"d": {"e": 1}},
+            "f": [{"g": {"h": 1}}, {"g": {"h": 3, "i": 10}, "j": 5}],
+        }
+    )
+    assert utils.get_leaves(entry) == {
+        ("a",),
+        ("b",),
+        ("c", "d", "e"),
+        ("f", "g", "h"),
+        ("f", "g", "i"),
+        ("f", "j"),
+    }
 
-    print("result:", new_entry)
 
-    get_value = utils.get_in(new_entry, fields)
-    if isinstance(get_value, list):
-        assert value in get_value
-    else:
-        assert value is get_value
+@given(myst.mutated_nested_dict({}))
+def test_all_leaves_are_terminals(entry: Nested_Dict):
+    leaves = utils.get_leaves(entry)
+    terminals = [utils.get_in(entry, leaf) for leaf in leaves]
+    for terminal in terminals:
+        assert isinstance(terminal, Basic_Value | list)
+
+        if isinstance(terminal, list) and len(terminal) > 0:
+            assert any(isinstance(value, Basic_Value) for value in terminal)

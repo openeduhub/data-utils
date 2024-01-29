@@ -1,19 +1,69 @@
 from __future__ import annotations
 
+import operator as op
 from collections.abc import Iterable, Sequence
+from functools import reduce
 from typing import Union
 
-Basic_Value = str | int | float | None
+Basic_Value_Not_None = str | int | float
+Basic_Value = Basic_Value_Not_None | None
 Terminal_Value = Basic_Value | list[Basic_Value]
 
 
 Nested_Dict = dict[
-    str, Union[Basic_Value, "Nested_Dict", list[Union["Nested_Dict", Basic_Value]]]
+    str, Union[Basic_Value, "Nested_Dict", list[Union[Basic_Value, "Nested_Dict"]]]
 ]
+Nested_Dict_Subtree = Basic_Value | Nested_Dict | list[Basic_Value | Nested_Dict]
 Query_Result = Terminal_Value | Nested_Dict | list["Query_Result"]
 
 
-def _nested_get_in(
+def get_leaves(nested_dict: Nested_Dict) -> set[tuple[str, ...]]:
+    return _get_leaves(nested_dict, tuple(), set())
+
+
+def _get_leaves(
+    nested_dict: Nested_Dict_Subtree,
+    current_keys: tuple[str, ...],
+    current_leaves: set[tuple[str, ...]],
+) -> set[tuple[str, ...]]:
+    if isinstance(nested_dict, Basic_Value):
+        return current_leaves | {current_keys}
+
+    if isinstance(nested_dict, dict):
+        return reduce(
+            op.or_,
+            (
+                _get_leaves(subtree, current_keys + (key,), current_leaves)
+                for key, subtree in nested_dict.items()
+            ),
+            current_leaves,
+        )
+
+    return reduce(
+        op.or_,
+        (_get_leaves(subtree, current_keys, current_leaves) for subtree in nested_dict),
+        current_leaves,
+    )
+
+
+def get_in(
+    nested_dict: Nested_Dict,
+    keys: Sequence[str],
+    catch_errors: tuple[type[Exception], ...] = tuple(),
+) -> Query_Result:
+    """
+    Recursively access a nested dictionary.
+
+    :param catch_errors: Errors to catch when accessing the nested dictionary.
+      Catch KeyErrors to return None when a nested dictionary
+        does not contain the key sequence.
+      Catch TypeErrors to return None when a nested dictionary ends
+        before all keys have been used up.
+    """
+    return _get_in(nested_dict, keys, catch_errors)
+
+
+def _get_in(
     nested_dict: Query_Result,
     keys: Sequence[str],
     catch_errors: Iterable[type[Exception]] = tuple(),
@@ -31,26 +81,9 @@ def _nested_get_in(
         return None
 
     if isinstance(val, list):
-        return [_nested_get_in(sub_val, keys, catch_errors) for sub_val in val]
+        return [_get_in(sub_val, keys, catch_errors) for sub_val in val]
 
-    return _nested_get_in(val, keys, catch_errors)
-
-
-def get_in(
-    nested_dict: Nested_Dict,
-    keys: Sequence[str],
-    catch_errors: tuple[type[Exception], ...] = tuple(),
-) -> Query_Result:
-    """
-    Recursively access a nested dictionary.
-
-    :param catch_errors: Errors to catch when accessing the nested dictionary.
-      Catch KeyErrors to return None when a nested dictionary
-        does not contain the key sequence.
-      Catch TypeErrors to return None when a nested dictionary ends
-        before all keys have been used up.
-    """
-    return _nested_get_in(nested_dict, keys, catch_errors)
+    return _get_in(val, keys, catch_errors)
 
 
 def _to_terminal(result: Query_Result) -> Terminal_Value:
