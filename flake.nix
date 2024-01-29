@@ -92,17 +92,17 @@
       let
         # import the packages from nixpkgs
         pkgs = nixpkgs.legacyPackages.${system};
-        python-pkgs = pkgs.python3Packages;
+        python = pkgs.python3;
       in
       {
         # the packages that we can build
         packages = rec {
-          data-utils = self.outputs.lib.data-utils python-pkgs;
+          data-utils = self.outputs.lib.data-utils python.pkgs;
           default = data-utils;
           docs = pkgs.runCommand "docs"
             {
               buildInputs = [
-                (python-packages-docs python-pkgs)
+                (python-packages-docs python.pkgs)
                 (data-utils.override { doCheck = false; })
               ];
             }
@@ -121,7 +121,7 @@
         devShells.default = pkgs.mkShell {
           buildInputs = [
             # the development installation of python
-            (python-pkgs.withPackages python-packages-devel)
+            (python.withPackages python-packages-devel)
             # python lsp server
             pkgs.nodePackages.pyright
             # for automatically generating nix expressions, e.g. from PyPi
