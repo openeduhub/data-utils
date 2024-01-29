@@ -144,10 +144,13 @@ should be sufficient. However, this method of installation is untested.
 Imports of modules / functions that will be used further below.
 #+name: imports
 #+begin_src python :var foo=""
-from pprint import pprint
 from pathlib import Path
-from data_utils.default_pipelines.flat_classification import generate_data
+from pprint import pprint
+
+import data_utils.default_pipelines.defaults as defaults
+from data_utils.data import subset_categories, subset_data_points
 from data_utils.default_pipelines.defaults import Fields
+from data_utils.default_pipelines.flat_classification import generate_data
 #+end_src
 
 ** Default Pipelines
@@ -188,6 +191,7 @@ print(f"{data.target_data.keys()=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].uris[:5]=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].labels[:5]=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].arr.shape=}\n")
+print(f"{data.target_data['properties.ccm:educationalcontext'].arr.shape=}\n")
 #+end_src
 
 #+RESULTS:
@@ -209,6 +213,8 @@ data.target_data['properties.ccm:taxonid'].uris[:5]=['http://w3id.org/openeduhub
 data.target_data['properties.ccm:taxonid'].labels[:5]=['Arbeitslehre', 'Berufliche Bildung', 'Bautechnik', 'MINT', 'Ernährung und Hauswirtschaft']
 
 data.target_data['properties.ccm:taxonid'].arr.shape=(1000, 46)
+
+data.target_data['properties.ccm:educationalcontext'].arr.shape=(1000, 10)
 #+end_example
 
 In the long run, typing the full identifiers for the metadata fields can be error prone and tiring. Thus, we provide an ~Enum~ that contains the most common fields:
@@ -439,8 +445,259 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
  'http://w3id.org/openeduhub/vocabs/discipline/oeh04010']
 #+end_example
 
-**** Removing Categories with Low Support
-
 **** Getting Readable Category Labels
 
+If the values assigned to a targeted field are URIs that link back to their controlled vocabularies, the ~generate_data~ function will automatically try to look up the preferred label (default: =prefLabel.de=):
+
+#+begin_src python :exports both :results output
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[Fields.TAXONID.value],
+    max_len=1000,
+    use_defaults=False,
+)
+pprint(
+    {
+        uri: label
+        for uri, label in zip(
+            data.target_data[Fields.TAXONID.value].uris[:10],
+            data.target_data[Fields.TAXONID.value].labels,
+        )
+    }
+)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
+ 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und '
+                                                       'Hauswirtschaft',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
+ 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
+#+end_example
+
+Additionally, we can provide a map from metadata field to SKOS vocabulary. For all fields where this is provided, this vocabulary will be used instead of dynamically looking up the label.
+This has the advantage of being much faster (only one network access instead of one per unique value) and being able to support URIs that do not directly link back to their controlled vocabularies.
+#+begin_src python :exports both :results output
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[Fields.TAXONID.value],
+    max_len=1000,
+    use_defaults=False,
+    skos_urls={Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json"},
+)
+pprint(
+    {
+        uri: label
+        for uri, label in zip(
+            data.target_data[Fields.TAXONID.value].uris[:10],
+            data.target_data[Fields.TAXONID.value].labels,
+        )
+    }
+)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
+ 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und '
+                                                       'Hauswirtschaft',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
+ 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
+#+end_example
+
+Some controlled vocabularies are already defined in ~data_utils.default_pipelines.defaults.skos_urls~:
+#+begin_src python :exports both :results output
+pprint(defaults.skos_urls)
+#+end_src
+
+#+RESULTS:
+: {'properties.ccm:educationalcontext': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json',
+:  'properties.ccm:fskRating': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json',
+:  'properties.ccm:taxonid': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json'}
+
 **** Filtering out Entries
+
+**** Dropping Categories and Data-Points using Global Information (e.g. Support)
+
+While the ~generate_data~ function does not directly support filtering mechanisms that rely on information that is only present once the entire data set is loaded, we provide some utility functions to easily deal with such tasks after the data has been generated.
+
+- ~data_utils.data.subset_data_points~ allows for dropping data points
+- ~data_utils.data.subset_categories~ allows for dropping categories
+
+*****  Example: Dropping Categories with low Support
+
+Load the data and calculate the initial support:
+#+begin_src python :results output :exports both
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[
+        Fields.TAXONID.value,
+        Fields.EDUCATIONAL_CONTEXT.value,
+    ],
+    max_len=1000,
+)
+
+support = data.target_data[Fields.TAXONID.value].arr.sum(-2)
+pprint({label: value for label, value in zip(data.target_data[Fields.TAXONID.value].labels, support)})
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{'Allgemein': 60,
+ 'Arbeitslehre': 1,
+ 'Astronomie': 3,
+ 'Bautechnik': 1,
+ 'Berufliche Bildung': 2,
+ 'Biologie': 47,
+ 'Chemie': 77,
+ 'Darstellendes Spiel': 22,
+ 'Deutsch': 61,
+ 'Deutsch als Zweitsprache': 126,
+ 'Englisch': 73,
+ 'Ernährung und Hauswirtschaft': 2,
+ 'Ethik': 19,
+ 'Französisch': 26,
+ 'Geografie': 18,
+ 'Geschichte': 120,
+ 'Gesellschaftskunde': 7,
+ 'Gesundheit': 4,
+ 'Holztechnik': 2,
+ 'Informatik': 27,
+ 'Interkulturelle Bildung': 2,
+ 'Kunst': 55,
+ 'MINT': 6,
+ 'Mathematik': 28,
+ 'Medienbildung': 35,
+ 'Mediendidaktik': 2,
+ 'Musik': 5,
+ 'Nachhaltigkeit': 42,
+ 'Open Educational Resources': 12,
+ 'Philosophie': 18,
+ 'Physik': 89,
+ 'Politik': 57,
+ 'Pädagogik': 8,
+ 'Religion': 15,
+ 'Sachunterricht': 9,
+ 'Sonderpädagogik': 2,
+ 'Sozialpädagogik': 1,
+ 'Spanisch': 152,
+ 'Sport': 17,
+ 'Türkisch': 8,
+ 'Umweltgefährdung, Umweltschutz': 1,
+ 'Weiterbildung': 1,
+ 'Werken': 1,
+ 'Wirtschaft und Verwaltung': 1,
+ 'Wirtschaftskunde': 15,
+ 'Zeitgemäße Bildung': 8}
+#+end_example
+
+Only keep categories that have support of at least 10:
+#+begin_src python :results output :exports both
+high_support = support >= 10
+
+filtered_data = subset_categories(data, subset_mask=high_support, field=Fields.TAXONID.value)
+filtered_support = filtered_data.target_data[Fields.TAXONID.value].arr.sum(-2)
+pprint({label: value for label, value in zip(filtered_data.target_data[Fields.TAXONID.value].labels, filtered_support)})
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{'Allgemein': 60,
+ 'Biologie': 47,
+ 'Chemie': 77,
+ 'Darstellendes Spiel': 22,
+ 'Deutsch': 61,
+ 'Deutsch als Zweitsprache': 126,
+ 'Englisch': 73,
+ 'Ethik': 19,
+ 'Französisch': 26,
+ 'Geografie': 18,
+ 'Geschichte': 120,
+ 'Informatik': 27,
+ 'Kunst': 55,
+ 'Mathematik': 28,
+ 'Medienbildung': 35,
+ 'Nachhaltigkeit': 42,
+ 'Open Educational Resources': 12,
+ 'Philosophie': 18,
+ 'Physik': 89,
+ 'Politik': 57,
+ 'Religion': 15,
+ 'Spanisch': 152,
+ 'Sport': 17,
+ 'Wirtschaftskunde': 15}
+#+end_example
+
+***** Example: Dropping Data with not Categories
+
+After having dropped categories with low support, we now may have data points that do not have any assigned taxonid. Indeed, if we check, we see that multiple points have no assignments:
+#+begin_src python :results output :exports both
+empty_taxonid = filtered_data.target_data[Fields.TAXONID.value].arr.sum(-1) == 0
+empty_taxonid.sum()
+
+print(
+    "number of data points with no taxonid assignments before action:",
+    empty_taxonid.sum(),
+)
+#+end_src
+
+#+RESULTS:
+: number of data points with no taxonid assignments before action: 18
+
+To ensure that we only include data that actually has assignments, we can new use the ~data_utils.data.subset_data_poins~ function.
+#+begin_src python :results output :exports both
+filtered2_data = subset_data_points(filtered_data, ~empty_taxonid)
+
+print(
+    "number of data points with no taxonid assignments after action:",
+    (filtered2_data.target_data[Fields.TAXONID.value].arr.sum(-1) == 0).sum(),
+)
+#+end_src
+
+#+RESULTS:
+: number of data points with no taxonid assignments after action: 0
+
+*Important*: In order to keep the data consistent, the ~subset_data_points~ function not only modifies the metadata field we worked with, but also all other metadata fields. /This is also why we did not need to provide a field name to the function./
+#+begin_src python :results output :exports both
+print(
+    "shape of taxonid array before filtering:",
+    data.target_data[Fields.TAXONID.value].arr.shape,
+)
+print(
+    "shape of educational context array before filtering:",
+    data.target_data[Fields.EDUCATIONAL_CONTEXT.value].arr.shape,
+)
+print("shape of ids array before filtering:", data.ids.shape)
+print("-----------------------------------------")
+print(
+    "shape of taxonid array after filtering:",
+    filtered2_data.target_data[Fields.TAXONID.value].arr.shape,
+)
+print(
+    "shape of educational context array after filtering:",
+    filtered2_data.target_data[Fields.EDUCATIONAL_CONTEXT.value].arr.shape,
+)
+print("shape of ids array after filtering:", filtered2_data.ids.shape)
+#+end_src
+
+#+RESULTS:
+: shape of taxonid array before filtering: (1000, 46)
+: shape of educational context array before filtering: (1000, 10)
+: shape of ids array before filtering: (1000,)
+: -----------------------------------------
+: shape of taxonid array after filtering: (982, 24)
+: shape of educational context array after filtering: (982, 10)
+: shape of ids array after filtering: (982,)
