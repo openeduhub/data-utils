@@ -1,5 +1,5 @@
 import operator as op
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Iterable, Sequence
 from pathlib import Path
 from typing import Any, NamedTuple, Optional
 
@@ -32,6 +32,7 @@ def generate_data(
     dropped_values: dict[str, Collection[Basic_Value_Not_None]] = dict(),
     remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]] = dict(),
     skos_urls: dict[str, str] = dict(),
+    uri_label_fields: dict[str, str] = dict(),
     filters: Collection[filt.Filter] = tuple(),
     use_defaults: bool = True,
     min_category_support: int = 0,
@@ -61,6 +62,7 @@ def generate_data(
         target: _values_to_target_data(
             df[target],
             skos_url=skos_urls.get(target, None),
+            uri_label_field=uri_label_fields.get(target, ("prefLabel", "de")),
             min_category_support=min_category_support,
         )
         for target in target_fields
@@ -112,7 +114,10 @@ def get_basic_df(
 
 
 def _values_to_target_data(
-    values: Collection[str], skos_url: Optional[str], min_category_support: int
+    values: Collection[str],
+    skos_url: Optional[str],
+    uri_label_field: Sequence[str],
+    min_category_support: int,
 ) -> Target_Data:
     # transform the entries into boolean arrays
     arr, uris = trans.as_boolean_array(values, sort_fn=lambda x: sorted(x))
@@ -120,10 +125,12 @@ def _values_to_target_data(
     # get readable labels for the targets, if available
     if skos_url is not None:
         labels: list[str | None] = fetch.labels_from_skos(
-            uris, url=skos_url, multi_value=False
+            uris, url=skos_url, label_seq=uri_label_field, multi_value=False
         )  # type: ignore
     else:
-        labels = fetch.labels_from_uris(uris=uris, multi_value=False)  # type: ignore
+        labels = fetch.labels_from_uris(
+            uris=uris, label_seq=uri_label_field, multi_value=False
+        )  # type: ignore
 
     data = Target_Data(arr, uris, labels)
 
