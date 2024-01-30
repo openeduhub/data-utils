@@ -219,6 +219,7 @@ The object ~data~ now contains all of the commonly used information we may need 
     When multiple assignment per material is not possible, this is equivalent to a one-hot-encoding.
   - =uris=: The URIs that correspond to each matrix column.
   - =labels=: The labels of the URIs.
+  - =in_test_set=: Whether each data point belongs to the test data set for this metadatum.
     
 #+begin_src python :session demo.py :exports results :results output
 print(f"{data.raw_texts[0]=}\n")
@@ -228,6 +229,7 @@ print(f"{data.target_data.keys()=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].uris[:5]=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].labels[:5]=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].arr.shape=}\n")
+print(f"{data.target_data['properties.ccm:taxonid'].in_test_set.shape=}\n")
 print(f"{data.target_data['properties.ccm:educationalcontext'].arr.shape=}\n")
 #+end_src
 
@@ -250,6 +252,8 @@ data.target_data['properties.ccm:taxonid'].uris[:5]=['http://w3id.org/openeduhub
 data.target_data['properties.ccm:taxonid'].labels[:5]=['Arbeitslehre', 'Berufliche Bildung', 'Bautechnik', 'MINT', 'Ernährung und Hauswirtschaft']
 
 data.target_data['properties.ccm:taxonid'].arr.shape=(1000, 46)
+
+data.target_data['properties.ccm:taxonid'].in_test_set.shape=(1000,)
 
 data.target_data['properties.ccm:educationalcontext'].arr.shape=(1000, 10)
 #+end_example

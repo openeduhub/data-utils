@@ -8,13 +8,14 @@ class Target_Data(NamedTuple):
     arr: np.ndarray[Any, np.dtypes.BoolDType]
     uris: list[str]
     labels: list[str | None]
+    in_test_set: np.ndarray[Any, np.dtypes.BoolDType]
 
 
 class Data(NamedTuple):
     raw_texts: np.ndarray[Any, np.dtypes.StrDType]
     ids: np.ndarray[Any, np.dtypes.StrDType]
-    target_data: dict[str, Target_Data]
     redaktion_arr: np.ndarray[Any, np.dtypes.BoolDType]
+    target_data: dict[str, Target_Data]
 
 
 def subset_data_points(data: Data, subset_mask: Sequence[bool]) -> Data:
@@ -24,6 +25,7 @@ def subset_data_points(data: Data, subset_mask: Sequence[bool]) -> Data:
             arr=target_data.arr[subset_mask],
             uris=target_data.uris,
             labels=target_data.labels,
+            in_test_set=target_data.in_test_set[subset_mask],
         )
         new_target_data[field] = target_data
 
@@ -40,6 +42,7 @@ def subset_categories(data: Data, subset_mask: Sequence[bool], field: str) -> Da
     new_target_data = data.target_data | {
         field: Target_Data(
             arr=data.target_data[field].arr[:, subset_mask],
+            in_test_set=data.target_data[field].in_test_set,
             uris=[
                 uri
                 for i, uri in enumerate(data.target_data[field].uris)

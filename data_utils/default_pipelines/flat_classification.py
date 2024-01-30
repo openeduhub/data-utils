@@ -117,4 +117,4 @@ def _values_to_target_data(
             uris=uris, label_seq=uri_label_field, multi_value=False
         )  # type: ignore
 
-    return Target_Data(arr, uris, labels)
+    return Target_Data(arr, uris, labels, np.zeros(len(arr), dtype=bool))
