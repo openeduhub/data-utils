@@ -1,4 +1,6 @@
 import argparse
+import urllib
+import urllib.error
 import data_utils.fetch as fetch
 from data_utils._version import __version__
 from pathlib import Path
@@ -64,15 +66,26 @@ def main():
         output_dir = output_dir.parent
 
     # download dump
-    output_file = fetch.fetch(
-        base_url=args.url,
-        target_file=args.input_file,
-        output_dir=output_dir,
-        output_file=output_file,
-        username=args.username,
-        password=args.password,
-        skip_if_exists=args.skip_if_exists,
-        delete_compressed_archive=args.no_delete_archive,
-    )
+    try:
+        output_file = fetch.fetch(
+            base_url=args.url,
+            target_file=args.input_file,
+            output_dir=output_dir,
+            output_file=output_file,
+            username=args.username,
+            password=args.password,
+            skip_if_exists=args.skip_if_exists,
+            delete_compressed_archive=args.no_delete_archive,
+        )
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            print(
+                "The domain you are trying to download data from requires authorization!\nPlease provide a username and password through -u and -p, respectively."
+            )
+
+        else:
+            raise e
+
+        return
 
     print(f"Done! Result is located at:\n{output_file}")
