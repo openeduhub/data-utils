@@ -183,11 +183,14 @@ Imports of modules / functions that will be used further below.
 from pathlib import Path
 from pprint import pprint
 
+import numpy as np
+
 import data_utils.defaults as defaults
 import data_utils.filters as filters
 from data_utils.data import Nested_Dict, get_terminal_in
 from data_utils.default_pipelines.data import (subset_categories,
-                                               subset_data_points)
+                                               subset_data_points,
+                                               sorted_by_indices)
 from data_utils.default_pipelines.flat_classification import generate_data
 from data_utils.defaults import Fields
 #+end_src
@@ -487,6 +490,8 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
  'http://w3id.org/openeduhub/vocabs/discipline/Geschichte',
  'http://w3id.org/openeduhub/vocabs/discipline/Informatik',
  'http://w3id.org/openeduhub/vocabs/discipline/Inhalte',
+
+
  'http://w3id.org/openeduhub/vocabs/discipline/Mathematik',
  'http://w3id.org/openeduhub/vocabs/discipline/Physik',
  'http://w3id.org/openeduhub/vocabs/discipline/Pädagogik',
@@ -614,6 +619,8 @@ data = generate_data(
     filters=[my_filter],
 )
 #+end_src
+
+#+RESULTS:
 
 #+begin_src python :results output :exports results
 print("Minimum text length:", min(len(text) for text in data.raw_texts))
@@ -816,6 +823,7 @@ print(
     data.target_data[Fields.EDUCATIONAL_CONTEXT.value].arr.shape,
 )
 print("shape of ids array before filtering:", data.ids.shape)
+print("shape of test data array before filtering:", data.target_data[Fields.EDUCATIONAL_CONTEXT.value].in_test_set.shape)
 print("-----------------------------------------")
 print(
     "shape of taxonid array after filtering:",
@@ -826,14 +834,45 @@ print(
     filtered2_data.target_data[Fields.EDUCATIONAL_CONTEXT.value].arr.shape,
 )
 print("shape of ids array after filtering:", filtered2_data.ids.shape)
+print("shape of test data array after filtering:", filtered2_data.target_data[Fields.EDUCATIONAL_CONTEXT.value].in_test_set.shape)
 #+end_src
 
 #+RESULTS:
 : shape of taxonid array before filtering: (1000, 46)
 : shape of educational context array before filtering: (1000, 10)
 : shape of ids array before filtering: (1000,)
+: shape of test data array before filtering: (1000,)
 : -----------------------------------------
 : shape of taxonid array after filtering: (982, 24)
 : shape of educational context array after filtering: (982, 10)
 : shape of ids array after filtering: (982,)
+: shape of test data array after filtering: (982,)
 
+**** Sorting
+
+It may be useful to sort the data points according to some metric, for example such that all data that has been editorially confirmed is first. For this ~data_utils.default_pipelines.data~ provides the ~sorted_by_indices~ helper function:
+
+#+begin_src python
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[
+        Fields.TAXONID.value,
+        Fields.EDUCATIONAL_CONTEXT.value,
+    ],
+    max_len=1000,
+)
+
+sort_indices = np.flip(np.argsort(data.redaktion_arr))
+data_sorted = sorted_by_indices(data, sort_indices)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
+print("Index of first non-confirmed entry before sorting:", np.where(~data.redaktion_arr)[0][0])
+print("Index of first non-confirmed entry after sorting:", np.where(~data_sorted.redaktion_arr)[0][0])
+#+end_src
+
+#+RESULTS:
+: Index of first non-confirmed entry before sorting: 16
+: Index of first non-confirmed entry after sorting: 967

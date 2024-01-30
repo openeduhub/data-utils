@@ -62,3 +62,25 @@ def subset_categories(data: Data, subset_mask: Sequence[bool], field: str) -> Da
         redaktion_arr=data.redaktion_arr,
         target_data=new_target_data,
     )
+
+
+def sorted_by_indices(data: Data, indices: np.ndarray) -> Data:
+    ids = data.ids[indices]
+    raw_texts = data.raw_texts[indices]
+    redaktion_arr = data.redaktion_arr[indices]
+
+    new_target_data = dict()
+    for target, target_data in data.target_data.items():
+        new_target_data[target] = Target_Data(
+            arr=target_data.arr[indices],
+            in_test_set=target_data.in_test_set[indices],
+            uris=target_data.uris,
+            labels=target_data.labels,
+        )
+
+    return Data(
+        raw_texts=raw_texts,
+        ids=ids,
+        redaktion_arr=redaktion_arr,
+        target_data=new_target_data,
+    )
