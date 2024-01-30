@@ -143,6 +143,40 @@ should be sufficient. However, this method of installation is untested.
 
 * Usage
 
+** Downloading Data
+
+The probably most common way of downloading data is through the CLI by downloading a specific file from a URL whilst specifying a username and password for authentication. This can be done through:
+
+#+begin_src shell
+download-data -u <USERNAME> -p <PASSWORD> -i <FILE_NAME> -o <OUTPUT_FILE_PATH> <URL>
+#+end_src
+
+or, by using ~nix run~:
+
+#+begin_src shell
+nix run github:openeduhub/data-utils#download-data -- -u <USERNAME> -p <PASSWORD> -i <FILE_NAME> -o <OUTPUT_FILE_PATH> <URL>
+#+end_src
+
+Alternatively, we can download the data within a Python script:
+#+begin_src python
+from data_utils.fetch import fetch
+
+downloaded_file_path = fetch(
+    base_url=URL,
+    target_file=FILE_NAME,
+    output_dir=OUTPUT_FILE_DIR, # optional
+    output_file=OUTPUT_FILE_NAME, # optional
+    username=USERNAME,
+    password=PASSWORD,
+)
+#+end_src
+
+If the target data file is detected to be compressed, i.e. its file-name ends on =.gz=, it will also be automatically be decompressed.
+
+** Default Pipelines
+
+The default pipelines are intended to immediately obtain all relevant, lightly pre-processed data in formats that make sense for the given information. They remove a lot of redundant work, such as converting labels into boolean arrays or pulling labels from controlled vocabularies / URIs.
+
 Imports of modules / functions that will be used further below.
 #+name: imports
 #+begin_src python :var foo=""
@@ -151,18 +185,14 @@ from pprint import pprint
 
 import data_utils.defaults as defaults
 import data_utils.filters as filters
-from data_utils.defaults import Fields
 from data_utils.data import Nested_Dict, get_terminal_in
 from data_utils.default_pipelines.data import (subset_categories,
                                                subset_data_points)
 from data_utils.default_pipelines.flat_classification import generate_data
+from data_utils.defaults import Fields
 #+end_src
 
 #+RESULTS: imports
-
-** Default Pipelines
-
-The default pipelines are intended to immediately obtain all relevant, lightly pre-processed data in formats that make sense for the given information. They remove a lot of redundant work, such as converting labels into boolean arrays or pulling labels from controlled vocabularies / URIs.
 
 *** Basic Example: Non-Hierarchical Metadata
 
@@ -802,3 +832,4 @@ print("shape of ids array after filtering:", filtered2_data.ids.shape)
 : shape of taxonid array after filtering: (982, 24)
 : shape of educational context array after filtering: (982, 10)
 : shape of ids array after filtering: (982,)
+
