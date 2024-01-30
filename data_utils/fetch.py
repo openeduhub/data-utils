@@ -107,7 +107,6 @@ def fetch(
         elif encoded_auth is not None:
             headers = {"Authorization": f"Basic {encoded_auth}"}
 
-        print("Downloading data...")
         _download(url=url, target_path=download_file, headers=headers)
 
     # if the file was gzipped, decompress it
