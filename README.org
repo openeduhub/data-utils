@@ -150,7 +150,9 @@ from pathlib import Path
 from pprint import pprint
 
 import data_utils.defaults as defaults
+import data_utils.filters as filters
 from data_utils.defaults import Fields
+from data_utils.data import Nested_Dict, get_terminal_in
 from data_utils.default_pipelines.data import (subset_categories,
                                                subset_data_points)
 from data_utils.default_pipelines.flat_classification import generate_data
@@ -233,6 +235,99 @@ print(f"{data.target_data[Fields.EDUCATIONAL_CONTEXT.value].uris[:5]=}\n")
 *** Additional Options
 
 In addition to extracting and transforming data, the default pipeline also automates various common data wrangling tasks.
+
+**** Getting Readable Category Labels
+
+If the values assigned to a targeted field are URIs that link back to their controlled vocabularies, the ~generate_data~ function will automatically try to look up the preferred label (default: =prefLabel.de=):
+
+#+begin_src python
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[Fields.TAXONID.value],
+    max_len=1000,
+    use_defaults=False,
+)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :exports results :results output
+pprint(
+    {
+        uri: label
+        for uri, label in zip(
+            data.target_data[Fields.TAXONID.value].uris[:10],
+            data.target_data[Fields.TAXONID.value].labels,
+        )
+    }
+)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
+ 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und '
+                                                       'Hauswirtschaft',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
+ 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
+#+end_example
+
+Additionally, we can provide a map from metadata field to SKOS vocabulary. For all fields where this is provided, this vocabulary will be used instead of dynamically looking up the label.
+This has the advantage of being much faster (only one network access instead of one per unique value) and being able to support URIs that do not directly link back to their controlled vocabularies.
+#+begin_src python 
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[Fields.TAXONID.value],
+    max_len=1000,
+    use_defaults=False,
+    skos_urls={Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json"},
+)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
+pprint(
+    {
+        uri: label
+        for uri, label in zip(
+            data.target_data[Fields.TAXONID.value].uris[:10],
+            data.target_data[Fields.TAXONID.value].labels,
+        )
+    }
+)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
+ 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und '
+                                                       'Hauswirtschaft',
+ 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
+ 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
+#+end_example
+
+Some controlled vocabularies are already defined in ~data_utils.defaults.skos_urls~:
+#+begin_src python :results output :exports results 
+pprint(defaults.skos_urls)
+#+end_src
+
+#+RESULTS:
+: {'properties.ccm:educationalcontext': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json',
+:  'properties.ccm:fskRating': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json',
+:  'properties.ccm:taxonid': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json'}
 
 **** Fixing Inconsistent Categories
 
@@ -460,100 +555,65 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
  'http://w3id.org/openeduhub/vocabs/discipline/oeh04010']
 #+end_example
 
-**** Getting Readable Category Labels
+**** Filtering out Entries
 
-If the values assigned to a targeted field are URIs that link back to their controlled vocabularies, the ~generate_data~ function will automatically try to look up the preferred label (default: =prefLabel.de=):
+In addition to modifying categories, we can also define arbitrary rules that let us drop data points before they have even been fully processed. This can be used, for example, for filtering out data that is not of sufficient quality or that does not fulfill certain conditions.
 
+To add such rules, use the ~filters~ keyword-argument of ~generate_data~:
 #+begin_src python
+def my_filter(entry: Nested_Dict) -> bool:
+    description = get_terminal_in(
+        entry,
+        Fields.DESCRIPTION.value.split("."),
+    )
+    if description is None:
+        return False
+    # the description field is multi-valued
+    return len(description[0]) > 5
+
+
 data = generate_data(
     json_file=Path("~/data.json"),
     target_fields=[Fields.TAXONID.value],
     max_len=1000,
     use_defaults=False,
+    filters=[my_filter],
 )
 #+end_src
-
-#+RESULTS:
-
-#+begin_src python :exports results :results output
-pprint(
-    {
-        uri: label
-        for uri, label in zip(
-            data.target_data[Fields.TAXONID.value].uris[:10],
-            data.target_data[Fields.TAXONID.value].labels,
-        )
-    }
-)
-#+end_src
-
-#+RESULTS:
-#+begin_example
-{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
- 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
- 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
- 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und '
-                                                       'Hauswirtschaft',
- 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
- 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
- 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
- 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
-#+end_example
-
-Additionally, we can provide a map from metadata field to SKOS vocabulary. For all fields where this is provided, this vocabulary will be used instead of dynamically looking up the label.
-This has the advantage of being much faster (only one network access instead of one per unique value) and being able to support URIs that do not directly link back to their controlled vocabularies.
-#+begin_src python 
-data = generate_data(
-    json_file=Path("~/data.json"),
-    target_fields=[Fields.TAXONID.value],
-    max_len=1000,
-    use_defaults=False,
-    skos_urls={Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json"},
-)
-#+end_src
-
-#+RESULTS:
 
 #+begin_src python :results output :exports results
-pprint(
-    {
-        uri: label
-        for uri, label in zip(
-            data.target_data[Fields.TAXONID.value].uris[:10],
-            data.target_data[Fields.TAXONID.value].labels,
-        )
-    }
+print("Minimum text length:", min(len(text) for text in data.raw_texts))
+#+end_src
+
+#+RESULTS:
+: Minimum text length: 39
+
+To simplify the process of defining such filter functions, the ~data_utils.filters~ module provides various helper functions. Especially useful here is ~get_filter_with_basic_predicate~, which creates a filter from a basic predicate function and a reference to the field to apply it to. /(Basic predicate functions are functions that map strings, floats, integers or None-values to a Boolean)./
+#+begin_src python
+my_filter2 = filters.get_filter_with_basic_predicate(
+    lambda x: x is not None and len(x) > 5,
+    Fields.DESCRIPTION.value,
+    multi_value_semantics=any, # doesn't matter here; we only ever have one description
+)
+
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[Fields.TAXONID.value],
+    max_len=1000,
+    use_defaults=False,
+    filters=[my_filter2],
 )
 #+end_src
 
 #+RESULTS:
-#+begin_example
-{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
- 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
- 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
- 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und '
-                                                       'Hauswirtschaft',
- 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
- 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
- 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
- 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
-#+end_example
-
-Some controlled vocabularies are already defined in ~data_utils.defaults.skos_urls~:
-#+begin_src python :results output :exports results 
-pprint(defaults.skos_urls)
+#+begin_src python :results output :exports results
+print("Minimum text length:", min(len(text) for text in data.raw_texts))
 #+end_src
 
 #+RESULTS:
-: {'properties.ccm:educationalcontext': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json',
-:  'properties.ccm:fskRating': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json',
-:  'properties.ccm:taxonid': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json'}
+: Minimum text length: 39
 
-**** Filtering out Entries
+For more examples on how to define filter functions, see [[file:data_utils/filters.py][data_utils.filters]].
 
 **** Dropping Categories and Data-Points using Global Information (e.g. Support)
 
@@ -562,7 +622,7 @@ While the ~generate_data~ function does not directly support filtering mechanism
 - ~data_utils.data.subset_data_points~ allows for dropping data points
 - ~data_utils.data.subset_categories~ allows for dropping categories
 
-*****  Example: Dropping Categories with low Support
+***** Example: Dropping Categories with low Support
 
 Load the data and calculate the initial support:
 #+begin_src python
