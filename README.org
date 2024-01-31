@@ -188,9 +188,6 @@ import numpy as np
 import data_utils.defaults as defaults
 import data_utils.filters as filters
 from data_utils.data import Nested_Dict, get_terminal_in
-from data_utils.default_pipelines.data import (subset_categories,
-                                               subset_data_points,
-                                               sorted_by_indices)
 from data_utils.default_pipelines.flat_classification import generate_data
 from data_utils.defaults import Fields
 #+end_src
@@ -490,8 +487,6 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
  'http://w3id.org/openeduhub/vocabs/discipline/Geschichte',
  'http://w3id.org/openeduhub/vocabs/discipline/Informatik',
  'http://w3id.org/openeduhub/vocabs/discipline/Inhalte',
-
-
  'http://w3id.org/openeduhub/vocabs/discipline/Mathematik',
  'http://w3id.org/openeduhub/vocabs/discipline/Physik',
  'http://w3id.org/openeduhub/vocabs/discipline/Pädagogik',
@@ -647,6 +642,7 @@ data = generate_data(
 #+end_src
 
 #+RESULTS:
+
 #+begin_src python :results output :exports results
 print("Minimum text length:", min(len(text) for text in data.raw_texts))
 #+end_src
@@ -658,10 +654,10 @@ For more examples on how to define filter functions, see [[file:data_utils/filte
 
 **** Dropping Categories and Data-Points using Global Information (e.g. Support)
 
-While the ~generate_data~ function does not directly support filtering mechanisms that rely on information that is only present once the entire data set is loaded, we provide some utility functions to easily deal with such tasks after the data has been generated.
+While the ~generate_data~ function does not directly support filtering mechanisms that rely on information that is only present once the entire data set is loaded, we provide some utility methods to easily deal with such tasks after the data has been generated.
 
-- ~data_utils.data.subset_data_points~ allows for dropping data points
-- ~data_utils.data.subset_categories~ allows for dropping categories
+- ~data_utils.default_pipelines.data.Data.subset_data_points~ allows for dropping or sorting data points
+- ~data_utils.default_pipelines.data.Data.subset_categories~ allows for dropping or sorting categories
 
 ***** Example: Dropping Categories with low Support
 
@@ -737,8 +733,10 @@ pprint({label: value for label, value in zip(data.target_data[Fields.TAXONID.val
 
 Only keep categories that have support of at least 10:
 #+begin_src python
-high_support = support >= 10
-filtered_data = subset_categories(data, subset_mask=high_support, field=Fields.TAXONID.value)
+high_support = np.where(support >= 10)[0]
+filtered_data = data.subset_categories(
+    indices=high_support, field=Fields.TAXONID.value
+)
 #+end_src
 
 #+RESULTS:
@@ -797,7 +795,9 @@ print(
 
 To ensure that we only include data that actually has assignments, we can new use the ~data_utils.data.subset_data_poins~ function.
 #+begin_src python
-filtered2_data = subset_data_points(filtered_data, ~empty_taxonid)
+filtered2_data = filtered_data.subset_data_points(
+    np.where(~empty_taxonid)[0]
+)
 #+end_src
 
 #+RESULTS:
@@ -850,7 +850,8 @@ print("shape of test data array after filtering:", filtered2_data.target_data[Fi
 
 **** Sorting
 
-It may be useful to sort the data points according to some metric, for example such that all data that has been editorially confirmed is first. For this ~data_utils.default_pipelines.data~ provides the ~sorted_by_indices~ helper function:
+It may be useful to sort the data points according to some metric, for example such that all data that has been editorially confirmed is first.
+For this the ~data_utils.default_pipelines.Data.subset_data_points~ method may also be used:
 
 #+begin_src python
 data = generate_data(
@@ -863,7 +864,7 @@ data = generate_data(
 )
 
 sort_indices = np.flip(np.argsort(data.redaktion_arr))
-data_sorted = sorted_by_indices(data, sort_indices)
+data_sorted = data.subset_data_points(sort_indices)
 #+end_src
 
 #+RESULTS:

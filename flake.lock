@@ -91,11 +91,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1706697495,
-        "narHash": "sha256-jZsA/AqJMJ4opvQqbpMPrmoMGVFoL3w7YxAs/uKZCuU=",
+        "lastModified": 1706709548,
+        "narHash": "sha256-Kcnxhezw5joPPpm2LSjWEf1AjcMYfE8xBidkz+LmsC4=",
         "owner": "openeduhub",
         "repo": "nlprep",
-        "rev": "bb6c6be2ad5b35c04d1b2f0bb4f2cc3181bdfc11",
+        "rev": "2c3d0bb4c0b01897c9c709a8ee40bb5f000ad7df",
         "type": "github"
       },
       "original": {
