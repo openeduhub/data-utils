@@ -5,6 +5,10 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-23.11";
     flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
+    nlprep = {
+      url = "github:openeduhub/nlprep";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, flake-utils, ... }:
@@ -18,6 +22,8 @@
           pandas
           numpy
           requests
+          tqdm
+          (self.inputs.nlprep.lib.nlprep py-pkgs)
         ];
 
       python-packages-test = py-pkgs:
