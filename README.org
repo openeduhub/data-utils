@@ -188,6 +188,9 @@ import numpy as np
 import data_utils.defaults as defaults
 import data_utils.filters as filters
 from data_utils.data import Nested_Dict, get_terminal_in
+from data_utils.default_pipelines.data import (subset_categories,
+                                               subset_data_points,
+                                               subset_words)
 from data_utils.default_pipelines.flat_classification import generate_data
 from data_utils.defaults import Fields
 #+end_src
@@ -654,10 +657,10 @@ For more examples on how to define filter functions, see [[file:data_utils/filte
 
 **** Dropping Categories and Data-Points using Global Information (e.g. Support)
 
-While the ~generate_data~ function does not directly support filtering mechanisms that rely on information that is only present once the entire data set is loaded, we provide some utility methods to easily deal with such tasks after the data has been generated.
+While the ~generate_data~ function does not directly support filtering mechanisms that rely on information that is only present once the entire data set is loaded, we provide some utility functions to easily deal with such tasks after the data has been generated.
 
-- ~data_utils.default_pipelines.data.Data.subset_data_points~ allows for dropping or sorting data points
-- ~data_utils.default_pipelines.data.Data.subset_categories~ allows for dropping or sorting categories
+- ~data_utils.default_pipelines.data.subset_data_points~ allows for dropping or sorting data points
+- ~data_utils.default_pipelines.data.subset_categories~ allows for dropping or sorting categories
 
 ***** Example: Dropping Categories with low Support
 
@@ -734,8 +737,8 @@ pprint({label: value for label, value in zip(data.target_data[Fields.TAXONID.val
 Only keep categories that have support of at least 10:
 #+begin_src python
 high_support = np.where(support >= 10)[0]
-filtered_data = data.subset_categories(
-    indices=high_support, field=Fields.TAXONID.value
+filtered_data = subset_categories(
+    data, indices=high_support, field=Fields.TAXONID.value
 )
 #+end_src
 
@@ -795,9 +798,7 @@ print(
 
 To ensure that we only include data that actually has assignments, we can new use the ~data_utils.data.subset_data_poins~ function.
 #+begin_src python
-filtered2_data = filtered_data.subset_data_points(
-    np.where(~empty_taxonid)[0]
-)
+filtered2_data = subset_data_points(filtered_data, np.where(~empty_taxonid)[0])
 #+end_src
 
 #+RESULTS:
@@ -864,7 +865,7 @@ data = generate_data(
 )
 
 sort_indices = np.flip(np.argsort(data.redaktion_arr))
-data_sorted = data.subset_data_points(sort_indices)
+data_sorted = subset_data_points(data, sort_indices)
 #+end_src
 
 #+RESULTS:

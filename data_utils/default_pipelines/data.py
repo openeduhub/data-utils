@@ -1,82 +1,58 @@
 import operator as op
 from collections import Counter
 from collections.abc import Collection, Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import partial, reduce
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, TypeVar
 
 import numpy as np
+from numpy.typing import NDArray
 from nlprep import Pipeline_Generator, apply_filters, pipelines, tokenize_documents
 from tqdm import tqdm
+from copy import copy
 
 
 @dataclass
-class Target_Data:
+class _Base_Data:
+    _nested_data_fields: set[str] = field(init=False)
+    _category_fields: set[str] = field(init=False)
+    _1d_data_fields: set[str] = field(init=False)
+    _2d_data_fields: set[str] = field(init=False)
+
+
+@dataclass
+class Target_Data(_Base_Data):
     arr: np.ndarray[Any, np.dtypes.BoolDType]
     in_test_set: np.ndarray[Any, np.dtypes.BoolDType]
-    uris: list[str]
-    labels: list[str | None]
+    uris: np.ndarray[Any, np.dtypes.StrDType]
+    labels: np.ndarray[Any, np.dtypes.StrDType]
+
+    _nested_data_fields = set()
+    _category_fields = {"uris", "labels"}
+    _1d_data_fields = {"in_test_set"}
+    _2d_data_fields = {"arr"}
 
 
 @dataclass
-class Data:
+class Data(_Base_Data):
     raw_texts: np.ndarray[Any, np.dtypes.StrDType]
     ids: np.ndarray[Any, np.dtypes.StrDType]
     redaktion_arr: np.ndarray[Any, np.dtypes.BoolDType]
     target_data: dict[str, Target_Data]
 
-    def subset_data_points(self, indices: Sequence[int]) -> "Data":
-        ids = self.ids[indices]
-        raw_texts = self.raw_texts[indices]
-        redaktion_arr = self.redaktion_arr[indices]
-
-        new_target_data = dict()
-        for field, target_data in self.target_data.items():
-            target_data = Target_Data(
-                arr=target_data.arr[indices],
-                in_test_set=target_data.in_test_set[indices],
-                uris=target_data.uris,
-                labels=target_data.labels,
-            )
-            new_target_data[field] = target_data
-
-        return Data(
-            ids=ids,
-            raw_texts=raw_texts,
-            redaktion_arr=redaktion_arr,
-            target_data=new_target_data,
-        )
-
-    def subset_categories(self, indices: Sequence[int], field: str) -> "Data":
-        new_target_data = self.target_data | {
-            field: Target_Data(
-                arr=self.target_data[field].arr[:, indices],
-                in_test_set=self.target_data[field].in_test_set,
-                uris=[self.target_data[field].uris[i] for i in indices],
-                labels=[self.target_data[field].labels[i] for i in indices],
-            )
-        }
-
-        return Data(
-            ids=self.ids.copy(),
-            raw_texts=self.raw_texts.copy(),
-            redaktion_arr=self.redaktion_arr.copy(),
-            target_data=new_target_data,
-        )
+    _nested_data_fields = {"target_data"}
+    _category_fields = set()
+    _1d_data_fields = {"raw_texts", "ids", "redaktion_arr"}
+    _2d_data_fields = set()
 
 
+@dataclass
 class Processed_Data(Data):
-    processed_texts: list[tuple[str, ...]]
+    processed_texts: list[tuple[str, ...]] = field(default_factory=list)
 
-    @classmethod
-    def __from_data_incomplete(cls, data: Data) -> "Processed_Data":
-        return Processed_Data(
-            raw_texts=data.raw_texts,
-            ids=data.ids,
-            redaktion_arr=data.redaktion_arr,
-            target_data=data.target_data,
-        )
+    def __post_init__(self):
+        self._1d_data_fields.add("processed_texts")
 
     @classmethod
     def from_data(
@@ -89,11 +65,16 @@ class Processed_Data(Data):
 
         print("Pre-processing texts...")
         try:
-            nlp.utils.load_caches(cache_dir, file_prefix="nlp_cache")
+            nlp.utils.load_caches(
+                cache_dir,  # type: ignore
+                file_prefix="nlp_cache",
+            )
         except (FileNotFoundError, TypeError):
             print("No NLP cache found. This may take a while...")
 
-        docs = list(tokenize_documents(tqdm(data.raw_texts), nlp.tokenize_as_lemmas))
+        docs = list(
+            tokenize_documents(tqdm(data.raw_texts.tolist()), nlp.tokenize_as_lemmas)
+        )
 
         # apply the given pipelines one by one
         for pipeline_generator in pipeline_generators:
@@ -103,45 +84,24 @@ class Processed_Data(Data):
         if cache_dir is not None:
             nlp.utils.save_caches(directory=cache_dir, file_prefix="nlp_cache")
 
-        obj = cls.__from_data_incomplete(data)
-
-        obj.processed_texts = [doc.selected_tokens for doc in docs]
-        return obj
-
-        # # drop all words that are longer than 25 characters
-        # results = [[token for token in doc if len(token) <= 25] for doc in results]
-
-    def subset_data_points(self, indices: Sequence[int]) -> "Processed_Data":
-        data = super().subset_data_points(indices)
-        processed_texts = [self.processed_texts[i] for i in indices]
-
-        obj = self.__from_data_incomplete(data)
-        obj.processed_texts = processed_texts
-
-        return obj
-
-    def subset_categories(self, indices: Sequence[int], field: str) -> "Processed_Data":
-        data = super().subset_categories(indices, field)
-        obj = self.__from_data_incomplete(data)
-        obj.processed_texts = self.processed_texts.copy()
-
-        return obj
-
-
-class BoW_Data(Processed_Data):
-    bows: np.ndarray[Any, np.dtypes.UInt8DType]
-
-    @classmethod
-    def __from_processed_data_incomplete(cls, data: Processed_Data) -> "BoW_Data":
-        obj = BoW_Data(
+        return cls(
             raw_texts=data.raw_texts,
             ids=data.ids,
             redaktion_arr=data.redaktion_arr,
             target_data=data.target_data,
+            processed_texts=[doc.selected_tokens for doc in docs],
         )
-        obj.processed_texts = data.processed_texts
 
-        return obj
+
+@dataclass
+class BoW_Data(Processed_Data):
+    bows: np.ndarray[Any, np.dtypes.UInt8DType] = field(
+        default_factory=lambda: np.array([])
+    )
+    id_to_word: dict[int, str] = field(default_factory=dict)
+
+    def __post_init__(self):
+        self._1d_data_fields.add("bows")
 
     @classmethod
     def from_processed_data(cls, data: Processed_Data) -> "BoW_Data":
@@ -154,16 +114,19 @@ class BoW_Data(Processed_Data):
             for word, count in Counter(doc).items():
                 index = word_to_id[word]
                 # avoid overflows, as we are using bytes here
-                res[index] = max(count, 255)
+                res[index] = min(count, 255)
 
             return res
 
-        bows = np.stack([doc_to_bow(doc) for doc in tqdm(data.processed_texts)])
-
-        obj = cls.__from_processed_data_incomplete(data)
-        obj.bows = bows
-
-        return obj
+        return cls(
+            raw_texts=data.raw_texts,
+            ids=data.ids,
+            redaktion_arr=data.redaktion_arr,
+            target_data=data.target_data,
+            processed_texts=data.processed_texts,
+            bows=np.stack([doc_to_bow(doc) for doc in tqdm(data.processed_texts)]),
+            id_to_word={index: word for index, word in enumerate(words)},
+        )
 
     @classmethod
     def from_data(
@@ -172,25 +135,66 @@ class BoW_Data(Processed_Data):
         pipeline_generators: Iterable[Pipeline_Generator] = tuple(),
         cache_dir: Optional[Path] = None,
     ) -> "BoW_Data":
-        return BoW_Data.from_processed_data(
+        return cls.from_processed_data(
             Processed_Data.from_data(
                 data, pipeline_generators=pipeline_generators, cache_dir=cache_dir
             )
         )
 
-    def subset_data_points(self, indices: Sequence[int]) -> "BoW_Data":
-        data = super().subset_data_points(indices)
-        bows = self.bows[indices]
 
-        obj = self.__from_processed_data_incomplete(data)
-        obj.bows = bows
+T = TypeVar("T")
+Base_Data_Subtype = TypeVar("Base_Data_Subtype", bound=_Base_Data)
+Data_Subtype = TypeVar("Data_Subtype", bound=Data)
+BoW_Subtype = TypeVar("BoW_Subtype", bound=BoW_Data)
 
-        return obj
 
-    def subset_categories(self, indices: Sequence[int], field: str) -> "BoW_Data":
-        data = super().subset_categories(indices, field)
+def _copy_with_changed_values(_obj: T, **kwargs) -> T:
+    obj = copy(_obj)
+    for key, value in kwargs.items():
+        setattr(obj, key, value)
 
-        obj = self.__from_processed_data_incomplete(data)
-        obj.bows = self.bows.copy()
+    return obj
 
-        return obj
+
+def subset_data_points(
+    data: Base_Data_Subtype, indices: Sequence[int] | NDArray[np.intp]
+) -> Base_Data_Subtype:
+    changed_values = {
+        key: getattr(data, key)[indices]
+        for key in data._1d_data_fields | data._2d_data_fields
+    }
+    changed_nested_data = {
+        key: {
+            nested_key: subset_data_points(nested_data, indices)
+            for nested_key, nested_data in getattr(data, key).items()
+        }
+        for key in data._nested_data_fields
+    }
+    return _copy_with_changed_values(data, **(changed_values | changed_nested_data))
+
+
+def subset_categories(
+    data: Data_Subtype, indices: Sequence[int] | NDArray[np.intp], field: str
+) -> Data_Subtype:
+    new_target_data = data.target_data | {
+        field: Target_Data(
+            arr=data.target_data[field].arr[:, indices],
+            in_test_set=data.target_data[field].in_test_set,
+            uris=data.target_data[field].uris[indices],
+            labels=data.target_data[field].labels[indices],
+        )
+    }
+
+    return _copy_with_changed_values(data, target_data=new_target_data)
+
+
+def subset_words(
+    data: BoW_Subtype, indices: Sequence[int] | NDArray[np.intp]
+) -> BoW_Subtype:
+    bows = data.bows[:, indices]
+    id_to_word = {
+        new_index: data.id_to_word[int(old_index)]
+        for new_index, old_index in enumerate(indices)
+    }
+
+    return _copy_with_changed_values(data, bows=bows, id_to_word=id_to_word)

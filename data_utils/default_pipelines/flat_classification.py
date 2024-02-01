@@ -118,5 +118,8 @@ def _values_to_target_data(
         )  # type: ignore
 
     return Target_Data(
-        arr=arr, uris=uris, labels=labels, in_test_set=np.zeros(len(arr), dtype=bool)
+        arr=arr,
+        uris=np.array(uris),
+        labels=np.array(labels),
+        in_test_set=np.zeros(len(arr), dtype=bool),
     )
