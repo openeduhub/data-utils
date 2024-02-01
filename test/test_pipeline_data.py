@@ -211,3 +211,31 @@ def test_bow_data(data: Data):
         doc_set = set(doc)
         bow_word_ids = np.where(bow > 0)[0]
         assert all(bow_data.id_to_word[id] in doc_set for id in bow_word_ids)
+
+
+def test_internal_sets():
+    data = Data(
+        raw_texts=np.array(["foo"]),
+        ids=np.array(["bar"]),
+        redaktion_arr=np.array([True]),
+        target_data=dict(),
+    )
+
+    assert "processed_texts" not in data._1d_data_fields
+    assert "bows" not in data._1d_data_fields
+
+    processed_data = Processed_Data.from_data(data)
+
+    assert "processed_texts" not in data._1d_data_fields
+    assert "bows" not in data._1d_data_fields
+    assert "processed_texts" in processed_data._1d_data_fields
+    assert "bows" not in processed_data._1d_data_fields
+
+    bow_data = BoW_Data.from_processed_data(processed_data)
+
+    assert "processed_texts" not in data._1d_data_fields
+    assert "bows" not in data._1d_data_fields
+    assert "processed_texts" in processed_data._1d_data_fields
+    assert "bows" not in processed_data._1d_data_fields
+    assert "processed_texts" in bow_data._1d_data_fields
+    assert "bows" in bow_data._1d_data_fields

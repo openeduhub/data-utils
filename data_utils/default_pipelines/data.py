@@ -15,10 +15,10 @@ from copy import copy
 
 @dataclass
 class _Base_Data:
-    _nested_data_fields: set[str] = field(init=False)
-    _category_fields: set[str] = field(init=False)
-    _1d_data_fields: set[str] = field(init=False)
-    _2d_data_fields: set[str] = field(init=False)
+    _nested_data_fields: set[str] = field(init=False, default_factory=set)
+    _category_fields: set[str] = field(init=False, default_factory=set)
+    _1d_data_fields: set[str] = field(init=False, default_factory=set)
+    _2d_data_fields: set[str] = field(init=False, default_factory=set)
 
 
 @dataclass
@@ -28,10 +28,11 @@ class Target_Data(_Base_Data):
     uris: np.ndarray[Any, np.dtypes.StrDType]
     labels: np.ndarray[Any, np.dtypes.StrDType]
 
-    _nested_data_fields = set()
-    _category_fields = {"uris", "labels"}
-    _1d_data_fields = {"in_test_set"}
-    _2d_data_fields = {"arr"}
+    def __post_init__(self):
+        self._nested_data_fields = set()
+        self._category_fields = {"uris", "labels"}
+        self._1d_data_fields = {"in_test_set"}
+        self._2d_data_fields = {"arr"}
 
 
 @dataclass
@@ -41,10 +42,11 @@ class Data(_Base_Data):
     redaktion_arr: np.ndarray[Any, np.dtypes.BoolDType]
     target_data: dict[str, Target_Data]
 
-    _nested_data_fields = {"target_data"}
-    _category_fields = set()
-    _1d_data_fields = {"raw_texts", "ids", "redaktion_arr"}
-    _2d_data_fields = set()
+    def __post_init__(self):
+        self._nested_data_fields = {"target_data"}
+        self._category_fields = set()
+        self._1d_data_fields = {"raw_texts", "ids", "redaktion_arr"}
+        self._2d_data_fields = set()
 
 
 @dataclass
@@ -52,6 +54,7 @@ class Processed_Data(Data):
     processed_texts: list[tuple[str, ...]] = field(default_factory=list)
 
     def __post_init__(self):
+        super().__post_init__()
         self._1d_data_fields.add("processed_texts")
 
     @classmethod
@@ -101,6 +104,7 @@ class BoW_Data(Processed_Data):
     id_to_word: dict[int, str] = field(default_factory=dict)
 
     def __post_init__(self):
+        super().__post_init__()
         self._1d_data_fields.add("bows")
 
     @classmethod
