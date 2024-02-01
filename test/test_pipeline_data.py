@@ -63,6 +63,18 @@ def data_st(draw: st.DrawFn, n: Optional[int] = None) -> Data:
     )
 
 
+@st.composite
+def processed_data_st(draw: st.DrawFn, n: Optional[int] = None) -> Processed_Data:
+    data = draw(data_st(n=n))
+    return Processed_Data.from_data(data)
+
+
+@st.composite
+def bow_data_st(draw: st.DrawFn, n: Optional[int] = None) -> BoW_Data:
+    data = draw(data_st(n=n))
+    return BoW_Data.from_data(data)
+
+
 def assert_subset_correct(new, old, indices):
     assert len(new) == len(indices)
     # new is correctly sorted
@@ -73,7 +85,7 @@ def assert_subset_correct(new, old, indices):
     assert all(all(x) if isinstance(x, Iterable) else x for x in identical)
 
 
-@given(st.data(), data_st())
+@given(st.data(), st.one_of(data_st(), processed_data_st(), bow_data_st()))
 def test_subset_data_points(data: st.DataObject, data_base: Data):
     if len(data_base.ids) == 0:
         indices = []
@@ -86,7 +98,10 @@ def test_subset_data_points(data: st.DataObject, data_base: Data):
 
     data_subset = subset_data_points(data_base, indices)
 
-    for field in ["raw_texts", "ids", "redaktion_arr"]:
+    for field in ["raw_texts", "ids", "redaktion_arr", "processed_texts", "bows"]:
+        if not hasattr(data_base, field):
+            continue
+
         assert_subset_correct(
             getattr(data_subset, field), getattr(data_base, field), indices
         )
@@ -108,7 +123,7 @@ def test_subset_data_points(data: st.DataObject, data_base: Data):
             assert new_value is old_value or new_value == old_value
 
 
-@given(st.data(), data_st())
+@given(st.data(), st.one_of(data_st(), processed_data_st(), bow_data_st()))
 def test_subset_categories(data: st.DataObject, data_base: Data):
     if len(data_base.target_data) == 0:
         return
@@ -129,7 +144,10 @@ def test_subset_categories(data: st.DataObject, data_base: Data):
     data_subset = subset_categories(data_base, indices=indices, field=chosen_field)
 
     # unchanged
-    for field in ["raw_texts", "ids", "redaktion_arr"]:
+    for field in ["raw_texts", "ids", "redaktion_arr", "processed_texts", "bows"]:
+        if not hasattr(data_base, field):
+            continue
+
         new_value = getattr(data_base, field)
         old_value = getattr(data_subset, field)
         assert new_value is old_value or new_value == old_value

@@ -163,8 +163,14 @@ def _copy_with_changed_values(_obj: T, **kwargs) -> T:
 def subset_data_points(
     data: Base_Data_Subtype, indices: Sequence[int] | NDArray[np.intp]
 ) -> Base_Data_Subtype:
+    def subset_arr_or_list(val: list | np.ndarray) -> list | np.ndarray:
+        if isinstance(val, list):
+            return [val[int(index)] for index in indices]
+
+        return val[indices]
+
     changed_values = {
-        key: getattr(data, key)[indices]
+        key: subset_arr_or_list(getattr(data, key))
         for key in data._1d_data_fields | data._2d_data_fields
     }
     changed_nested_data = {
