@@ -215,7 +215,7 @@ data = generate_data(
 The object ~data~ now contains all of the commonly used information we may need for classification tasks or their evaluation:
 - =raw_texts=: The title, concatenated with the description (and separated by a =\n=).
 - =ids=: The internal unique identifiers of the materials.
-- =redaktion_arr=: A Boolean array containing information about whether each material belongs to the "Redaktionsbuffet" (i.e. its quality has been confirmed by an editor).
+- =editor_arr=: A Boolean array containing information about whether each material belongs to the "Redaktionsbuffet" (i.e. its quality has been confirmed by an editor).
 - =target_data=: Information about each selected metadata field:
   - =arr=: The Boolean matrix mapping each material to all of its relevant categories.
     When multiple assignment per material is not possible, this is equivalent to a one-hot-encoding.
