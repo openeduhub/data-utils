@@ -50,7 +50,13 @@ def data_st(draw: st.DrawFn, n: Optional[int] = None) -> Data:
     if n is None:
         n = draw(st.integers(min_value=1, max_value=MAX_DATA_LEN))
 
-    raw_texts = draw(st.lists(st.text(), min_size=n, max_size=n))
+    raw_texts = draw(
+        st.lists(
+            st.text(st.characters(blacklist_categories=["Cc", "Cs"])),
+            min_size=n,
+            max_size=n,
+        )
+    )
     ids = draw(st.lists(st.booleans(), min_size=n, max_size=n))
     redaktion_arr = draw(st.lists(st.booleans(), min_size=n, max_size=n))
     target_data = draw(st.dictionaries(st.text(), target_data_st(n=n), max_size=3))
@@ -144,7 +150,7 @@ def test_subset_categories(data: st.DataObject, data_base: Data):
     data_subset = subset_categories(data_base, indices=indices, field=chosen_field)
 
     # unchanged
-    for field in ["raw_texts", "ids", "redaktion_arr", "processed_texts", "bows"]:
+    for field in ["raw_texts", "ids", "redaktion_arr", "processed_texts"]:
         if not hasattr(data_base, field):
             continue
 
@@ -200,14 +206,12 @@ def test_bow_data(data: Data):
     bow_data = BoW_Data.from_processed_data(processed_data)
 
     assert "processed_texts" in bow_data._1d_data_fields
-    assert "bows" in bow_data._1d_data_fields
 
     # unchanged
     for field in [
         "raw_texts",
         "ids",
         "redaktion_arr",
-        "target_data",
         "processed_texts",
     ]:
         new, old = getattr(bow_data, field), getattr(processed_data, field)
@@ -216,6 +220,12 @@ def test_bow_data(data: Data):
             assert all(identical)
         else:
             assert identical
+
+    old_target_data = data.target_data
+    new_target_data = bow_data.target_data
+
+    for field in old_target_data:
+        assert old_target_data[field] == new_target_data[field]
 
     # check document lengths
     lens_old = [len(doc) for doc in processed_data.processed_texts]
@@ -227,8 +237,9 @@ def test_bow_data(data: Data):
     # check ids
     for bow, doc in zip(bow_data.bows, bow_data.processed_texts):
         doc_set = set(doc)
-        bow_word_ids = np.where(bow > 0)[0]
-        assert all(bow_data.id_to_word[id] in doc_set for id in bow_word_ids)
+        words = bow_data.words[bow > 0]
+        for word in words:
+            assert word in doc_set
 
 
 def test_internal_sets():
@@ -240,20 +251,14 @@ def test_internal_sets():
     )
 
     assert "processed_texts" not in data._1d_data_fields
-    assert "bows" not in data._1d_data_fields
 
     processed_data = Processed_Data.from_data(data)
 
     assert "processed_texts" not in data._1d_data_fields
-    assert "bows" not in data._1d_data_fields
     assert "processed_texts" in processed_data._1d_data_fields
-    assert "bows" not in processed_data._1d_data_fields
 
     bow_data = BoW_Data.from_processed_data(processed_data)
 
     assert "processed_texts" not in data._1d_data_fields
-    assert "bows" not in data._1d_data_fields
     assert "processed_texts" in processed_data._1d_data_fields
-    assert "bows" not in processed_data._1d_data_fields
     assert "processed_texts" in bow_data._1d_data_fields
-    assert "bows" in bow_data._1d_data_fields

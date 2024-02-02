@@ -3,8 +3,6 @@ from functools import reduce
 from pathlib import Path
 from typing import Optional
 
-from nlprep.utils import pickle
-
 import data_utils.default_pipelines.flat_classification as base_pipeline
 import data_utils.filters as filters
 import numpy as np
@@ -13,7 +11,6 @@ from data_utils.default_pipelines.data import (
     Processed_Data,
     subset_categories,
     subset_data_points,
-    subset_words,
 )
 from nlprep import pipelines
 
@@ -21,7 +18,6 @@ from nlprep import pipelines
 def generate_data(
     json_file: Path,
     target_fields: Collection[str],
-    save_file: Path,
     cache_dir: Optional[Path] = None,
     **kwargs,
 ) -> BoW_Data:
@@ -63,6 +59,7 @@ def generate_data(
     base_data = subset_data_points(base_data, np.where(to_keep)[0])
 
     # pre-process texts
+    print("Pre-processing texts...")
     processed_data = Processed_Data.from_data(
         base_data,
         pipeline_generators=pipelines.get_poc_topic_modeling_pipelines(
@@ -79,17 +76,29 @@ def generate_data(
                 "AUX",
                 "ADP",
             },
+            required_df_interval={
+                "min_num": 10,
+                "max_rate": 0.25,
+                "interval_open": False,
+                "count_only_selected": True,
+            },
         ),
         cache_dir=cache_dir,
     )
     del base_data  # now redundant
 
-    # # drop all words that are longer than 25 characters
-    # results = [[token for token in doc if len(token) <= 25] for doc in results]
-
     # calculate bag of words
+    print("Transforming into bag of words...")
     bow_data = BoW_Data.from_processed_data(processed_data)
     del processed_data  # now redundant
+
+    # drop all tokens that make up more than 0.5% of all tokens
+    keep_tokens = (bow_data.bows.sum(-2) / bow_data.bows.sum()) < 0.005
+    bow_data = subset_categories(bow_data, np.where(keep_tokens)[0], field="bows")
+
+    # extremely long tokens are usually invalid, so drop them
+    keep_tokens = np.array([len(word) <= 30 for word in bow_data.words])
+    bow_data = subset_categories(bow_data, np.where(keep_tokens)[0], field="bows")
 
     # ensure that all docs have at least ten tokens,
     # each token is in at least five docs,
@@ -108,7 +117,7 @@ def generate_data(
     ):
         print(f"Shape of bag of words: {bow_data.bows.shape}")
         # drop tokens that have too small support
-        bow_data = subset_words(bow_data, np.where(support >= 5)[0])
+        bow_data = subset_categories(bow_data, np.where(support >= 5)[0], field="bows")
 
         # drop docs that are too small
         lens = bow_data.bows.sum(-1)
@@ -126,12 +135,12 @@ def generate_data(
 
         # drop all documents that have no categories assigned
         to_keep = reduce(
-            np.logical_and,
+            np.logical_or,
             (
                 target_data.arr.sum(1) > 0
                 for target_data in bow_data.target_data.values()
             ),
-            np.ones_like(bow_data.ids, dtype=bool),
+            np.zeros_like(bow_data.ids, dtype=bool),
         )
         bow_data = subset_data_points(bow_data, np.where(to_keep)[0])
 

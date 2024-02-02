@@ -9,7 +9,6 @@ from typing import Any, Optional, TypeVar
 import numpy as np
 from numpy.typing import NDArray
 from nlprep import Pipeline_Generator, apply_filters, pipelines, tokenize_documents
-from tqdm import tqdm
 from copy import copy
 
 
@@ -23,7 +22,7 @@ class _Base_Data:
 
 @dataclass
 class Target_Data(_Base_Data):
-    arr: np.ndarray[Any, np.dtypes.BoolDType]
+    arr: np.ndarray
     in_test_set: np.ndarray[Any, np.dtypes.BoolDType]
     uris: np.ndarray[Any, np.dtypes.StrDType]
     labels: np.ndarray[Any, np.dtypes.StrDType]
@@ -66,18 +65,15 @@ class Processed_Data(Data):
     ) -> "Processed_Data":
         import nlprep.spacy as nlp
 
-        print("Pre-processing texts...")
         try:
             nlp.utils.load_caches(
                 cache_dir,  # type: ignore
                 file_prefix="nlp_cache",
             )
         except (FileNotFoundError, TypeError):
-            print("No NLP cache found. This may take a while...")
+            pass
 
-        docs = list(
-            tokenize_documents(tqdm(data.raw_texts.tolist()), nlp.tokenize_as_lemmas)
-        )
+        docs = list(tokenize_documents(data.raw_texts.tolist(), nlp.tokenize_as_lemmas))
 
         # apply the given pipelines one by one
         for pipeline_generator in pipeline_generators:
@@ -98,19 +94,27 @@ class Processed_Data(Data):
 
 @dataclass
 class BoW_Data(Processed_Data):
-    bows: np.ndarray[Any, np.dtypes.UInt8DType] = field(
-        default_factory=lambda: np.array([])
-    )
-    id_to_word: dict[int, str] = field(default_factory=dict)
+    _virtual_bow_dict: dict[str, Target_Data] = field(default_factory=dict)
 
     def __post_init__(self):
         super().__post_init__()
-        self._1d_data_fields.add("bows")
+        self._nested_data_fields.add("_virtual_bow_dict")
+
+    @property
+    def bows(self) -> np.ndarray[Any, np.dtypes.IntDType]:
+        """Alias for accessing the bag of words representations more conveniently."""
+        return self._virtual_bow_dict["bows"].arr
+
+    @property
+    def words(self) -> np.ndarray[Any, np.dtypes.StrDType]:
+        """Alias for accessing the id-to-word map more conveniently."""
+        return self._virtual_bow_dict["bows"].labels
 
     @classmethod
     def from_processed_data(cls, data: Processed_Data) -> "BoW_Data":
-        print("Converting texts to bag of words representations...")
-        words = list(reduce(op.or_, (set(doc) for doc in data.processed_texts), set()))
+        words: list[str] = list(
+            reduce(op.or_, (set(doc) for doc in data.processed_texts), set())
+        )
         word_to_id = {word: index for index, word in enumerate(words)}
 
         def doc_to_bow(doc: Collection[str]):
@@ -122,14 +126,21 @@ class BoW_Data(Processed_Data):
 
             return res
 
+        bows = np.stack([doc_to_bow(doc) for doc in data.processed_texts])
+        bows_data = Target_Data(
+            arr=bows,
+            in_test_set=np.zeros_like(bows, dtype=np.dtypes.BoolDType),
+            uris=np.array(words),
+            labels=np.array(words),
+        )
+
         return cls(
             raw_texts=data.raw_texts,
             ids=data.ids,
             redaktion_arr=data.redaktion_arr,
             target_data=data.target_data,
             processed_texts=data.processed_texts,
-            bows=np.stack([doc_to_bow(doc) for doc in tqdm(data.processed_texts)]),
-            id_to_word={index: word for index, word in enumerate(words)},
+            _virtual_bow_dict={"bows": bows_data},
         )
 
     @classmethod
@@ -186,25 +197,17 @@ def subset_data_points(
 def subset_categories(
     data: Data_Subtype, indices: Sequence[int] | NDArray[np.intp], field: str
 ) -> Data_Subtype:
-    new_target_data = data.target_data | {
-        field: Target_Data(
-            arr=data.target_data[field].arr[:, indices],
-            in_test_set=data.target_data[field].in_test_set,
-            uris=data.target_data[field].uris[indices],
-            labels=data.target_data[field].labels[indices],
-        )
+    changed_nested_data = {
+        key: getattr(data, key)
+        | {
+            nested_key: subset_categories(nested_data, indices, field)
+            for nested_key, nested_data in getattr(data, key).items()
+            if nested_key == field
+        }
+        for key in data._nested_data_fields
     }
+    changed_values = {
+        key: getattr(data, key)[:, indices] for key in data._2d_data_fields
+    } | {key: getattr(data, key)[indices] for key in data._category_fields}
 
-    return _copy_with_changed_values(data, target_data=new_target_data)
-
-
-def subset_words(
-    data: BoW_Subtype, indices: Sequence[int] | NDArray[np.intp]
-) -> BoW_Subtype:
-    bows = data.bows[:, indices]
-    id_to_word = {
-        new_index: data.id_to_word[int(old_index)]
-        for new_index, old_index in enumerate(indices)
-    }
-
-    return _copy_with_changed_values(data, bows=bows, id_to_word=id_to_word)
+    return _copy_with_changed_values(data, **(changed_nested_data | changed_values))
