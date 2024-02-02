@@ -58,13 +58,13 @@ def data_st(draw: st.DrawFn, n: Optional[int] = None) -> Data:
         )
     )
     ids = draw(st.lists(st.booleans(), min_size=n, max_size=n))
-    redaktion_arr = draw(st.lists(st.booleans(), min_size=n, max_size=n))
+    editor_arr = draw(st.lists(st.booleans(), min_size=n, max_size=n))
     target_data = draw(st.dictionaries(st.text(), target_data_st(n=n), max_size=3))
 
     return Data(
         raw_texts=np.array(raw_texts),
         ids=np.array(ids),
-        redaktion_arr=np.array(redaktion_arr),
+        editor_arr=np.array(editor_arr),
         target_data=target_data,
     )
 
@@ -104,7 +104,7 @@ def test_subset_data_points(data: st.DataObject, data_base: Data):
 
     data_subset = subset_data_points(data_base, indices)
 
-    for field in ["raw_texts", "ids", "redaktion_arr", "processed_texts", "bows"]:
+    for field in ["raw_texts", "ids", "editor_arr", "processed_texts", "bows"]:
         if not hasattr(data_base, field):
             continue
 
@@ -150,7 +150,7 @@ def test_subset_categories(data: st.DataObject, data_base: Data):
     data_subset = subset_categories(data_base, indices=indices, field=chosen_field)
 
     # unchanged
-    for field in ["raw_texts", "ids", "redaktion_arr", "processed_texts"]:
+    for field in ["raw_texts", "ids", "editor_arr", "processed_texts"]:
         if not hasattr(data_base, field):
             continue
 
@@ -191,7 +191,7 @@ def test_processed_data(data: Data):
     assert "processed_texts" in processed_data._1d_data_fields
 
     # unchanged
-    for field in ["raw_texts", "ids", "redaktion_arr", "target_data"]:
+    for field in ["raw_texts", "ids", "editor_arr", "target_data"]:
         new, old = getattr(processed_data, field), getattr(data, field)
         identical = new == old
         if isinstance(identical, Iterable):
@@ -211,7 +211,7 @@ def test_bow_data(data: Data):
     for field in [
         "raw_texts",
         "ids",
-        "redaktion_arr",
+        "editor_arr",
         "processed_texts",
     ]:
         new, old = getattr(bow_data, field), getattr(processed_data, field)
@@ -246,7 +246,7 @@ def test_internal_sets():
     data = Data(
         raw_texts=np.array(["foo"]),
         ids=np.array(["bar"]),
-        redaktion_arr=np.array([True]),
+        editor_arr=np.array([True]),
         target_data=dict(),
     )
 

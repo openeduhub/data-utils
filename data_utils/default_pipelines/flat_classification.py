@@ -1,7 +1,7 @@
 import operator as op
-from collections.abc import Collection, Iterable, Sequence
+from collections.abc import Collection, Sequence
 from pathlib import Path
-from typing import Any, NamedTuple, Optional
+from typing import Optional
 
 import data_utils.defaults as defaults
 import data_utils.fetch as fetch
@@ -9,9 +9,9 @@ import data_utils.filters as filt
 import data_utils.transform as trans
 import numpy as np
 import pandas as pd
-from data_utils.defaults import Fields
 from data_utils.data import Basic_Value, Basic_Value_Not_None
 from data_utils.default_pipelines.data import Data, Target_Data
+from data_utils.defaults import Fields
 
 
 def generate_data(
@@ -70,7 +70,7 @@ def generate_data(
     return Data(
         raw_texts=raw_texts.to_numpy(),
         ids=df[Fields.ID.value].to_numpy(),
-        redaktion_arr=redaktion_series.to_numpy(dtype=bool),
+        editor_arr=redaktion_series.to_numpy(dtype=bool),
         target_data=target_data,
     )
 

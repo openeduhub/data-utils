@@ -226,7 +226,7 @@ The object ~data~ now contains all of the commonly used information we may need 
 #+begin_src python :session demo.py :exports results :results output
 print(f"{data.raw_texts[0]=}\n")
 print(f"{data.ids[:5]=}\n")
-print(f"{data.redaktion_arr.shape=}\n")
+print(f"{data.editor_arr.shape=}\n")
 print(f"{data.target_data.keys()=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].uris[:5]=}\n")
 print(f"{data.target_data['properties.ccm:taxonid'].labels[:5]=}\n")
@@ -245,7 +245,7 @@ data.ids[:5]=array(['42b412c5-6aa6-45ac-bb6a-da23f231bb15',
        'd76d5429-efbb-4736-8c9c-25bd6569a145',
        '819a87fb-87aa-4785-aff2-c0a79c4bb2ce'], dtype=object)
 
-data.redaktion_arr.shape=(1000,)
+data.editor_arr.shape=(1000,)
 
 data.target_data.keys()=dict_keys(['properties.ccm:educationalcontext', 'properties.ccm:taxonid'])
 
@@ -652,6 +652,7 @@ data = generate_data(
 #+end_src
 
 #+RESULTS:
+: /tmp/babel-enMXI9/python-04bYjA
 
 #+begin_src python :results output :exports results
 print("Minimum text length:", min(len(text) for text in data.raw_texts))
@@ -871,15 +872,15 @@ data = generate_data(
     max_len=1000,
 )
 
-sort_indices = np.flip(np.argsort(data.redaktion_arr))
+sort_indices = np.flip(np.argsort(data.editor_arr))
 data_sorted = subset_data_points(data, sort_indices)
 #+end_src
 
 #+RESULTS:
 
 #+begin_src python :results output :exports results
-print("Index of first non-confirmed entry before sorting:", np.where(~data.redaktion_arr)[0][0])
-print("Index of first non-confirmed entry after sorting:", np.where(~data_sorted.redaktion_arr)[0][0])
+print("Index of first non-confirmed entry before sorting:", np.where(~data.editor_arr)[0][0])
+print("Index of first non-confirmed entry after sorting:", np.where(~data_sorted.editor_arr)[0][0])
 #+end_src
 
 #+RESULTS:
