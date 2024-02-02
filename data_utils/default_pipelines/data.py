@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import operator as op
 from collections import Counter
 from collections.abc import Collection, Iterable, Sequence
@@ -14,6 +16,13 @@ from copy import copy
 
 @dataclass
 class _Base_Data:
+    """
+    The basic information contained within all data objects.
+
+    This in intended entirely for internal use within the subset functions,
+    so that they can detect which fields to act on and in what way.
+    """
+
     _nested_data_fields: set[str] = field(init=False, default_factory=set)
     _category_fields: set[str] = field(init=False, default_factory=set)
     _1d_data_fields: set[str] = field(init=False, default_factory=set)
@@ -22,6 +31,20 @@ class _Base_Data:
 
 @dataclass
 class Target_Data(_Base_Data):
+    """
+    Data for one particular field, including assignments and metadata.
+
+    :param arr: The assignments to the field at hand.
+        For categorical fields, this is a Boolean matrix.
+        For bag-of-words data, this is an Integer matrix.
+    :param in_test_set: Boolean array indicating whether each data point
+        belongs to the test data set for this field.
+    :param uris: String array indicating the URI of each category
+        (i.e. the right-most dimension of the assignment array).
+    :param labels: String array indicating the (human-readable) label
+        of each category.
+    """
+
     arr: np.ndarray
     in_test_set: np.ndarray[Any, np.dtypes.BoolDType]
     uris: np.ndarray[Any, np.dtypes.StrDType]
@@ -36,20 +59,36 @@ class Target_Data(_Base_Data):
 
 @dataclass
 class Data(_Base_Data):
+    """
+    Data on an entire text corpus with multiple possible metadata fields.
+
+    :param raw_texts: The unprocessed texts contained within each document.
+    :param ids: The unique IDs of each document.
+    :param editor_arr: A Boolean array indicating whether each document
+        is editorially confirmed.
+    :param target_data: Map from field names to their data.
+    """
+
     raw_texts: np.ndarray[Any, np.dtypes.StrDType]
     ids: np.ndarray[Any, np.dtypes.StrDType]
-    redaktion_arr: np.ndarray[Any, np.dtypes.BoolDType]
+    editor_arr: np.ndarray[Any, np.dtypes.BoolDType]
     target_data: dict[str, Target_Data]
 
     def __post_init__(self):
         self._nested_data_fields = {"target_data"}
         self._category_fields = set()
-        self._1d_data_fields = {"raw_texts", "ids", "redaktion_arr"}
+        self._1d_data_fields = {"raw_texts", "ids", "editor_arr"}
         self._2d_data_fields = set()
 
 
 @dataclass
 class Processed_Data(Data):
+    """
+    A text corpus where each document's text has been tokenized and pre-processed.
+
+    :param processed_texts: The tokenized representations of the texts.
+    """
+
     processed_texts: list[tuple[str, ...]] = field(default_factory=list)
 
     def __post_init__(self):
@@ -63,6 +102,20 @@ class Processed_Data(Data):
         pipeline_generators: Iterable[Pipeline_Generator] = tuple(),
         cache_dir: Optional[Path] = None,
     ) -> "Processed_Data":
+        """
+        Turn an unprocessed corpus into a processed one.
+
+        This utilizes the nlprep library for tokenization and pre-processing.
+        Note that this may take a long time for decently large corpuses.
+
+        :param data: The text corpus to pre-process.
+        :param pipeline_generators: Pipelines to iteratively apply to the
+            corpus, in order to filter out unwanted tokens.
+            See the nlprep library for more details.
+        :param cache_dir: The path to the directory that shall contain a cache
+            of all the pre-processed texts. Useful when identical texts may be
+            processed multiple times.
+        """
         import nlprep.spacy as nlp
 
         try:
@@ -86,7 +139,7 @@ class Processed_Data(Data):
         return cls(
             raw_texts=data.raw_texts,
             ids=data.ids,
-            redaktion_arr=data.redaktion_arr,
+            editor_arr=data.editor_arr,
             target_data=data.target_data,
             processed_texts=[doc.selected_tokens for doc in docs],
         )
@@ -94,6 +147,11 @@ class Processed_Data(Data):
 
 @dataclass
 class BoW_Data(Processed_Data):
+    """
+    A tokenized corpus where each document has additionally been turned into
+    its bag-of-words representation.
+    """
+
     _virtual_bow_dict: dict[str, Target_Data] = field(default_factory=dict)
 
     def __post_init__(self):
@@ -102,16 +160,28 @@ class BoW_Data(Processed_Data):
 
     @property
     def bows(self) -> np.ndarray[Any, np.dtypes.IntDType]:
-        """Alias for accessing the bag of words representations more conveniently."""
+        """
+        A two-dimensional array representing each document's bag-of-words
+        representation.
+        """
         return self._virtual_bow_dict["bows"].arr
 
     @property
     def words(self) -> np.ndarray[Any, np.dtypes.StrDType]:
-        """Alias for accessing the id-to-word map more conveniently."""
+        """
+        The words that are represented by each column of the bag-of-words
+        representation.
+        """
         return self._virtual_bow_dict["bows"].labels
 
     @classmethod
     def from_processed_data(cls, data: Processed_Data) -> "BoW_Data":
+        """
+        Create bag-of-words representations from a tokenized corpus.
+
+        Note that for space efficiency, word counts within one document
+        are capped at 255.
+        """
         words: list[str] = list(
             reduce(op.or_, (set(doc) for doc in data.processed_texts), set())
         )
@@ -137,30 +207,29 @@ class BoW_Data(Processed_Data):
         return cls(
             raw_texts=data.raw_texts,
             ids=data.ids,
-            redaktion_arr=data.redaktion_arr,
+            editor_arr=data.editor_arr,
             target_data=data.target_data,
             processed_texts=data.processed_texts,
             _virtual_bow_dict={"bows": bows_data},
         )
 
     @classmethod
-    def from_data(
-        cls,
-        data: Data,
-        pipeline_generators: Iterable[Pipeline_Generator] = tuple(),
-        cache_dir: Optional[Path] = None,
-    ) -> "BoW_Data":
-        return cls.from_processed_data(
-            Processed_Data.from_data(
-                data, pipeline_generators=pipeline_generators, cache_dir=cache_dir
-            )
-        )
+    def from_data(cls, data: Data, **kwargs) -> "BoW_Data":
+        """
+        Get bag-of-words representations for unprocessed data.
+
+        This simply applies the pre-processing step from
+        :func:`data_utils.default_pipelines.data.Processed_Data.from_data`
+        before calculating the bag-of-words representations.
+
+        :param kwargs: Additional keyword-arguments to be passed onto
+            :func:`data_utils.default_pipelines.data.Processed_Data.from_data`.
+        """
+        return cls.from_processed_data(Processed_Data.from_data(data, **kwargs))
 
 
 T = TypeVar("T")
 Base_Data_Subtype = TypeVar("Base_Data_Subtype", bound=_Base_Data)
-Data_Subtype = TypeVar("Data_Subtype", bound=Data)
-BoW_Subtype = TypeVar("BoW_Subtype", bound=BoW_Data)
 
 
 def _copy_with_changed_values(_obj: T, **kwargs) -> T:
@@ -174,6 +243,11 @@ def _copy_with_changed_values(_obj: T, **kwargs) -> T:
 def subset_data_points(
     data: Base_Data_Subtype, indices: Sequence[int] | NDArray[np.intp]
 ) -> Base_Data_Subtype:
+    """
+    Return a subset of the given corpus that only contains data points
+    as indicated by the given sequence of indices.
+    """
+
     def subset_arr_or_list(val: list | np.ndarray) -> list | np.ndarray:
         if isinstance(val, list):
             return [val[int(index)] for index in indices]
@@ -195,19 +269,29 @@ def subset_data_points(
 
 
 def subset_categories(
-    data: Data_Subtype, indices: Sequence[int] | NDArray[np.intp], field: str
-) -> Data_Subtype:
-    changed_nested_data = {
-        key: getattr(data, key)
-        | {
-            nested_key: subset_categories(nested_data, indices, field)
-            for nested_key, nested_data in getattr(data, key).items()
-            if nested_key == field
-        }
-        for key in data._nested_data_fields
-    }
-    changed_values = {
-        key: getattr(data, key)[:, indices] for key in data._2d_data_fields
-    } | {key: getattr(data, key)[indices] for key in data._category_fields}
+    data: Base_Data_Subtype,
+    indices: Sequence[int] | NDArray[np.intp],
+    field: Optional[str],
+) -> Base_Data_Subtype:
+    """
+    Return a modified version of the corpus such that the data field,
+    will only contain the categories as determined by the given indices.
+    """
 
-    return _copy_with_changed_values(data, **(changed_nested_data | changed_values))
+    if field is not None:
+        changed_data = {
+            key: getattr(data, key)
+            | {
+                nested_key: subset_categories(nested_data, indices, None)
+                for nested_key, nested_data in getattr(data, key).items()
+                if nested_key == field
+            }
+            for key in data._nested_data_fields
+        }
+
+    else:
+        changed_data = {
+            key: getattr(data, key)[:, indices] for key in data._2d_data_fields
+        } | {key: getattr(data, key)[indices] for key in data._category_fields}
+
+    return _copy_with_changed_values(data, **changed_data)

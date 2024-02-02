@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import operator as op
 from collections.abc import Collection, Sequence
 from pathlib import Path
@@ -25,6 +27,32 @@ def generate_data(
     use_defaults: bool = True,
     **kwargs,
 ) -> Data:
+    """
+    Turn the raw json data into a representation more suitable for classification tasks.
+
+    Currently, this only supports \"flat\" categorical data,
+    i.e. non-hierarchical structures.
+
+    :param json_file: The path to the raw json file to process, e.g. from
+        :func:`data_utils.fetch.fetch`.
+    :param target_fields: The data fields that shall be contained.
+        Any other data (except text) will be discarded.
+    :param dropped_values: Map from data field to the categories that
+        shall be dropped.
+    :param remapped_values: Map from data field to the categories that
+        shall be renamed to different ones.
+    :param skos_urls: Map from data field to the SKOS vocabulary to use
+        for looking up human-readable labels for the categories.
+    :param uri_label_fields: Map from the data field to the (dot-separated)
+        fields to look up in the SKOS vocabulary when looking up
+        human-readable labels.
+    :param filters: Additional filters to apply to drop data during importing.
+    :param use_defaults: Whether to apply defaults (:ref:`data_utils.defaults`).
+        If defaults and arguments given above conflict, the given arguments
+        will be preferred.
+    :param kwargs: Additional keyword-arguments to pass onto
+        :func:`data_utils.fetch.df_from_json_file`.
+    """
     if use_defaults:
         dropped_values = defaults.dropped_values | dropped_values
         remapped_values = defaults.remapped_values | remapped_values
@@ -35,7 +63,7 @@ def generate_data(
             filt.existing_text_filter,
         } | set(filters)
 
-    df = get_basic_df(
+    df = _get_basic_df(
         json_file=json_file,
         target_fields=target_fields,
         dropped_values=dropped_values,
@@ -75,7 +103,7 @@ def generate_data(
     )
 
 
-def get_basic_df(
+def _get_basic_df(
     json_file: Path, target_fields: Collection[str], **kwargs
 ) -> pd.DataFrame:
     df = fetch.df_from_json_file(

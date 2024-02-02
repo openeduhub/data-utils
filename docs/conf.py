@@ -39,4 +39,4 @@ autodoc_type_aliases = {
         "Nested_Dict",
         "Query_Result",
     ]
-} | {"Filter": "data_utils.filter.Filter"}
+} | {"Filter": "data_utils.filters.Filter"}
