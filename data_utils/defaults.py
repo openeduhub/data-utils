@@ -5,6 +5,7 @@ from data_utils.data import Basic_Value, Basic_Value_Not_None
 
 
 class Fields(Enum):
+    """A selection of commonly used metadata fields."""
 
     AGE = "properties.ccm:educationaltypicalagerange"
     COLLECTIONS = "collections.properties.cm:title"
@@ -25,6 +26,7 @@ class Fields(Enum):
     URL = "properties.ccm:wwwurl"
 
 
+#: Default values that shall be dropped from particular metadata fields.
 dropped_values: dict[str, Collection[Basic_Value_Not_None]] = {
     Fields.TAXONID.value: {
         "",
@@ -34,6 +36,7 @@ dropped_values: dict[str, Collection[Basic_Value_Not_None]] = {
     Fields.LANGUAGE.value: set(),
 }
 
+#: Default values that shall be remapped for particular metadata fields
 remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]] = {
     Fields.TAXONID.value: {
         "http://w3id.org/openeduhub/vocabs/discipline/Darstellendes-Spiel": "http://w3id.org/openeduhub/vocabs/discipline/12002",
@@ -72,6 +75,8 @@ remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]] = {
     },
 }
 
+#: Default SKOS controlled vocabularies to look up label definition in
+#: for particular metadata fields.
 skos_urls: dict[str, str] = {
     Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json",
     Fields.EDUCATIONAL_CONTEXT.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json",
