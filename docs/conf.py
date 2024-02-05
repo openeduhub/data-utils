@@ -39,4 +39,12 @@ autodoc_type_aliases = {
         "Nested_Dict",
         "Query_Result",
     ]
-} | {"Filter": "data_utils.filters.Filter"}
+} | {
+    x: f"data_utils.filters.{x}"
+    for x in [
+        "Filter",
+        "Predicate",
+        "Simple_Predicate",
+        "Multi_Value_Predicate",
+    ]
+}

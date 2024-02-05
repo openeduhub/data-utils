@@ -7,16 +7,41 @@ from typing import Iterable
 from data_utils.data import Basic_Value, Nested_Dict, Terminal_Value, get_terminal_in
 from data_utils.defaults import Fields
 
+#: A filter evaluates a particular data entry
+#: and returns True iff. it shall be kept.
 Filter = Callable[[Nested_Dict], bool]
+
+#: A predicate evaluates a particular (potentially multi-value) field's
+#: value(s) and returns True (the value(s) shall be accepted) or False
+#: (the value(s) shall be rejected)
+Predicate = Callable[[Terminal_Value], bool]
+
+#: A simple predicate is like a ``Predicate``,
+#: but only applies to single values.
+Simple_Predicate = Callable[[Basic_Value], bool]
+
+#: A multi-value predicate takes multiple ``Predicate`` or ``Simple_Predicate``
+#: results and summarizes them into one Boolean value.
+#:
+#: Examples: The builtin ``any`` and ``all``
+Multi_Value_Predicate = Callable[[Iterable[bool]], bool]
 
 
 def get_predicate_on_terminal(
-    simple_predicate: Callable[[Basic_Value], bool],
-    multi_value_semantics: Callable[[Iterable[bool]], bool],
-) -> Callable[[Terminal_Value], bool]:
+    simple_predicate: Simple_Predicate,
+    multi_value_semantics: Multi_Value_Predicate,
+) -> Predicate:
     """
     Create a predicate function that acts on a terminal value from one
     that acts on basic values.
+
+    This allows for the simpler creation of predicate functions,
+    as additional semantics stemming from multi-value fields can be handled
+    automatically.
+
+    :param multi_value_semantics: The predicate function to use in order to
+        summarize multi-value fields into one Boolean value.
+        Usually set to `any` or `all`, depending on the desired behavior.
     """
 
     def fun(comp_value: Terminal_Value) -> bool:
@@ -29,16 +54,24 @@ def get_predicate_on_terminal(
 
 
 def get_filter(
-    predicate_fun: Callable[[Terminal_Value], bool], key: str, key_separator: str = "."
-) -> Callable[[Nested_Dict], bool]:
+    predicate_fun: Predicate,
+    field: str,
+    separator: str = ".",
+) -> Filter:
     """
-    Create a filter that returns true iff the given predicate function
-    evaluates to True for the value at the given key sequence.
+    Create a filter keeps entries given by the predicate function evaluated
+    on a particular field.
+
+    :param predicate_fun: The predicate function to apply to values
+         in the given ``field``.
+    :param field: The field which the filter shall evaluate ``predicate_fun``
+         on.
+    :param separator: The separator to use for splitting ``field``.
     """
 
     def fun(entry: Nested_Dict) -> bool:
         value = get_terminal_in(
-            entry, key.split(key_separator), catch_errors=(KeyError, TypeError)
+            entry, field.split(separator), catch_errors=(KeyError, TypeError)
         )
         return predicate_fun(value)
 
@@ -46,23 +79,26 @@ def get_filter(
 
 
 def get_filter_with_basic_predicate(
-    predicate_fun: Callable[[Basic_Value], bool],
-    key: str,
-    multi_value_semantics: Callable[[Iterable[bool]], bool],
-    key_separator: str = ".",
-) -> Callable[[Nested_Dict], bool]:
+    predicate_fun: Simple_Predicate,
+    field: str,
+    multi_value_semantics: Multi_Value_Predicate,
+    separator: str = ".",
+) -> Filter:
     """
-    Convenience function to create filters from predicate functions on basic values.
+    Create a filter from a predicate function on basic values.
+
+    Essentially just a combines :func:`get_predicate_on_terminal` and
+    :func:`get_filter` in order to derive the filter to return.
     """
     return get_filter(
         get_predicate_on_terminal(predicate_fun, multi_value_semantics),
-        key=key,
-        key_separator=key_separator,
+        field=field,
+        separator=separator,
     )
 
 
 def negated(_filter: Filter) -> Filter:
-    """Return a new filter that evaluates to the opposite of the given one."""
+    """Create a new filter that evaluates to the opposite of the given one."""
 
     def fun(entry: Nested_Dict) -> bool:
         return not _filter(entry)
@@ -99,7 +135,7 @@ def kibana_basic_filter(entry: Nested_Dict) -> bool:
 
 def kibana_publicly_visible(entry: Nested_Dict) -> bool:
     """
-    Only accepts data that is publicly visible.
+    A filter that only accepts data that is publicly visible.
 
     This may be because the data is explicitly set to be public,
     or because it is contained within a collection that is public.
@@ -115,25 +151,33 @@ def kibana_publicly_visible(entry: Nested_Dict) -> bool:
     return any(fun(entry) for fun in should_filters)
 
 
-kibana_redaktionsbuffet = get_filter_with_basic_predicate(
+#: A filter that only accepts data that has been confirmed by editors
+#: (i.e. it is located within the "Redaktionsbuffet")
+kibana_redaktionsbuffet: Filter = get_filter_with_basic_predicate(
     predicate_fun=partial(op.eq, "Redaktionsbuffet"),
-    key=Fields.COLLECTIONS.value,
+    field=Fields.COLLECTIONS.value,
     multi_value_semantics=any,
 )
 
 
 def get_test_data_filter(included_labels: Iterable[str]) -> Filter:
     """
-    Get a filter that only include test data according to the given test data labels.
+    Create a filter that only includes data if it is part of a test data set
+    with any of the given labels.
     """
+    included_labels_set = set(included_labels)
     return get_filter_with_basic_predicate(
-        lambda x: any(x == label for label in included_labels), "test_data", any
+        lambda x: x in included_labels_set, "test_data", any
     )
 
 
 def get_language_filter(accepted_languages: Collection[str]) -> Filter:
+    """
+    Create a filter that rejects any data that contains a not explicitly
+    allowed language.
+    """
     if len(accepted_languages) == 0:
-        return lambda x: True
+        return lambda _: True
 
     def fun(entry: Nested_Dict) -> bool:
         langs = get_terminal_in(entry, Fields.LANGUAGE.value.split("."))
@@ -150,17 +194,27 @@ def get_language_filter(accepted_languages: Collection[str]) -> Filter:
     return fun
 
 
-german_filter = get_language_filter(["de", "de_DE", "de-DE"])
+#: A filter that only accepts data that *only* contains German content
+german_filter: Filter = get_language_filter(["de", "de_DE", "de-DE"])
 
 
 def get_labeled_filter(
     fields: Collection[str],
-    key_separator: str = ".",
-    multi_field_semantics: Callable[[Iterable[bool]], bool] = any,
+    separator: str = ".",
+    multi_field_semantics: Multi_Value_Predicate = any,
 ) -> Filter:
+    """
+    Create a filter that only accepts data that contains values in the given
+    fields.
+
+    :param multi_field_semantics: If multiple values for ``fields`` have been
+        given, this determines how they shall be combined (e.g. does only one
+        field need to contain a value or do all fields need to?)
+    """
+
     def fun(entry: Nested_Dict) -> bool:
         found_values = (
-            get_terminal_in(entry, field.split(key_separator)) for field in fields
+            get_terminal_in(entry, field.split(separator)) for field in fields
         )
         return multi_field_semantics(bool(value) for value in found_values)
 
@@ -170,18 +224,34 @@ def get_labeled_filter(
 def get_len_filter(
     fields: Collection[str],
     min_lengths: int | Collection[int],
-    key_separator: str = ".",
-    multi_field_semantics: Callable[[Iterable[bool]], bool] = any,
+    separator: str = ".",
+    multi_field_semantics: Multi_Value_Predicate = any,
 ) -> Filter:
+    """
+    Create a filter that only accepts data that contains values with a minimum
+    length.
+
+    :param min_lengths:
+        - If a single integer, all values from all given fields have their
+          length compared to this value.
+        - If a list, the first field\'s length is compared to the first value,
+          the second to the second...
+
+          Note that it is assumed that ``fields`` and ``min_lengths`` are of
+          the same length.
+    :param multi_field_semantics: If multiple fields have been given, this
+        determines how they shall be combined (e.g. does only one field need to
+        contain a value or do all fields need to?)
+    """
     if len(fields) == 0:
-        return lambda x: True
+        return lambda _: True
 
     if not isinstance(min_lengths, Collection):
         min_lengths = [min_lengths for _ in fields]
 
     def fun(entry: Nested_Dict) -> bool:
         found_values = (
-            get_terminal_in(entry, field.split(key_separator)) for field in fields
+            get_terminal_in(entry, field.split(separator)) for field in fields
         )
         lengths = (
             len(value) if isinstance(value, Collection) else 0 for value in found_values
@@ -193,7 +263,8 @@ def get_len_filter(
     return fun
 
 
-existing_text_filter = get_len_filter(
+#: A filter that only keeps data that includes both a title and a description.
+existing_text_filter: Filter = get_len_filter(
     [Fields.TITLE.value, Fields.DESCRIPTION.value],
     min_lengths=1,
     multi_field_semantics=all,
