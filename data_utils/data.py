@@ -6,18 +6,30 @@ from collections.abc import Iterable, Sequence
 from functools import reduce
 from typing import Union
 
+#: A basic, singular value that may not be ``None``
 Basic_Value_Not_None = str | int | float
+#: Like :any:`Basic_Value_Not_None`, but may be ``None``
 Basic_Value = Basic_Value_Not_None | None
+#: A terminal value is any value that may be in a leaf of the tree
+#: representing each :any:`Data_Point`.
 Terminal_Value = Basic_Value | list[Basic_Value]
 
+#: A data point is represented as a recursively nested dictionary,
+#: where each key maps to a :any:`Terminal_Value`, another dictionary,
+#: or a list of dictionaries. Thus, each data points follows a tree structure.
 Data_Point = dict[
     str, Union[Basic_Value, "Data_Point", list[Union[Basic_Value, "Data_Point"]]]
 ]
+#: The possible values of any given entry in the data point's tree.
 Data_Point_Subtree = Basic_Value | Data_Point | list[Basic_Value | Data_Point]
+#: The result of a query on the tree representing a data point.
+#: Because we may be accessing multiple nested lists, the dimension
+#: of a query result is not certain a-priori.
 Query_Result = Terminal_Value | Data_Point | list["Query_Result"]
 
 
 def get_leaves(data_point: Data_Point) -> set[tuple[str, ...]]:
+    """Get all leaf-nodes of a :any:`Data_Point`, as tuples of keys."""
     return _get_leaves(data_point, tuple(), set())
 
 
@@ -26,6 +38,17 @@ def get_in(
     keys: Sequence[str],
     catch_errors: tuple[type[Exception], ...] = tuple(),
 ) -> Query_Result:
+    """
+    Recursively access a :any:`Data_Point`.
+
+    :param catch_errors:
+      Errors to catch when accessing the data-point.
+
+      - Add ``KeyError`` to return ``None`` when a data-point does not contain
+        the key sequence.
+      - Add ``TypeError`` to return ``None`` when a data-point ends before all
+        keys have been used up.
+    """
     return _get_in(data_point, keys, catch_errors)
 
 
@@ -34,6 +57,10 @@ def get_terminal_in(
     keys: Sequence[str],
     catch_errors: tuple[type[Exception], ...] = (KeyError, TypeError),
 ) -> Terminal_Value:
+    """
+    Like :func:`get_in`, but replace non-:any:`Terminal_Value` results with
+    ``None`` and flatten nested lists.
+    """
     return _to_terminal(get_in(data_point, keys, catch_errors))
 
 
