@@ -4,12 +4,12 @@ from collections.abc import Callable, Collection
 from functools import partial
 from typing import Iterable
 
-from data_utils.data import Basic_Value, Nested_Dict, Terminal_Value, get_terminal_in
+from data_utils.data import Basic_Value, Data_Point, Terminal_Value, get_terminal_in
 from data_utils.defaults import Fields
 
 #: A filter evaluates a particular data entry
 #: and returns True iff. it shall be kept.
-Filter = Callable[[Nested_Dict], bool]
+Filter = Callable[[Data_Point], bool]
 
 #: A predicate evaluates a particular (potentially multi-value) field's
 #: value(s) and returns True (the value(s) shall be accepted) or False
@@ -69,7 +69,7 @@ def get_filter(
     :param separator: The separator to use for splitting ``field``.
     """
 
-    def fun(entry: Nested_Dict) -> bool:
+    def fun(entry: Data_Point) -> bool:
         value = get_terminal_in(
             entry, field.split(separator), catch_errors=(KeyError, TypeError)
         )
@@ -100,13 +100,13 @@ def get_filter_with_basic_predicate(
 def negated(_filter: Filter) -> Filter:
     """Create a new filter that evaluates to the opposite of the given one."""
 
-    def fun(entry: Nested_Dict) -> bool:
+    def fun(entry: Data_Point) -> bool:
         return not _filter(entry)
 
     return fun
 
 
-def kibana_basic_filter(entry: Nested_Dict) -> bool:
+def kibana_basic_filter(entry: Data_Point) -> bool:
     """
     The 'Basic Filter' from Kibana.
 
@@ -133,7 +133,7 @@ def kibana_basic_filter(entry: Nested_Dict) -> bool:
     return all(fun(entry) for fun in must_filters)
 
 
-def kibana_publicly_visible(entry: Nested_Dict) -> bool:
+def kibana_publicly_visible(entry: Data_Point) -> bool:
     """
     A filter that only accepts data that is publicly visible.
 
@@ -179,7 +179,7 @@ def get_language_filter(accepted_languages: Collection[str]) -> Filter:
     if len(accepted_languages) == 0:
         return lambda _: True
 
-    def fun(entry: Nested_Dict) -> bool:
+    def fun(entry: Data_Point) -> bool:
         langs = get_terminal_in(entry, Fields.LANGUAGE.value.split("."))
 
         if langs is None:
@@ -212,7 +212,7 @@ def get_labeled_filter(
         field need to contain a value or do all fields need to?)
     """
 
-    def fun(entry: Nested_Dict) -> bool:
+    def fun(entry: Data_Point) -> bool:
         found_values = (
             get_terminal_in(entry, field.split(separator)) for field in fields
         )
@@ -249,7 +249,7 @@ def get_len_filter(
     if not isinstance(min_lengths, Collection):
         min_lengths = [min_lengths for _ in fields]
 
-    def fun(entry: Nested_Dict) -> bool:
+    def fun(entry: Data_Point) -> bool:
         found_values = (
             get_terminal_in(entry, field.split(separator)) for field in fields
         )

@@ -6,7 +6,7 @@ import hypothesis.strategies as st
 from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
-    Nested_Dict,
+    Data_Point,
     Terminal_Value,
 )
 import data_utils.data as data
@@ -14,7 +14,7 @@ from hypothesis import given, settings
 
 
 def test_get_leaves_static():
-    entry = Nested_Dict(
+    entry = Data_Point(
         {
             "a": 1,
             "b": [1, 2, 3],
@@ -32,8 +32,8 @@ def test_get_leaves_static():
     }
 
 
-@given(myst.mutated_nested_dict({}))
-def test_all_leaves_are_terminals(entry: Nested_Dict):
+@given(myst.mutated_data_point({}))
+def test_all_leaves_are_terminals(entry: Data_Point):
     leaves = data.get_leaves(entry)
     terminals = [data.get_in(entry, leaf) for leaf in leaves]
     for terminal in terminals:

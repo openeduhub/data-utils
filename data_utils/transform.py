@@ -8,8 +8,8 @@ import numpy as np
 from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
-    Nested_Dict,
-    Nested_Dict_Subtree,
+    Data_Point,
+    Data_Point_Subtree,
     Terminal_Value,
 )
 
@@ -17,11 +17,11 @@ T = TypeVar("T")
 
 
 def with_changed_value(
-    entry: Nested_Dict,
+    entry: Data_Point,
     keys: Sequence[str],
     to_drop: Collection[Basic_Value_Not_None],
     to_remap: dict[Basic_Value_Not_None, Basic_Value],
-) -> Nested_Dict:
+) -> Data_Point:
     if None in to_drop or None in to_remap:
         raise ValueError(
             "Dropping or remapping from None is not supported, as this can, and will, result in unexpected behavior."
@@ -41,11 +41,11 @@ def with_changed_value(
 
 
 def _with_changed_value(
-    subtree: Nested_Dict_Subtree,
+    subtree: Data_Point_Subtree,
     keys: Sequence[str],
     to_drop: Collection[Basic_Value_Not_None],
     to_remap: dict[Basic_Value_Not_None, Basic_Value],
-) -> Nested_Dict_Subtree:
+) -> Data_Point_Subtree:
     # we have reached the subtree we need to modify
     if len(keys) == 0:
         if isinstance(subtree, Basic_Value):
@@ -91,11 +91,11 @@ def change_single_value(
 
 
 def change_multi_value(
-    subtree: Iterable[Basic_Value | Nested_Dict],
+    subtree: Iterable[Basic_Value | Data_Point],
     to_drop: Collection[Basic_Value_Not_None],
     to_remap: dict[Basic_Value_Not_None, Basic_Value],
-) -> list[Basic_Value | Nested_Dict]:
-    to_ret: list[Basic_Value | Nested_Dict] = list()
+) -> list[Basic_Value | Data_Point]:
+    to_ret: list[Basic_Value | Data_Point] = list()
     for subtree_value in subtree:
         # do not touch nested dictionaries
         if isinstance(subtree_value, dict):

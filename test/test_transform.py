@@ -8,7 +8,7 @@ import hypothesis.strategies as st
 from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
-    Nested_Dict,
+    Data_Point,
     get_in,
     get_leaves,
     get_terminal_in,
@@ -18,7 +18,7 @@ from hypothesis import given, settings
 
 
 def untouched_are_unchanged(
-    old: Nested_Dict, new: Nested_Dict, changed_field: Iterable[str]
+    old: Data_Point, new: Data_Point, changed_field: Iterable[str]
 ):
     fields_to_check = (get_leaves(old) | get_leaves(new)) - {tuple(changed_field)}
     for field in fields_to_check:
@@ -57,7 +57,7 @@ def test_fix_entry_single_value_remap_before_drop(
 
 @given(
     st.data(),
-    myst.mutated_nested_dict(
+    myst.mutated_data_point(
         {
             "target_value": 1,
             "target_list": list(range(3)),
@@ -74,7 +74,7 @@ def test_fix_entry_single_value_remap_before_drop(
     st.sampled_from([["target_value"], ["target_list"], ["target_nested_dict", "a"]]),
 )
 def test_with_changed_value_do_nothing(
-    data: st.DataObject, entry: Nested_Dict, fields: list[str]
+    data: st.DataObject, entry: Data_Point, fields: list[str]
 ):
     new_entry = trans.with_changed_value(entry, fields, [], dict())
     assert new_entry == entry
@@ -88,9 +88,9 @@ def test_with_changed_value_raises_value_error():
 
 @given(
     st.data(),
-    myst.mutated_nested_dict({"value": {"subtree": 1}}, min_iters=0),
+    myst.mutated_data_point({"value": {"subtree": 1}}, min_iters=0),
 )
-def test_with_changed_value_drop_from_value(data: st.DataObject, entry: Nested_Dict):
+def test_with_changed_value_drop_from_value(data: st.DataObject, entry: Data_Point):
     fields = ["value", "subtree"]
     value = get_terminal_in(entry, fields)
 
@@ -112,9 +112,9 @@ def test_with_changed_value_drop_from_value(data: st.DataObject, entry: Nested_D
 
 @given(
     st.data(),
-    myst.mutated_nested_dict({"list": {"subtree": list(range(3))}}, min_iters=0),
+    myst.mutated_data_point({"list": {"subtree": list(range(3))}}, min_iters=0),
 )
-def test_with_changed_value_drop_from_list(data: st.DataObject, entry: Nested_Dict):
+def test_with_changed_value_drop_from_list(data: st.DataObject, entry: Data_Point):
     fields = ["list", "subtree"]
     values = get_terminal_in(entry, fields)
 
@@ -146,7 +146,7 @@ def test_with_changed_value_drop_from_list(data: st.DataObject, entry: Nested_Di
 
 @given(
     st.data(),
-    myst.mutated_nested_dict(
+    myst.mutated_data_point(
         {
             "dict": [
                 {"a": 1},
@@ -158,7 +158,7 @@ def test_with_changed_value_drop_from_list(data: st.DataObject, entry: Nested_Di
     ),
 )
 def test_with_changed_value_drop_from_nested_dict(
-    data: st.DataObject, entry: Nested_Dict
+    data: st.DataObject, entry: Data_Point
 ):
     fields = data.draw(
         st.sampled_from(
@@ -193,7 +193,7 @@ def test_with_changed_value_drop_from_nested_dict(
 
 @given(
     st.data(),
-    myst.mutated_nested_dict(
+    myst.mutated_data_point(
         {
             "value": 1,
             "list": list(range(3)),
@@ -220,7 +220,7 @@ def test_with_changed_value_drop_from_nested_dict(
 )
 def test_with_changed_value_remap(
     data: st.DataObject,
-    entry: Nested_Dict,
+    entry: Data_Point,
     fields: list[str],
 ):
     values = get_terminal_in(entry, fields)

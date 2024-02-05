@@ -10,76 +10,72 @@ Basic_Value_Not_None = str | int | float
 Basic_Value = Basic_Value_Not_None | None
 Terminal_Value = Basic_Value | list[Basic_Value]
 
-
-Nested_Dict = dict[
-    str, Union[Basic_Value, "Nested_Dict", list[Union[Basic_Value, "Nested_Dict"]]]
+Data_Point = dict[
+    str, Union[Basic_Value, "Data_Point", list[Union[Basic_Value, "Data_Point"]]]
 ]
-Nested_Dict_Subtree = Basic_Value | Nested_Dict | list[Basic_Value | Nested_Dict]
-Query_Result = Terminal_Value | Nested_Dict | list["Query_Result"]
+Data_Point_Subtree = Basic_Value | Data_Point | list[Basic_Value | Data_Point]
+Query_Result = Terminal_Value | Data_Point | list["Query_Result"]
 
 
-def get_leaves(nested_dict: Nested_Dict) -> set[tuple[str, ...]]:
-    return _get_leaves(nested_dict, tuple(), set())
+def get_leaves(data_point: Data_Point) -> set[tuple[str, ...]]:
+    return _get_leaves(data_point, tuple(), set())
+
+
+def get_in(
+    data_point: Data_Point,
+    keys: Sequence[str],
+    catch_errors: tuple[type[Exception], ...] = tuple(),
+) -> Query_Result:
+    return _get_in(data_point, keys, catch_errors)
+
+
+def get_terminal_in(
+    data_point: Data_Point,
+    keys: Sequence[str],
+    catch_errors: tuple[type[Exception], ...] = (KeyError, TypeError),
+) -> Terminal_Value:
+    return _to_terminal(get_in(data_point, keys, catch_errors))
 
 
 def _get_leaves(
-    nested_dict: Nested_Dict_Subtree,
+    data_point: Data_Point_Subtree,
     current_keys: tuple[str, ...],
     current_leaves: set[tuple[str, ...]],
 ) -> set[tuple[str, ...]]:
-    if isinstance(nested_dict, Basic_Value):
+    if isinstance(data_point, Basic_Value):
         return current_leaves | {current_keys}
 
-    if isinstance(nested_dict, dict):
+    if isinstance(data_point, dict):
         return reduce(
             op.or_,
             (
                 _get_leaves(subtree, current_keys + (key,), current_leaves)
-                for key, subtree in nested_dict.items()
+                for key, subtree in data_point.items()
             ),
             current_leaves,
         )
 
     return reduce(
         op.or_,
-        (_get_leaves(subtree, current_keys, current_leaves) for subtree in nested_dict),
+        (_get_leaves(subtree, current_keys, current_leaves) for subtree in data_point),
         current_leaves,
     )
 
 
-def get_in(
-    nested_dict: Nested_Dict,
-    keys: Sequence[str],
-    catch_errors: tuple[type[Exception], ...] = tuple(),
-) -> Query_Result:
-    """
-    Recursively access a nested dictionary.
-
-    :param catch_errors:
-      Errors to catch when accessing the nested dictionary.
-
-      - Add KeyError to return None when a nested dictionary
-        does not contain the key sequence.
-      - Add TypeError to return None when a nested dictionary ends
-        before all keys have been used up.
-    """
-    return _get_in(nested_dict, keys, catch_errors)
-
-
 def _get_in(
-    nested_dict: Query_Result,
+    data_point: Query_Result,
     keys: Sequence[str],
     catch_errors: Iterable[type[Exception]] = tuple(),
 ) -> Query_Result:
     if not keys:
-        return nested_dict
+        return data_point
 
     key = keys[0]
     keys = keys[1:]
 
     try:
         # type errors are expected here
-        val = nested_dict[key]  # type: ignore
+        val = data_point[key]  # type: ignore
     except catch_errors as e:
         return None
 
@@ -106,14 +102,3 @@ def _to_terminal(result: Query_Result) -> Terminal_Value:
         return to_ret
 
     return result
-
-
-def get_terminal_in(
-    nested_dict: Nested_Dict,
-    keys: Sequence[str],
-    catch_errors: tuple[type[Exception], ...] = (KeyError, TypeError),
-) -> Terminal_Value:
-    """
-    Like get_in, but replace non-terminal results with None and flatten nested lists.
-    """
-    return _to_terminal(get_in(nested_dict, keys, catch_errors))

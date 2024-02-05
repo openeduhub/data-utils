@@ -21,7 +21,7 @@ import data_utils.transform as trans
 from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
-    Nested_Dict,
+    Data_Point,
     Terminal_Value,
     get_in,
     get_terminal_in,
@@ -139,7 +139,7 @@ def _download(url: str, target_path: Path, headers: Optional[dict[str, str]] = N
 
 
 def _dict_from_json_entry(
-    raw_entry: Nested_Dict,
+    raw_entry: Data_Point,
     columns: Iterable[str] | dict[str, str],
     key_separator: str = ".",
 ) -> dict[str, Terminal_Value]:

@@ -3,7 +3,7 @@ from functools import partial
 from typing import Any, Optional, TypeVar
 
 import hypothesis.strategies as st
-from data_utils.data import Basic_Value, Nested_Dict, Terminal_Value
+from data_utils.data import Basic_Value, Data_Point, Terminal_Value
 
 # values that may be associated with any key / added to a list
 basic_values_not_none = st.one_of(
@@ -44,9 +44,9 @@ def filtered_strategy(
 filtered_nested_basic_values = partial(filtered_strategy, strategy=nested_basic_values)
 
 
-def cut_subtree(base_dict: Nested_Dict, key: str) -> Nested_Dict:
-    """Remove a key-value pair from a nested dictionary."""
-    return Nested_Dict(
+def cut_subtree(base_dict: Data_Point, key: str) -> Data_Point:
+    """Remove a key-value pair from a data-point."""
+    return Data_Point(
         {
             base_key: base_value
             for base_key, base_value in base_dict.items()
@@ -58,17 +58,17 @@ def cut_subtree(base_dict: Nested_Dict, key: str) -> Nested_Dict:
 @st.composite
 def replace_subtree(
     draw: st.DrawFn,
-    base_dict: Nested_Dict,
+    base_dict: Data_Point,
     key: str,
     blacklist: Collection[Basic_Value] = frozenset(),
     whitelist: Collection[Basic_Value] = frozenset(),
-) -> Nested_Dict:
+) -> Data_Point:
     """Replace the value for the given key with a random new value."""
     # make sure that the new value does not equal the old one
     new_value = draw(
         filtered_nested_basic_values(blacklist=blacklist, whitelist=whitelist)
     )
-    return Nested_Dict(
+    return Data_Point(
         {
             base_key: base_value if base_key != key else new_value
             for base_key, base_value in base_dict.items()
@@ -79,12 +79,12 @@ def replace_subtree(
 @st.composite
 def add_garbage(
     draw: st.DrawFn,
-    base_dict: Nested_Dict,
+    base_dict: Data_Point,
     value_blacklist: Collection[Basic_Value] = frozenset(),
     value_whitelist: Collection[Basic_Value] = frozenset(),
     key_blacklist: Collection[str] = frozenset(),
     key_whitelist: Collection[str] = frozenset(),
-) -> Nested_Dict:
+) -> Data_Point:
     """Add a new key-value pair."""
     key = draw(
         filtered_strategy(
@@ -99,7 +99,7 @@ def add_garbage(
         )
     )
 
-    return Nested_Dict(
+    return Data_Point(
         {base_key: base_value for base_key, base_value in base_dict.items()}
         | {key: value}  # type: ignore
     )
@@ -108,11 +108,11 @@ def add_garbage(
 @st.composite
 def recursively_mutated_dict(
     draw: st.DrawFn,
-    base_dict: Nested_Dict,
+    base_dict: Data_Point,
     key: str,
     index: int | None = None,
     **kwargs,
-) -> Nested_Dict:
+) -> Data_Point:
     """
     Randomly mutate the sub-tree starting at the given key.
 
@@ -123,11 +123,11 @@ def recursively_mutated_dict(
     followed_dict = base_dict[key]
     if index is None:
         assert isinstance(followed_dict, dict)
-        return Nested_Dict(
+        return Data_Point(
             {
                 base_key: base_value
                 if base_key != key
-                else draw(mutated_nested_dict(followed_dict, **kwargs))
+                else draw(mutated_data_point(followed_dict, **kwargs))
                 for base_key, base_value in base_dict.items()
             }
         )
@@ -135,20 +135,20 @@ def recursively_mutated_dict(
     assert isinstance(followed_dict, list)
     followed_dict = followed_dict[index]
     assert isinstance(followed_dict, dict)
-    return Nested_Dict(
+    return Data_Point(
         {
             base_key: base_value
             if base_key != key
-            else draw(mutated_nested_dict(followed_dict, **kwargs))
+            else draw(mutated_data_point(followed_dict, **kwargs))
             for base_key, base_value in base_dict.items()
         }
     )
 
 
 @st.composite
-def mutated_nested_dict(
+def mutated_data_point(
     draw: st.DrawFn,
-    base_dict: Nested_Dict,
+    base_dict: Data_Point,
     allow_cut=True,
     allow_replace=True,
     allow_add_key=True,
@@ -162,8 +162,8 @@ def mutated_nested_dict(
     add_key_blacklist: Collection[str] = frozenset(),
     min_iters: int = 1,
     max_iters: int = 1,
-) -> Nested_Dict:
-    """Randomly change some aspect(s) of the given nested dictionary."""
+) -> Data_Point:
+    """Randomly change some aspect(s) of the given data-point."""
     kwargs = {
         "allow_cut": allow_cut,
         "allow_replace": allow_replace,
@@ -175,7 +175,7 @@ def mutated_nested_dict(
     }
     iters = draw(st.integers(min_iters, max_iters))
     for _ in range(iters):
-        actions: list[Callable[[], Nested_Dict]] = list()
+        actions: list[Callable[[], Data_Point]] = list()
         # add a random new key with a random terminal value
         if allow_add_key:
             actions.append(
@@ -232,7 +232,7 @@ def mutated_nested_dict(
                         )
                     )
                     actions.append(
-                        lambda: Nested_Dict(
+                        lambda: Data_Point(
                             {
                                 base_key: base_value
                                 if base_key != key
@@ -251,7 +251,7 @@ def mutated_nested_dict(
                             x for i, x in enumerate(value) if i != index
                         ]
                         actions.append(
-                            lambda: Nested_Dict(
+                            lambda: Data_Point(
                                 {
                                     base_key: base_value
                                     if base_key != key

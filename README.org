@@ -187,7 +187,7 @@ import numpy as np
 
 import data_utils.defaults as defaults
 import data_utils.filters as filters
-from data_utils.data import Nested_Dict, get_terminal_in
+from data_utils.data import Data_Point, get_terminal_in
 from data_utils.default_pipelines.data import (subset_categories,
                                                subset_data_points)
 from data_utils.default_pipelines.flat_classification import generate_data
@@ -605,7 +605,7 @@ In addition to modifying categories, we can also define arbitrary rules that let
 
 To add such rules, use the ~filters~ keyword-argument of ~generate_data~:
 #+begin_src python
-def my_filter(entry: Nested_Dict) -> bool:
+def my_filter(entry: Data_Point) -> bool:
     description = get_terminal_in(
         entry,
         Fields.DESCRIPTION.value.split("."),
@@ -635,7 +635,7 @@ print("Minimum text length:", min(len(text) for text in data.raw_texts))
 : Minimum text length: 39
 
 To simplify the process of defining such filter functions, the ~data_utils.filters~ module provides various helper functions. Especially useful here is ~get_filter_with_basic_predicate~, which creates a filter from a basic predicate function and a reference to the field to apply it to. /(Basic predicate functions are functions that map strings, floats, integers or None-values to a Boolean)./
-#+begin_src python
+#+begin_src python :results silent
 my_filter2 = filters.get_filter_with_basic_predicate(
     lambda x: x is not None and len(x) > 5,
     Fields.DESCRIPTION.value,
@@ -650,9 +650,6 @@ data = generate_data(
     filters=[my_filter2],
 )
 #+end_src
-
-#+RESULTS:
-: /tmp/babel-enMXI9/python-04bYjA
 
 #+begin_src python :results output :exports results
 print("Minimum text length:", min(len(text) for text in data.raw_texts))

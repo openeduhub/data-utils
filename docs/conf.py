@@ -36,7 +36,8 @@ autodoc_type_aliases = {
         "Basic_Value_Not_None",
         "Basic_Value",
         "Terminal_Value",
-        "Nested_Dict",
+        "Data_Point",
+        "Data_Point_Subtree",
         "Query_Result",
     ]
 } | {

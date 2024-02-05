@@ -1,14 +1,14 @@
 from collections.abc import Iterable
-from test.strategies import basic_values, mutated_nested_dict
+from test.strategies import basic_values, mutated_data_point
 
 import data_utils.filters as filt
 import hypothesis.strategies as st
-from data_utils.data import Nested_Dict
+from data_utils.data import Data_Point
 from hypothesis import given
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "nodeRef": {"storeRef": {"protocol": "workspace"}},
             "type": "ccm:io",
@@ -20,12 +20,12 @@ from hypothesis import given
         min_iters=0,
     )
 )
-def test_kibana_basic_filter_accepts_from_minimal(entry: Nested_Dict):
+def test_kibana_basic_filter_accepts_from_minimal(entry: Data_Point):
     assert filt.kibana_basic_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "nodeRef": {"storeRef": {"protocol": "workspace"}},
             "type": "ccm:io",
@@ -36,12 +36,12 @@ def test_kibana_basic_filter_accepts_from_minimal(entry: Nested_Dict):
         min_iters=1,
     )
 )
-def test_kibana_basic_filter_rejects_from_minimal(entry: Nested_Dict):
+def test_kibana_basic_filter_rejects_from_minimal(entry: Data_Point):
     assert not filt.kibana_basic_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "nodeRef": {"storeRef": {"protocol": "workspace"}},
             "type": "ccm:io",
@@ -52,45 +52,45 @@ def test_kibana_basic_filter_rejects_from_minimal(entry: Nested_Dict):
         min_iters=0,
     )
 )
-def test_kibana_basic_filter_rejects_with_bad_aspect(entry: Nested_Dict):
+def test_kibana_basic_filter_rejects_with_bad_aspect(entry: Data_Point):
     assert not filt.kibana_basic_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         dict(),
         value_blacklist=["workspace"],
         min_iters=0,
     )
 )
-def test_kibana_basic_filter_rejects_without_workspace(entry: Nested_Dict):
+def test_kibana_basic_filter_rejects_without_workspace(entry: Data_Point):
     assert not filt.kibana_basic_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         dict(),
         value_blacklist=["ccm:io"],
         min_iters=0,
     )
 )
-def test_kibana_basic_filter_rejects_without_ccm_io(entry: Nested_Dict):
+def test_kibana_basic_filter_rejects_without_ccm_io(entry: Data_Point):
     assert not filt.kibana_basic_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         dict(),
         value_blacklist=["mds_oeh"],
         min_iters=0,
     )
 )
-def test_kibana_basic_filter_rejects_without_mds_oeh(entry: Nested_Dict):
+def test_kibana_basic_filter_rejects_without_mds_oeh(entry: Data_Point):
     assert not filt.kibana_basic_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "permissions": {"Read": ["foo", "GROUP_EVERYONE", "bar"]},
         },
@@ -98,12 +98,12 @@ def test_kibana_basic_filter_rejects_without_mds_oeh(entry: Nested_Dict):
         min_iters=0,
     )
 )
-def test_kibana_publicly_visible_accepts_from_minimal_self(entry: Nested_Dict):
+def test_kibana_publicly_visible_accepts_from_minimal_self(entry: Data_Point):
     assert filt.kibana_publicly_visible(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "collections": [
                 {"permissions": {"Read": ["foo", "GROUP_EVERYONE", "bar"]}},
@@ -114,12 +114,12 @@ def test_kibana_publicly_visible_accepts_from_minimal_self(entry: Nested_Dict):
         min_iters=0,
     )
 )
-def test_kibana_publicly_visible_accepts_from_minimal_collection(entry: Nested_Dict):
+def test_kibana_publicly_visible_accepts_from_minimal_collection(entry: Data_Point):
     assert filt.kibana_publicly_visible(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "permissions": {"Read": ["GROUP_EVERYONE"]},
         },
@@ -128,12 +128,12 @@ def test_kibana_publicly_visible_accepts_from_minimal_collection(entry: Nested_D
         min_iters=1,
     )
 )
-def test_kibana_publicly_visible_rejects_from_minimal_self(entry: Nested_Dict):
+def test_kibana_publicly_visible_rejects_from_minimal_self(entry: Data_Point):
     assert not filt.kibana_publicly_visible(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "collections": [{"permissions": {"Read": ["GROUP_EVERYONE"]}}],
         },
@@ -142,25 +142,25 @@ def test_kibana_publicly_visible_rejects_from_minimal_self(entry: Nested_Dict):
         min_iters=1,
     )
 )
-def test_kibana_publicly_visible_rejects_from_minimal_collection(entry: Nested_Dict):
+def test_kibana_publicly_visible_rejects_from_minimal_collection(entry: Data_Point):
     assert not filt.kibana_publicly_visible(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         dict(),
         value_blacklist=["GROUP_EVERYONE"],
         min_iters=0,
     )
 )
 def test_kibana_publicly_visible_rejects_without_adding_correct_value(
-    entry: Nested_Dict,
+    entry: Data_Point,
 ):
     assert not filt.kibana_publicly_visible(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "collections": [
                 "foo",
@@ -172,12 +172,12 @@ def test_kibana_publicly_visible_rejects_without_adding_correct_value(
         min_iters=0,
     )
 )
-def test_kibana_redaktionsbuffet_accepts_from_minimal(entry: Nested_Dict):
+def test_kibana_redaktionsbuffet_accepts_from_minimal(entry: Data_Point):
     assert filt.kibana_redaktionsbuffet(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {"collections": [{"properties": {"cm:title": "Redaktionsbuffet"}}]},
         allow_add_key=False,  # would not falsify
         allow_add_to_list=False,  # would not falsify
@@ -185,31 +185,31 @@ def test_kibana_redaktionsbuffet_accepts_from_minimal(entry: Nested_Dict):
         min_iters=1,
     )
 )
-def test_kibana_redaktionsbuffet_rejects_from_minimal(entry: Nested_Dict):
+def test_kibana_redaktionsbuffet_rejects_from_minimal(entry: Data_Point):
     assert not filt.kibana_redaktionsbuffet(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         dict(),
         value_blacklist={"Redaktionsbuffet"},
         min_iters=1,
     )
 )
-def test_kibana_redaktionsbuffet_rejects_without_correct_value(entry: Nested_Dict):
+def test_kibana_redaktionsbuffet_rejects_without_correct_value(entry: Data_Point):
     assert not filt.kibana_redaktionsbuffet(entry)
 
 
 @given(
     st.data(),
-    mutated_nested_dict(
+    mutated_data_point(
         {"properties": {"cclom:general_language": []}},
         mod_key_blacklist="properties",
         min_iters=0,
     ),
     st.lists(st.text(), max_size=10, unique=True),
 )
-def test_language_filter_accepts(data, entry: Nested_Dict, langs: list[str]):
+def test_language_filter_accepts(data, entry: Data_Point, langs: list[str]):
     # add any number of accepted languages
     if len(langs) > 0:
         entry["properties"]["cclom:general_language"] = data.draw(
@@ -222,7 +222,7 @@ def test_language_filter_accepts(data, entry: Nested_Dict, langs: list[str]):
 
 @given(
     st.data(),
-    mutated_nested_dict(
+    mutated_data_point(
         {"properties": {"cclom:general_language": []}},
         mod_key_blacklist="properties",
         min_iters=0,
@@ -232,7 +232,7 @@ def test_language_filter_accepts(data, entry: Nested_Dict, langs: list[str]):
     ),
 )
 def test_language_filter_rejects_one_incorrect(
-    data, entry: Nested_Dict, langs: list[str]
+    data, entry: Data_Point, langs: list[str]
 ):
     # add any number of accepted languages, plus one that is not
     entry["properties"]["cclom:general_language"] = data.draw(
@@ -244,7 +244,7 @@ def test_language_filter_rejects_one_incorrect(
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {"properties": {"cclom:general_language": []}},
         mod_key_blacklist="properties",
         min_iters=0,
@@ -253,7 +253,7 @@ def test_language_filter_rejects_one_incorrect(
         st.text().filter(lambda x: "." not in x), min_size=1, max_size=10, unique=True
     ),
 )
-def test_language_filter_accepts_none(entry: Nested_Dict, langs: list[str]):
+def test_language_filter_accepts_none(entry: Data_Point, langs: list[str]):
     entry["properties"]["cclom:general_language"] = None
 
     fun = filt.get_language_filter(langs)
@@ -261,12 +261,12 @@ def test_language_filter_accepts_none(entry: Nested_Dict, langs: list[str]):
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {"properties": {"cclom:general_language": []}},
         min_iters=0,
     )
 )
-def test_language_filter_accepts_with_empty_accepted_langs(entry: Nested_Dict):
+def test_language_filter_accepts_with_empty_accepted_langs(entry: Data_Point):
     langs = []
     fun = filt.get_language_filter(langs)
     assert fun(entry)
@@ -280,7 +280,7 @@ def test_language_filter_accepts_with_empty_accepted_langs(entry: Nested_Dict):
 )
 def test_labeled_filter_accepts_with_any(data, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -303,7 +303,7 @@ def test_labeled_filter_accepts_with_any(data, fields: list[str]):
 )
 def test_labeled_filter_accepts_with_all(data, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -321,7 +321,7 @@ def test_labeled_filter_accepts_with_all(data, fields: list[str]):
 @given(st.data(), st.text())
 def test_labeled_filter_rejects_none(data, field: str):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=[field],
@@ -338,7 +338,7 @@ def test_labeled_filter_rejects_none(data, field: str):
 @given(st.data(), st.text())
 def test_labeled_filter_rejects_empty_list(data, field: str):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=[field],
@@ -355,7 +355,7 @@ def test_labeled_filter_rejects_empty_list(data, field: str):
 @given(st.data(), st.text())
 def test_labeled_filter_rejects_empty_string(data, field: str):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=[field],
@@ -377,7 +377,7 @@ def test_labeled_filter_rejects_empty_string(data, field: str):
 )
 def test_labeled_filter_rejects_all_one_missing(data, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -402,7 +402,7 @@ def test_labeled_filter_rejects_all_one_missing(data, fields: list[str]):
 )
 def test_labeled_filter_rejects_any_all_missing(data, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -422,7 +422,7 @@ def test_labeled_filter_rejects_any_all_missing(data, fields: list[str]):
 )
 def test_len_filter_accepts_any_any_true(data, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -456,7 +456,7 @@ def test_len_filter_accepts_any_any_true(data, fields: list[str]):
 )
 def test_len_filter_accepts_all_all_true(data, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -482,7 +482,7 @@ def test_len_filter_accepts_all_all_true(data, fields: list[str]):
 )
 def test_len_filter_rejects_any_all_false(data, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -508,7 +508,7 @@ def test_len_filter_rejects_any_all_false(data, fields: list[str]):
 )
 def test_len_filter_rejects_all_any_false(data: st.DataObject, fields: list[str]):
     entry = data.draw(
-        mutated_nested_dict(
+        mutated_data_point(
             dict(),
             min_iters=0,
             mod_key_blacklist=fields,
@@ -535,7 +535,7 @@ def test_len_filter_rejects_all_any_false(data: st.DataObject, fields: list[str]
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "properties": {
                 "cclom:title": "foo",
@@ -546,12 +546,12 @@ def test_len_filter_rejects_all_any_false(data: st.DataObject, fields: list[str]
         min_iters=0,
     )
 )
-def test_existing_text_filter_accepts(entry: Nested_Dict):
+def test_existing_text_filter_accepts(entry: Data_Point):
     assert filt.existing_text_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "properties": {
                 "cclom:title": "foo",
@@ -562,12 +562,12 @@ def test_existing_text_filter_accepts(entry: Nested_Dict):
         min_iters=0,
     )
 )
-def test_existing_text_filter_rejects_empty_description(entry: Nested_Dict):
+def test_existing_text_filter_rejects_empty_description(entry: Data_Point):
     assert not filt.existing_text_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "properties": {
                 "cclom:title": "",
@@ -578,12 +578,12 @@ def test_existing_text_filter_rejects_empty_description(entry: Nested_Dict):
         min_iters=0,
     )
 )
-def test_existing_text_filter_rejects_empty_title(entry: Nested_Dict):
+def test_existing_text_filter_rejects_empty_title(entry: Data_Point):
     assert not filt.existing_text_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "properties": {
                 "cclom:general_description": "bar",
@@ -593,12 +593,12 @@ def test_existing_text_filter_rejects_empty_title(entry: Nested_Dict):
         min_iters=0,
     )
 )
-def test_existing_text_filter_rejects_no_title(entry: Nested_Dict):
+def test_existing_text_filter_rejects_no_title(entry: Data_Point):
     assert not filt.existing_text_filter(entry)
 
 
 @given(
-    mutated_nested_dict(
+    mutated_data_point(
         {
             "properties": {
                 "cclom:title": "foo",
@@ -608,5 +608,5 @@ def test_existing_text_filter_rejects_no_title(entry: Nested_Dict):
         min_iters=0,
     )
 )
-def test_existing_text_filter_rejects_no_description(entry: Nested_Dict):
+def test_existing_text_filter_rejects_no_description(entry: Data_Point):
     assert not filt.existing_text_filter(entry)
