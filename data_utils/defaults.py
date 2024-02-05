@@ -5,14 +5,24 @@ from data_utils.data import Basic_Value, Basic_Value_Not_None
 
 
 class Fields(Enum):
-    ID = "nodeRef.id"
-    TITLE = "properties.cclom:title"
+
+    AGE = "properties.ccm:educationaltypicalagerange"
+    COLLECTIONS = "collections.properties.cm:title"
+    COMPETENCE = "properties.ccm:competence"
     DESCRIPTION = "properties.cclom:general_description"
-    LANGUAGE = "properties.cclom:general_language"
-    TAXONID = "properties.ccm:taxonid"
+    DURATION = "properties.cclom:duration"
     EDUCATIONAL_CONTEXT = "properties.ccm:educationalcontext"
     FSK_RATING = "properties.ccm:fskRating"
-    COLLECTIONS = "collections.properties.cm:title"
+    ID = "nodeRef.id"
+    KEYWORDS_CONTROLLED = "properties.cclom:classification_keyword"
+    KEYWORDS_FREE = "properties.cclom:general_keyword"
+    LANGUAGE = "properties.cclom:general_language"
+    LRT = "properties.ccm:oeh_lrt"
+    TAXONID = "properties.ccm:taxonid"
+    TAXONID_UNIVERSITY = "properties.ccm:oeh_taxonid_university"
+    TITLE = "properties.cclom:title"
+    TOPIC = "properties.ccm:curriculum"
+    URL = "properties.ccm:wwwurl"
 
 
 dropped_values: dict[str, Collection[Basic_Value_Not_None]] = {
