@@ -35,8 +35,9 @@ class Target_Data(_Base_Data):
     Data for one particular field, including assignments and metadata.
 
     :param arr: The assignments to the field at hand.
-        For categorical fields, this is a Boolean matrix.
-        For bag-of-words data, this is an Integer matrix.
+
+        - For categorical fields, this is a Boolean matrix.
+        - For bag-of-words data, this is an Integer matrix.
     :param in_test_set: Boolean array indicating whether each data point
         belongs to the test data set for this field.
     :param uris: String array indicating the URI of each category
@@ -45,9 +46,19 @@ class Target_Data(_Base_Data):
         of each category.
     """
 
+    #:The assignments to the field at hand.
+    #:
+    #: - For categorical fields, this is a Boolean matrix.
+    #: - For bag-of-words data, this is an Integer matrix.
     arr: np.ndarray
+    #: Boolean array indicating whether each data point
+    #: belongs to the test data set for this field.
     in_test_set: np.ndarray[Any, np.dtypes.BoolDType]
+    #: String array indicating the URI of each category
+    #: (i.e. the right-most dimension of the assignment array).
     uris: np.ndarray[Any, np.dtypes.StrDType]
+    #: String array indicating the (human-readable) label
+    #: of each category.
     labels: np.ndarray[Any, np.dtypes.StrDType]
 
     def __post_init__(self):
@@ -69,9 +80,14 @@ class Data(_Base_Data):
     :param target_data: Map from field names to their data.
     """
 
+    #: The unprocessed texts contained within each document.
     raw_texts: np.ndarray[Any, np.dtypes.StrDType]
+    #: The unique IDs of each document.
     ids: np.ndarray[Any, np.dtypes.StrDType]
+    #: A Boolean array indicating whether each document
+    #: is editorially confirmed.
     editor_arr: np.ndarray[Any, np.dtypes.BoolDType]
+    #: Map from field names to their data.
     target_data: dict[str, Target_Data]
 
     def __post_init__(self):
@@ -89,6 +105,7 @@ class Processed_Data(Data):
     :param processed_texts: The tokenized representations of the texts.
     """
 
+    #: The tokenized representations of the texts.
     processed_texts: list[tuple[str, ...]] = field(default_factory=list)
 
     def __post_init__(self):
