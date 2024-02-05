@@ -176,7 +176,7 @@ class BoW_Data(Processed_Data):
         self._nested_data_fields.add("_virtual_bow_dict")
 
     @property
-    def bows(self) -> np.ndarray[Any, np.dtypes.IntDType]:
+    def bows(self) -> np.ndarray[Any, np.dtypes.UInt8DType]:
         """
         A two-dimensional array representing each document's bag-of-words
         representation.
