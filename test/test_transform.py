@@ -5,16 +5,15 @@ from functools import reduce
 
 import data_utils.transform as trans
 import hypothesis.strategies as st
+import pytest
 from data_utils.data import (
     Basic_Value,
     Basic_Value_Not_None,
     Data_Point,
-    get_in,
     get_leaves,
     get_terminal_in,
 )
-import pytest
-from hypothesis import given, settings
+from hypothesis import given
 
 
 def untouched_are_unchanged(
@@ -35,24 +34,24 @@ def untouched_are_unchanged(
 
 @given(myst.basic_values)
 def test_fix_entry_single_value_no_change(value: Basic_Value):
-    assert value is trans.change_single_value(value, list(), dict())
+    assert value is trans._change_single_value(value, list(), dict())
 
 
 @given(myst.basic_values_not_none, myst.basic_values)
 def test_fix_entry_single_value_remap(value: Basic_Value_Not_None, remap: Basic_Value):
-    assert remap is trans.change_single_value(value, list(), {value: remap})
+    assert remap is trans._change_single_value(value, list(), {value: remap})
 
 
 @given(myst.basic_values_not_none)
 def test_fix_entry_single_value_drop(value: Basic_Value_Not_None):
-    assert None is trans.change_single_value(value, [value], dict())
+    assert None is trans._change_single_value(value, [value], dict())
 
 
 @given(myst.basic_values_not_none, myst.basic_values_not_none)
 def test_fix_entry_single_value_remap_before_drop(
     value: Basic_Value_Not_None, remap: Basic_Value_Not_None
 ):
-    assert None is trans.change_single_value(value, [remap], {value: remap})
+    assert None is trans._change_single_value(value, [remap], {value: remap})
 
 
 @given(
