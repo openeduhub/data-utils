@@ -64,6 +64,13 @@ def generate_data(
         **kwargs,
     )
 
+    # only keep a maximum number of non-editorially confirmed materials
+    base_data = subset_data_points(base_data, np.flip(np.argsort(base_data.editor_arr)))
+    editor_count = base_data.editor_arr.sum()
+    base_data = subset_data_points(
+        base_data, np.arange(min(len(base_data.editor_arr), editor_count * 3))
+    )
+
     # drop all target categories with fewer than 10 associated materials
     for target in target_fields:
         support = base_data.target_data[target].arr.sum(-2)
