@@ -174,4 +174,7 @@ def generate_data(
             for target, target_data in bow_data.target_data.items()
         }
 
+    # sort by editorial status, such that confirmed data is before unconfirmed
+    bow_data = subset_data_points(bow_data, np.flip(np.argsort(bow_data.editor_arr)))
+
     return bow_data
