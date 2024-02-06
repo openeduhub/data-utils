@@ -173,7 +173,7 @@ downloaded_file_path = fetch(
 
 If the target data file is detected to be compressed, i.e. its file-name ends on =.gz=, it will also be automatically be decompressed.
 
-** Default Pipelines
+** Processing Pipelines
 
 The default pipelines are intended to immediately obtain all relevant, lightly pre-processed data in formats that make sense for the given information. They remove a lot of redundant work, such as converting labels into boolean arrays or pulling labels from controlled vocabularies / URIs.
 
@@ -189,7 +189,9 @@ import data_utils.defaults as defaults
 import data_utils.filters as filters
 from data_utils.data import Data_Point, get_terminal_in
 from data_utils.default_pipelines.data import (subset_categories,
-                                               subset_data_points)
+                                               subset_data_points,
+                                               Processed_Data,
+                                               BoW_Data)
 from data_utils.default_pipelines.flat_classification import generate_data
 from data_utils.defaults import Fields
 #+end_src
@@ -278,11 +280,7 @@ print(f"{data.target_data[Fields.EDUCATIONAL_CONTEXT.value].uris[:5]=}\n")
 :        'http://w3id.org/openeduhub/vocabs/educationalContext/foerderschule'],
 :       dtype='<U71')
 
-*** Additional Options
-
-In addition to extracting and transforming data, the default pipeline also automates various common data wrangling tasks.
-
-**** Getting Readable Category Labels
+*** Getting Readable Category Labels
 
 If the values assigned to a targeted field are URIs that link back to their controlled vocabularies, the ~generate_data~ function will automatically try to look up the preferred label (default: =prefLabel.de=):
 
@@ -373,7 +371,7 @@ pprint(defaults.skos_urls)
 :  'properties.ccm:fskRating': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json',
 :  'properties.ccm:taxonid': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json'}
 
-**** Fixing Inconsistent Categories
+*** Fixing Inconsistent Categories
 
 The =remapped_values= argument allows us to provide a dictionary for any number of selected metadata fields, defining which original values shall be mapped to which new ones. For example, this may be used to unify the language codes:
 
@@ -599,7 +597,7 @@ array(['http://w3id.org/openeduhub/vocabs/discipline/020',
       dtype='<U58')
 #+end_example
 
-**** Filtering out Entries
+*** Filtering out Entries
 
 In addition to modifying categories, we can also define arbitrary rules that let us drop data points before they have even been fully processed. This can be used, for example, for filtering out data that is not of sufficient quality or that does not fulfill certain conditions.
 
@@ -660,14 +658,14 @@ print("Minimum text length:", min(len(text) for text in data.raw_texts))
 
 For more examples on how to define filter functions, see [[file:data_utils/filters.py][data_utils.filters]].
 
-**** Dropping Categories and Data-Points using Global Information (e.g. Support)
+*** Dropping Categories and Data-Points using Global Information (e.g. Support)
 
 While the ~generate_data~ function does not directly support filtering mechanisms that rely on information that is only present once the entire data set is loaded, we provide some utility functions to easily deal with such tasks after the data has been generated.
 
 - ~data_utils.default_pipelines.data.subset_data_points~ allows for dropping or sorting data points
 - ~data_utils.default_pipelines.data.subset_categories~ allows for dropping or sorting categories
 
-***** Example: Dropping Categories with low Support
+**** Example: Dropping Categories with low Support
 
 Load the data and calculate the initial support:
 #+begin_src python
@@ -782,7 +780,7 @@ pprint({label: value for label, value in zip(filtered_data.target_data[Fields.TA
  'Wirtschaftskunde': 15}
 #+end_example
 
-***** Example: Dropping Data with not Categories
+**** Example: Dropping Data with not Categories
 
 After having dropped categories with low support, we now may have data points that do not have any assigned taxonid. Indeed, if we check, we see that multiple points have no assignments:
 #+begin_src python
@@ -854,7 +852,7 @@ print("shape of test data array after filtering:", filtered2_data.target_data[Fi
 : shape of ids array after filtering: (982,)
 : shape of test data array after filtering: (982,)
 
-**** Sorting
+*** Sorting
 
 It may be useful to sort the data points according to some metric, for example such that all data that has been editorially confirmed is first.
 For this the ~data_utils.default_pipelines.Data.subset_data_points~ method may also be used:
@@ -883,3 +881,118 @@ print("Index of first non-confirmed entry after sorting:", np.where(~data_sorted
 #+RESULTS:
 : Index of first non-confirmed entry before sorting: 16
 : Index of first non-confirmed entry after sorting: 967
+
+*** Natural Language Pre-Processing and Bag of Words
+
+The texts of generated data can additionally be pre-processed (using the [[https://github.com/openeduhub/nlprep][nlprep]] library) and transformed into bag-of-words representations:
+
+#+begin_src python
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[
+        Fields.TAXONID.value,
+        Fields.EDUCATIONAL_CONTEXT.value,
+    ],
+    max_len=10000,
+)
+
+processed_data = Processed_Data.from_data(data)
+bow_data = BoW_Data.from_processed_data(processed_data)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
+print(f"Raw texts:\n{bow_data.raw_texts[:2]}\n")
+print(f"Pre-processed texts:\n{bow_data.processed_texts[:2]}\n")
+print(f"Bag-of-words shape:\n{bow_data.bows.shape}")
+#+end_src
+
+#+RESULTS:
+: Raw texts:
+: ['Animation zu Covid-19: Wie das Coronavirus angreift \nDieser Beitrag aus "Spektrum der Wissenschaft" erklärt in Text und Animationen, wie Sars-CoV-2 aussieht und wirkt.'
+:  'La guerra civil en la última ficción narrativa española\nSeit der Veröffentlichung von Javier Cercas Roman "Soldados de Salamina" beschäftigen sich immer mehr Autor*innen mit dem Spanischen Bürgerkrieg. Fernando Larraz versucht die  Romane des 21. Jahrhunderts nach verschiedenen Gesichtpunkten zu klassifizieren.']
+: 
+: Pre-processed texts:
+: [('Animation', 'zu', 'Covid-19', '--', 'wie', 'der', 'Coronavirus', 'angreifen', '\n', 'dieser', 'Beitrag', 'aus', '--', 'Spektrum', 'der', 'Wissenschaft', '--', 'erklären', 'in', 'Text', 'und', 'Animation', '--', 'wie', 'Sars-CoV-2', 'aussehen', 'und', 'wirken', '--'), ('La', 'guerra', 'civil', '--', '--', 'última', 'ficción', 'narrativa', 'española', '\n', 'seit', 'der', 'Veröffentlichung', 'von', 'Javier', 'Cerca', 'Roman', '--', 'Soldados', 'de', 'Salamina', '--', 'beschäftigen', 'sich', 'immer', 'mehr', 'Autor*in', 'mit', 'der', 'spanisch', 'Bürgerkrieg', '--', 'Fernando', 'Larraz', 'versuchen', 'der', ' ', 'Roman', 'der', '21.', 'Jahrhundert', 'nach', 'verschieden', 'Gesichtpunkt', 'zu', 'klassifizieren', '--')]
+: 
+: Bag-of-words shape:
+: (10000, 47432)
+
+You may note that barely any pre-processing has occurred. This is because we did not provide any additional pre-processing pipelines. Here, we have the full flexibility of the ~nlprep~ library:
+
+#+begin_src python
+from nlprep import pipelines
+
+more_processed_data = Processed_Data.from_data(
+    data,
+    pipelines.get_poc_topic_modeling_pipelines(),
+)
+bow_data = BoW_Data.from_processed_data(more_processed_data)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
+print("More heavily pre-processed texts:")
+print(more_processed_data.processed_texts[:2])
+print(f"\nBag-of-words shape:\n{bow_data.bows.shape}")
+#+end_src
+
+#+RESULTS:
+: More heavily pre-processed texts:
+: [('Animation', 'Coronavirus', 'Beitrag', 'Spektrum', 'Wissenschaft', 'erklären', 'Text', 'Animation', 'aussehen', 'wirken'), ('La', 'versuchen', 'Roman', '21.', 'española', 'Jahrhundert', 'verschieden', 'Veröffentlichung', 'Roman', 'beschäftigen', 'spanisch', 'Bürgerkrieg')]
+: 
+: Bag-of-words shape:
+: (10000, 6211)
+
+The ~data_utils.default_pipelines.its_jointprobability~ pipeline already calculates bag-of-words:
+
+#+begin_src python
+from data_utils.default_pipelines import its_jointprobability
+bow_data = its_jointprobability.generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[
+        Fields.TAXONID.value,
+        Fields.EDUCATIONAL_CONTEXT.value,
+    ],
+    max_len=10000,
+)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
+print(f"Raw texts:\n{bow_data.raw_texts[:2]}\n")
+print(f"Pre-processed texts:\n{bow_data.processed_texts[:2]}\n")
+print(f"Bag-of-words shape:\n{bow_data.bows.shape}")
+#+end_src
+
+#+RESULTS:
+: Raw texts:
+: ['La guerra civil en la última ficción narrativa española\nSeit der Veröffentlichung von Javier Cercas Roman "Soldados de Salamina" beschäftigen sich immer mehr Autor*innen mit dem Spanischen Bürgerkrieg. Fernando Larraz versucht die  Romane des 21. Jahrhunderts nach verschiedenen Gesichtpunkten zu klassifizieren.'
+:  'Don Quijote de la Mancha didaktisiert\nGeschichte von Don Quijote in didaktisierter Version, die neben einer historischen und literarischen Kontextualisierung eine Übersicht über handelnde Personen und Erzähltechniken beinhaltet. Während des Lesens unterstützen Vokabelhilfen auf Spanisch, Aufgabenformate zum Leseverstehen und Aufbau des Wortschatzes das Verständnis. Wer die Handreichungen zum Text haben möchte, muss eine E-Mail an coerll@austin.utexas.edu senden, die unterrichtete Niveaustufe angeben, genauso wie den Ort und Webseite der Schule.']
+: 
+: Pre-processed texts:
+: [('La', 'versuchen', 'Roman', '21.', 'Jahrhundert', 'verschieden', 'Veröffentlichung', 'Roman', 'beschäftigen', 'spanisch', 'Bürgerkrieg'), ('Geschichte', 'Version', 'historisch', 'literarisch', 'Übersicht', 'Person', 'beinhalten', 'Lesen', 'unterstützen', 'Spanisch', 'Aufgabenformat', 'leseverstehen', 'Aufbau', 'Wortschatz', 'Verständnis', 'Handreichung', 'Text', 'E-Mail', 'senden', 'Niveaustufe', 'angeben', 'genauso', 'Ort', 'Webseite', 'Schule')]
+: 
+: Bag-of-words shape:
+: (5097, 3483)
+
+The ~subset_data_points~ and ~subset_categories~ functions still work on ~Processed_Data~ and ~BoW_Data~. For the latter, ~subset_categories~ can even be used to modify the words included in the bag-of-words representation:
+
+#+begin_src python
+bow_data_point_subset = subset_data_points(bow_data, np.arange(100))
+bow_data_words_subset = subset_categories(bow_data, np.arange(100), "bows")
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output :exports results
+print(f"{bow_data_point_subset.bows.shape=}")
+print(f"{bow_data_words_subset.bows.shape=}")
+#+end_src
+
+#+RESULTS:
+: bow_data_point_subset.bows.shape=(100, 6211)
+: bow_data_words_subset.bows.shape=(10000, 100)
