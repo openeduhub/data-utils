@@ -75,7 +75,8 @@ def generate_data(
     # get data for targets
     target_data = {
         target: _values_to_target_data(
-            df[target],
+            df,
+            field=target,
             skos_url=skos_urls.get(target, None),
             uri_label_field=uri_label_fields.get(target, ("prefLabel", "de")),
         )
@@ -114,6 +115,7 @@ def _get_basic_df(
             Fields.ID.value,
             Fields.COLLECTIONS.value,
             Fields.LANGUAGE.value,
+            Fields.TEST_DATA.value,
         }
         | set(target_fields),
         **kwargs,
@@ -128,10 +130,13 @@ def _get_basic_df(
 
 
 def _values_to_target_data(
-    values: Collection[str],
+    df: pd.DataFrame,
+    field: str,
     skos_url: Optional[str],
     uri_label_field: Sequence[str],
 ) -> Target_Data:
+    values = df[field]
+
     # transform the entries into boolean arrays
     arr, uris = trans.as_boolean_array(values, sort_fn=lambda x: sorted(x))
 
@@ -149,5 +154,10 @@ def _values_to_target_data(
         arr=arr,
         uris=np.array(uris),
         labels=np.array(labels),
-        in_test_set=np.zeros(len(arr), dtype=bool),
+        in_test_set=np.array(
+            [
+                test_ids is not None and field in test_ids
+                for test_ids in df[Fields.TEST_DATA.value]
+            ]
+        ),
     )
