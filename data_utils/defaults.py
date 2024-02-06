@@ -21,6 +21,7 @@ class Fields(Enum):
     LRT = "properties.ccm:oeh_lrt"
     TAXONID = "properties.ccm:taxonid"
     TAXONID_UNIVERSITY = "properties.ccm:oeh_taxonid_university"
+    TEST_DATA = "properties.ccm:oeh_ai_test_data"
     TITLE = "properties.cclom:title"
     TOPIC = "properties.ccm:curriculum"
     URL = "properties.ccm:wwwurl"

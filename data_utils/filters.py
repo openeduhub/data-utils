@@ -167,7 +167,7 @@ def get_test_data_filter(included_labels: Iterable[str]) -> Filter:
     """
     included_labels_set = set(included_labels)
     return get_filter_with_basic_predicate(
-        lambda x: x in included_labels_set, "test_data", any
+        lambda x: x in included_labels_set, Fields.TEST_DATA.value, any
     )
 
 
