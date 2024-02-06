@@ -74,9 +74,11 @@ def generate_data(
         )
 
     # drop all data that now no longer has any targets
-    to_keep = np.ones_like(base_data.ids, dtype=bool)
-    for target in target_fields:
-        to_keep = np.logical_and(to_keep, base_data.target_data[target].arr.sum(-1) > 0)
+    to_keep = reduce(
+        np.logical_or,
+        [target_data.arr.sum(-1) > 0 for target_data in base_data.target_data.values()],
+        np.zeros_like(base_data.editor_arr, dtype=bool),
+    )
 
     base_data = subset_data_points(base_data, np.where(to_keep)[0])
 
