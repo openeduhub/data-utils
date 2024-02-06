@@ -970,11 +970,11 @@ print(f"Bag-of-words shape:\n{bow_data.bows.shape}")
 
 #+RESULTS:
 : Raw texts:
-: ['La guerra civil en la última ficción narrativa española\nSeit der Veröffentlichung von Javier Cercas Roman "Soldados de Salamina" beschäftigen sich immer mehr Autor*innen mit dem Spanischen Bürgerkrieg. Fernando Larraz versucht die  Romane des 21. Jahrhunderts nach verschiedenen Gesichtpunkten zu klassifizieren.'
-:  'Don Quijote de la Mancha didaktisiert\nGeschichte von Don Quijote in didaktisierter Version, die neben einer historischen und literarischen Kontextualisierung eine Übersicht über handelnde Personen und Erzähltechniken beinhaltet. Während des Lesens unterstützen Vokabelhilfen auf Spanisch, Aufgabenformate zum Leseverstehen und Aufbau des Wortschatzes das Verständnis. Wer die Handreichungen zum Text haben möchte, muss eine E-Mail an coerll@austin.utexas.edu senden, die unterrichtete Niveaustufe angeben, genauso wie den Ort und Webseite der Schule.']
+: ['Nie wieder keine Ahnung! Malerei — Die Zeit\nDas erste Bild wurde auf Stein gemalt, an die Wand einer Höhle bei Lascaux in Frankreich. Faszinierend sich vorzustellen, wie Menschen im Schein von flackernden Holzscheiten mit Holzkohle, Rötel und Manganerde Tiere mit einem so genauen Blick für Bewegungsabläufe und Körperproportionen abbildeten, dass man die Vorstellung von unseren Vorfahren als primitiven Keulenschwingern sofort revidieren muss. (Online-Signatur Medienzentren: 4983038)'
+:  'Wie spricht man den Buchstaben Z richtig aus? | fröhlich Deutsch\nKlingen die Wörter "kurz" und "Kurs" eigentlich gleich? Viele, die den Buchstaben Z falsch aussprechen, haben in Wirklichkeit gar kein Problem mit der Aussprache. Warum, erfahrt ihr in diesem Video!']
 : 
 : Pre-processed texts:
-: [('La', 'versuchen', 'Roman', '21.', 'Jahrhundert', 'verschieden', 'Veröffentlichung', 'Roman', 'beschäftigen', 'spanisch', 'Bürgerkrieg'), ('Geschichte', 'Version', 'historisch', 'literarisch', 'Übersicht', 'Person', 'beinhalten', 'Lesen', 'unterstützen', 'Spanisch', 'Aufgabenformat', 'leseverstehen', 'Aufbau', 'Wortschatz', 'Verständnis', 'Handreichung', 'Text', 'E-Mail', 'senden', 'Niveaustufe', 'angeben', 'genauso', 'Ort', 'Webseite', 'Schule')]
+: [('Mensch', 'sofort', 'Malerei', 'Online-Signatur', 'Medienzentr', 'Bild', 'Tier', 'faszinierend', 'Stein', 'malen', 'genau', 'Blick', 'Wand', 'Frankreich', 'Vorstellung', 'vorstellen'), ('falsch', 'sprechen', 'Buchstabe', 'Wirklichkeit', 'Problem', 'deutsch', 'Aussprache', 'Wort', 'Kurs', 'Buchstabe')]
 : 
 : Bag-of-words shape:
 : (5097, 3483)
@@ -994,5 +994,5 @@ print(f"{bow_data_words_subset.bows.shape=}")
 #+end_src
 
 #+RESULTS:
-: bow_data_point_subset.bows.shape=(100, 6211)
-: bow_data_words_subset.bows.shape=(10000, 100)
+: bow_data_point_subset.bows.shape=(100, 3483)
+: bow_data_words_subset.bows.shape=(5097, 100)
