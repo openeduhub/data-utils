@@ -142,7 +142,7 @@ def _values_to_target_data(
     values = df[field]
 
     # transform the entries into boolean arrays
-    arr, uris = trans.as_boolean_array(values, sort_fn=lambda x: sorted(x))
+    arr, uris = trans.as_boolean_array(values)
 
     # get readable labels for the targets, if available
     if not skip_labels:
