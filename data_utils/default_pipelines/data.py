@@ -3,18 +3,17 @@ from __future__ import annotations
 import operator as op
 from collections import Counter
 from collections.abc import Collection, Iterable, Sequence
-from dataclasses import dataclass, field
-from functools import partial, reduce
+from dataclasses import asdict, dataclass, field
+from functools import reduce
 from pathlib import Path
 from typing import Any, Optional, TypeVar
 
 import numpy as np
+from nlprep import Pipeline_Generator, apply_filters, tokenize_documents
 from numpy.typing import NDArray
-from nlprep import Pipeline_Generator, apply_filters, pipelines, tokenize_documents
-from copy import copy
 
 
-@dataclass
+@dataclass(frozen=True)
 class _Base_Data:
     """
     The basic information contained within all data objects.
@@ -23,13 +22,13 @@ class _Base_Data:
     so that they can detect which fields to act on and in what way.
     """
 
-    _nested_data_fields: set[str] = field(init=False, default_factory=set)
-    _category_fields: set[str] = field(init=False, default_factory=set)
-    _1d_data_fields: set[str] = field(init=False, default_factory=set)
-    _2d_data_fields: set[str] = field(init=False, default_factory=set)
+    _nested_data_fields: frozenset[str] = field(init=False, repr=False)
+    _category_fields: frozenset[str] = field(init=False, repr=False)
+    _1d_data_fields: frozenset[str] = field(init=False, repr=False)
+    _2d_data_fields: frozenset[str] = field(init=False, repr=False)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Target_Data(_Base_Data):
     """
     Data for one particular field, including assignments and metadata.
@@ -46,6 +45,11 @@ class Target_Data(_Base_Data):
         of each category.
     """
 
+    _nested_data_fields = frozenset()
+    _category_fields = frozenset({"uris", "labels"})
+    _1d_data_fields = frozenset({"in_test_set"})
+    _2d_data_fields = frozenset({"arr"})
+
     #:The assignments to the field at hand.
     #:
     #: - For categorical fields, this is a Boolean matrix.
@@ -61,14 +65,8 @@ class Target_Data(_Base_Data):
     #: of each category.
     labels: np.ndarray[Any, np.dtypes.StrDType]
 
-    def __post_init__(self):
-        self._nested_data_fields = set()
-        self._category_fields = {"uris", "labels"}
-        self._1d_data_fields = {"in_test_set"}
-        self._2d_data_fields = {"arr"}
 
-
-@dataclass
+@dataclass(frozen=True)
 class Data(_Base_Data):
     """
     Data on an entire text corpus with multiple possible metadata fields.
@@ -90,14 +88,13 @@ class Data(_Base_Data):
     #: Map from field names to their data.
     target_data: dict[str, Target_Data]
 
-    def __post_init__(self):
-        self._nested_data_fields = {"target_data"}
-        self._category_fields = set()
-        self._1d_data_fields = {"raw_texts", "ids", "editor_arr"}
-        self._2d_data_fields = set()
+    _nested_data_fields = frozenset({"target_data"})
+    _category_fields = frozenset()
+    _1d_data_fields = frozenset({"raw_texts", "ids", "editor_arr"})
+    _2d_data_fields = frozenset()
 
 
-@dataclass
+@dataclass(frozen=True)
 class Processed_Data(Data):
     """
     A text corpus where each document's text has been tokenized and pre-processed.
@@ -108,9 +105,10 @@ class Processed_Data(Data):
     #: The tokenized representations of the texts.
     processed_texts: list[tuple[str, ...]] = field(default_factory=list)
 
-    def __post_init__(self):
-        super().__post_init__()
-        self._1d_data_fields.add("processed_texts")
+    _nested_data_fields = Data._nested_data_fields
+    _category_fields = Data._category_fields
+    _1d_data_fields = Data._1d_data_fields | {"processed_texts"}
+    _2d_data_fields = Data._2d_data_fields
 
     @classmethod
     def from_data(
@@ -162,18 +160,19 @@ class Processed_Data(Data):
         )
 
 
-@dataclass
+@dataclass(frozen=True)
 class BoW_Data(Processed_Data):
     """
     A tokenized corpus where each document has additionally been turned into
     its bag-of-words representation.
     """
 
-    _virtual_bow_dict: dict[str, Target_Data] = field(default_factory=dict)
+    _virtual_bow_dict: dict[str, Target_Data] = field(default_factory=dict, repr=False)
 
-    def __post_init__(self):
-        super().__post_init__()
-        self._nested_data_fields.add("_virtual_bow_dict")
+    _nested_data_fields = Processed_Data._nested_data_fields | {"_virtual_bow_dict"}
+    _category_fields = Processed_Data._category_fields
+    _1d_data_fields = Processed_Data._1d_data_fields
+    _2d_data_fields = Processed_Data._2d_data_fields
 
     @property
     def bows(self) -> np.ndarray[Any, np.dtypes.UInt8DType]:
@@ -245,16 +244,18 @@ class BoW_Data(Processed_Data):
         return cls.from_processed_data(Processed_Data.from_data(data, **kwargs))
 
 
-T = TypeVar("T")
 Base_Data_Subtype = TypeVar("Base_Data_Subtype", bound=_Base_Data)
 
 
-def _copy_with_changed_values(_obj: T, **kwargs) -> T:
-    obj = copy(_obj)
-    for key, value in kwargs.items():
-        setattr(obj, key, value)
+def _copy_with_changed_values(_obj: Base_Data_Subtype, **kwargs) -> Base_Data_Subtype:
+    original_dict = {
+        key: value
+        for key, value in asdict(_obj).items()
+        # skip hidden properties
+        if "_" != key[0]
+    }
 
-    return obj
+    return _obj.__class__(**(original_dict | kwargs))
 
 
 def subset_data_points(

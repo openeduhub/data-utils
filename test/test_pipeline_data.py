@@ -126,7 +126,10 @@ def test_subset_data_points(data: st.DataObject, data_base: Data):
         for field in ["uris", "labels"]:
             new_value = getattr(target_data_new, field)
             old_value = getattr(target_data_old, field)
-            assert new_value is old_value or new_value == old_value
+            if isinstance(old_value, np.ndarray):
+                assert all(new_value == old_value)
+            else:
+                assert new_value is old_value or new_value == old_value
 
 
 @given(st.data(), st.one_of(data_st(), processed_data_st(), bow_data_st()))
@@ -156,7 +159,10 @@ def test_subset_categories(data: st.DataObject, data_base: Data):
 
         new_value = getattr(data_base, field)
         old_value = getattr(data_subset, field)
-        assert new_value is old_value or new_value == old_value
+        if isinstance(old_value, np.ndarray):
+            assert all(new_value == old_value)
+        else:
+            assert new_value is old_value or new_value == old_value
 
     for key in set(data_base.target_data.keys()) | set(data_subset.target_data.keys()):
         target_data_new = data_subset.target_data[key]
