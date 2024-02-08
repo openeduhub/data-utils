@@ -25,6 +25,7 @@ def generate_data(
     uri_label_fields: dict[str, str] = dict(),
     filters: Collection[filt.Filter] = tuple(),
     use_defaults: bool = True,
+    skip_labels: bool = False,
     **kwargs,
 ) -> Data:
     """
@@ -50,6 +51,7 @@ def generate_data(
     :param use_defaults: Whether to apply defaults (:ref:`data_utils.defaults`).
         If defaults and arguments given above conflict, the given arguments
         will be preferred.
+    :param skip_labels: Whether to skip automatic label generation.
     :param kwargs: Additional keyword-arguments to pass onto
         :func:`data_utils.fetch.df_from_json_file`.
     """
@@ -79,6 +81,7 @@ def generate_data(
             field=target,
             skos_url=skos_urls.get(target, None),
             uri_label_field=uri_label_fields.get(target, ("prefLabel", "de")),
+            skip_labels=skip_labels,
         )
         for target in target_fields
     }
@@ -134,6 +137,7 @@ def _values_to_target_data(
     field: str,
     skos_url: Optional[str],
     uri_label_field: Sequence[str],
+    skip_labels: bool,
 ) -> Target_Data:
     values = df[field]
 
@@ -141,14 +145,17 @@ def _values_to_target_data(
     arr, uris = trans.as_boolean_array(values, sort_fn=lambda x: sorted(x))
 
     # get readable labels for the targets, if available
-    if skos_url is not None:
-        labels: list[str | None] = fetch.labels_from_skos(
-            uris, url=skos_url, label_seq=uri_label_field, multi_value=False
-        )  # type: ignore
+    if not skip_labels:
+        if skos_url is not None:
+            labels: list[str | None] = fetch.labels_from_skos(
+                uris, url=skos_url, label_seq=uri_label_field, multi_value=False
+            )  # type: ignore
+        else:
+            labels = fetch.labels_from_uris(
+                uris=uris, label_seq=uri_label_field, multi_value=False
+            )  # type: ignore
     else:
-        labels = fetch.labels_from_uris(
-            uris=uris, label_seq=uri_label_field, multi_value=False
-        )  # type: ignore
+        labels = [None for _ in uris]
 
     return Target_Data(
         arr=arr,
