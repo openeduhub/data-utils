@@ -95,7 +95,7 @@ def generate_data(
     )
 
     # determine whether documents belong to the redaktionsbuffet
-    redaktion_series = df[Fields.COLLECTIONS.value].apply(
+    redaktion_series = df[Fields.COLLECTIONS_TITLE.value].apply(
         lambda x: x is not None and "Redaktionsbuffet" in x
     )
 
@@ -116,7 +116,7 @@ def _get_basic_df(
             Fields.TITLE.value,
             Fields.DESCRIPTION.value,
             Fields.ID.value,
-            Fields.COLLECTIONS.value,
+            Fields.COLLECTIONS_TITLE.value,
             Fields.LANGUAGE.value,
             Fields.TEST_DATA.value,
         }

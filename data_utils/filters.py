@@ -155,7 +155,7 @@ def kibana_publicly_visible(entry: Data_Point) -> bool:
 #: (i.e. it is located within the "Redaktionsbuffet")
 kibana_redaktionsbuffet: Filter = get_filter_with_basic_predicate(
     predicate_fun=partial(op.eq, "Redaktionsbuffet"),
-    field=Fields.COLLECTIONS.value,
+    field=Fields.COLLECTIONS_TITLE.value,
     multi_value_semantics=any,
 )
 
