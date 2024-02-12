@@ -10,12 +10,11 @@ import urllib.request
 from collections import defaultdict
 from collections.abc import Collection, Iterable, Iterator, Sequence
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import pandas as pd
 import requests
 
-from data_utils.filters import Filter
 import data_utils.filters as filt
 import data_utils.transform as trans
 from data_utils.data import (
@@ -24,8 +23,10 @@ from data_utils.data import (
     Data_Point,
     Terminal_Value,
     get_in,
+    get_leaves,
     get_terminal_in,
 )
+from data_utils.filters import Filter
 
 
 def fetch(
@@ -322,7 +323,7 @@ def labels_from_skos(
     multi_value: Optional[bool] = None,
     label_seq: Sequence[str] = ("prefLabel", "de"),
     id_seq: Sequence[str] = ("id",),
-) -> list[str | None] | list[list[str | None] | None]:
+) -> list[Basic_Value | None] | list[list[Basic_Value] | None]:
     """
     Get URIs for the given IDs by first reading a SKOS vocabulary.
 
@@ -336,15 +337,31 @@ def labels_from_skos(
         in order to link to the given IDs.
     """
     with requests.get(url) as request:
-        concepts: list[dict[str, Any]] = request.json()["hasTopConcept"]
+        schema: Data_Point = request.json()
 
-    labels: dict[str, str | None] = defaultdict(lambda: None)
-    labels.update(
-        {
-            get_in(entry, id_seq): get_in(entry, label_seq)  # type: ignore
-            for entry in concepts
-        }
-    )
+    # dictionary mapping ids to labels
+    labels: dict[Basic_Value, Basic_Value] = defaultdict(lambda: None)
+    for leaf in get_leaves(schema):
+        n = len(label_seq)
+        if len(leaf) < len(label_seq) or leaf[-n:] != label_seq:
+            continue
+
+        hit_label = get_terminal_in(schema, leaf)
+        hit_id = get_terminal_in(schema, leaf[:-n] + tuple(id_seq))
+
+        # we found nested sub-trees
+        if isinstance(hit_label, list):
+            if isinstance(hit_id, list):
+                labels = labels | {id: label for id, label in zip(hit_id, hit_label)}
+            else:
+                labels = labels | {hit_id: label for label in hit_label}
+
+            continue
+
+        if isinstance(hit_id, list):
+            labels = labels | {id: hit_label for id in hit_id}
+        else:
+            labels = labels | {hit_id: hit_label}
 
     if multi_value is None:
         for value in ids:
