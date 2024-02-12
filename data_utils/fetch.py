@@ -22,6 +22,7 @@ from data_utils.data import (
     Basic_Value_Not_None,
     Data_Point,
     Terminal_Value,
+    get_children_map,
     get_in,
     get_leaves,
     get_terminal_in,
@@ -376,3 +377,17 @@ def labels_from_skos(
     else:
         fun_single = lambda x: labels[x] if x is not None else None
         return [fun_single(id) for id in ids]
+
+
+def hierarchy_from_skos(
+    url: str,
+    id_field: str = "id",
+    subcategory_fields: Iterable[str] = frozenset({"narrower", "hasTopConcept"}),
+) -> dict[str, tuple[str, ...]]:
+    """Get the map from IDs to children for a remote schema."""
+    with requests.get(url) as request:
+        schema = request.json()
+
+    return get_children_map(
+        schema, id_field=id_field, subcategory_fields=subcategory_fields
+    )
