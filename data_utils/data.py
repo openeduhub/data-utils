@@ -64,6 +64,43 @@ def get_terminal_in(
     return _to_terminal(get_in(data_point, keys, catch_errors))
 
 
+def get_children_map(
+    full_schema: Data_Point,
+    id_field: str,
+    subcategory_fields: Iterable[str],
+) -> dict[str, tuple[str, ...]]:
+    """
+    Take a nested schema and turn it into a flat map from id to children ids.
+    """
+    entries: dict[str, tuple[str, ...]] = dict()
+    nodes: list[Data_Point] = [full_schema]
+    while len(nodes) > 0:
+        node = nodes.pop()
+        node_id: str = node[id_field]  # type: ignore
+        node_children = list()
+
+        for subcategory_field in subcategory_fields:
+            if subcategory_field not in node:
+                continue
+
+            child_nodes: list[Data_Point] = node[subcategory_field]  # type: ignore
+            nodes += child_nodes
+            node_children += [child_node[id_field] for child_node in child_nodes]
+
+        entries[node_id] = tuple(node_children)
+
+    return entries
+
+
+def get_parent_map(children_map: dict[str, tuple[str, ...]]) -> dict[str, str]:
+    entries: dict[str, str] = dict()
+    for parent_id, children in children_map.items():
+        for child in children:
+            entries[child] = parent_id
+
+    return entries
+
+
 def _get_leaves(
     data_point: Data_Point_Subtree,
     current_keys: tuple[str, ...],
