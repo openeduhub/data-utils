@@ -100,4 +100,5 @@ skos_urls: dict[str, str] = {
     Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json",
     Fields.EDUCATIONAL_CONTEXT.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json",
     Fields.FSK_RATING.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json",
+    Fields.TOPIC.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/oeh-topics/5e40e372-735c-4b17-bbf7-e827a5702b57.json",
 }
