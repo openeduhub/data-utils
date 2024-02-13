@@ -25,6 +25,7 @@ from data_utils.data import (
     get_children_map,
     get_in,
     get_leaves,
+    get_parent_map,
     get_terminal_in,
 )
 from data_utils.filters import Filter
@@ -341,6 +342,26 @@ def labels_from_skos(
         schema: Data_Point = request.json()
 
     # dictionary mapping ids to labels
+    labels = _get_label_dict(schema, label_seq, id_seq)
+
+    if multi_value is None:
+        for value in ids:
+            if value is not None:
+                multi_value = isinstance(value, Collection)
+                break
+
+    if multi_value:
+        fun_multi = lambda x: [labels[value] for value in x] if x is not None else None
+        return [fun_multi(id) for id in ids]
+
+    else:
+        fun_single = lambda x: labels[x] if x is not None else None
+        return [fun_single(id) for id in ids]
+
+
+def _get_label_dict(
+    schema: Data_Point, label_seq: Sequence[str], id_seq: Sequence[str]
+) -> dict[Basic_Value, Basic_Value]:
     labels: dict[Basic_Value, Basic_Value] = defaultdict(lambda: None)
     for leaf in get_leaves(schema):
         n = len(label_seq)
@@ -364,30 +385,26 @@ def labels_from_skos(
         else:
             labels = labels | {hit_id: hit_label}
 
-    if multi_value is None:
-        for value in ids:
-            if value is not None:
-                multi_value = isinstance(value, Collection)
-                break
-
-    if multi_value:
-        fun_multi = lambda x: [labels[value] for value in x] if x is not None else None
-        return [fun_multi(id) for id in ids]
-
-    else:
-        fun_single = lambda x: labels[x] if x is not None else None
-        return [fun_single(id) for id in ids]
+    return labels
 
 
 def hierarchy_from_skos(
     url: str,
-    id_field: str = "id",
+    id_seq: Sequence[str] = ("id",),
+    label_seq: Sequence[str] = ("prefLabel", "de"),
     subcategory_fields: Iterable[str] = frozenset({"narrower", "hasTopConcept"}),
-) -> dict[str, tuple[str, ...]]:
+) -> list[dict[str, Basic_Value]]:
     """Get the map from IDs to children for a remote schema."""
     with requests.get(url) as request:
         schema = request.json()
 
-    return get_children_map(
-        schema, id_field=id_field, subcategory_fields=subcategory_fields
+    child_map = get_children_map(
+        schema, id_seq=id_seq, subcategory_fields=subcategory_fields
     )
+    parent_map = defaultdict(lambda: None) | get_parent_map(child_map)
+    labels = _get_label_dict(schema, id_seq=id_seq, label_seq=label_seq)
+
+    return [
+        {"name": label, "key": key, "parent": parent_map[key]}
+        for key, label in labels.items()
+    ]
