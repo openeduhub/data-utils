@@ -4,7 +4,7 @@ from __future__ import annotations
 import operator as op
 from collections.abc import Iterable, Sequence
 from functools import reduce
-from typing import Union
+from typing import TypeVar, Union
 
 #: A basic, singular value that may not be ``None``
 Basic_Value_Not_None = str | int | float
@@ -66,18 +66,18 @@ def get_terminal_in(
 
 def get_children_map(
     full_schema: Data_Point,
-    id_field: str,
+    id_seq: Sequence[str],
     subcategory_fields: Iterable[str],
-) -> dict[str, tuple[str, ...]]:
+) -> dict[Basic_Value, tuple[Basic_Value, ...]]:
     """
     Take a nested schema and turn it into a flat map from id to children ids.
     """
-    entries: dict[str, tuple[str, ...]] = dict()
+    entries: dict[Basic_Value, tuple[Basic_Value, ...]] = dict()
     nodes: list[Data_Point] = [full_schema]
     while len(nodes) > 0:
         node = nodes.pop()
-        node_id: str = node[id_field]  # type: ignore
-        node_children = list()
+        node_id: Basic_Value = get_terminal_in(node, id_seq)  # type: ignore
+        node_children: list[str] = list()
 
         for subcategory_field in subcategory_fields:
             if subcategory_field not in node:
@@ -85,15 +85,22 @@ def get_children_map(
 
             child_nodes: list[Data_Point] = node[subcategory_field]  # type: ignore
             nodes += child_nodes
-            node_children += [child_node[id_field] for child_node in child_nodes]
+            node_children += [
+                get_terminal_in(child_node, id_seq)  # type: ignore
+                for child_node in child_nodes
+            ]
 
         entries[node_id] = tuple(node_children)
 
     return entries
 
 
-def get_parent_map(children_map: dict[str, tuple[str, ...]]) -> dict[str, str]:
-    entries: dict[str, str] = dict()
+_KT = TypeVar("_KT")
+_VT = TypeVar("_VT")
+
+
+def get_parent_map(children_map: dict[_KT, tuple[_VT, ...]]) -> dict[_VT, _KT]:
+    entries: dict[_VT, _KT] = dict()
     for parent_id, children in children_map.items():
         for child in children:
             entries[child] = parent_id
