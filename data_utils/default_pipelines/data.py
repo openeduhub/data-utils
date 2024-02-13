@@ -212,10 +212,12 @@ class BoW_Data(Processed_Data):
 
             return res
 
-        bows = np.stack([doc_to_bow(doc) for doc in data.processed_texts])
+        bows = np.stack(
+            [doc_to_bow(doc) for doc in data.processed_texts], dtype=np.uint8
+        )
         bows_data = Target_Data(
             arr=bows,
-            in_test_set=np.zeros_like(bows, dtype=np.dtypes.BoolDType),
+            in_test_set=np.zeros_like(data.editor_arr, dtype=np.dtypes.BoolDType),
             uris=np.array(words),
             labels=np.array(words),
         )
