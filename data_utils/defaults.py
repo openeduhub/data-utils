@@ -29,22 +29,6 @@ class Fields(Enum):
     URL = "properties.ccm:wwwurl"
 
 
-class Grouped_Fields(Enum):
-    """Metadata fields that are categorical and controlled."""
-
-    COLLECTIONS_UUID = "collections.properties.sys:node-uuid"
-    COLLECTIONS_LOCATION = "collections.properties.cclom:location"
-    COLLECTIONS_TITLE = "collections.properties.cm:title"
-    COMPETENCE = "properties.ccm:competence"
-    EDUCATIONAL_CONTEXT = "properties.ccm:educationalcontext"
-    FSK_RATING = "properties.ccm:fskRating"
-    LANGUAGE = "properties.cclom:general_language"
-    LRT = "properties.ccm:oeh_lrt"
-    TAXONID = "properties.ccm:taxonid"
-    TAXONID_UNIVERSITY = "properties.ccm:oeh_taxonid_university"
-    TOPIC = "properties.ccm:curriculum"
-
-
 #: Default values that shall be dropped from particular metadata fields.
 dropped_values: dict[str, Collection[Basic_Value_Not_None]] = {
     Fields.TAXONID.value: {
