@@ -8,6 +8,7 @@ class Fields(Enum):
     """A selection of commonly used metadata fields."""
 
     AGE = "properties.ccm:educationaltypicalagerange"
+    COURSE_MODE = "properties.ccm:oeh_course_coursemode"
     COLLECTIONS_LOCATION = "collections.properties.cclom:location"
     COLLECTIONS_TITLE = "collections.properties.cm:title"
     COLLECTIONS_UUID = "collections.properties.sys:node-uuid"
