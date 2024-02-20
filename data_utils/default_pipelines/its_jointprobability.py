@@ -71,6 +71,15 @@ def generate_data(
         base_data, np.arange(min(len(base_data.editor_arr), editor_count * 3))
     )
 
+    # drop target categories with no label
+    for target in target_fields:
+        label_is_not_none = np.array(
+            [label is not None for label in base_data.target_data[target].labels]
+        )
+        base_data = subset_categories(
+            base_data, indices=np.where(label_is_not_none)[0], field=target
+        )
+
     # drop all target categories with fewer than 10 associated materials
     for target in target_fields:
         support = base_data.target_data[target].arr.sum(-2)
