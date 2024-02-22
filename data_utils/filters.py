@@ -27,6 +27,24 @@ Simple_Predicate = Callable[[Basic_Value], bool]
 Multi_Value_Predicate = Callable[[Iterable[bool]], bool]
 
 
+def negated(_filter: Filter) -> Filter:
+    """Create a new filter that evaluates to the opposite of the given one."""
+
+    def fun(entry: Data_Point) -> bool:
+        return not _filter(entry)
+
+    return fun
+
+
+def comp(*filters: Filter, comp_semantics: Multi_Value_Predicate = any) -> Filter:
+    """Create o new filter by composing an arbitrary number of filters."""
+
+    def fun(entry: Data_Point) -> bool:
+        return comp_semantics(filter(entry) for filter in filters)
+
+    return fun
+
+
 def get_predicate_on_terminal(
     simple_predicate: Simple_Predicate,
     multi_value_semantics: Multi_Value_Predicate,
@@ -97,15 +115,6 @@ def get_filter_with_basic_predicate(
     )
 
 
-def negated(_filter: Filter) -> Filter:
-    """Create a new filter that evaluates to the opposite of the given one."""
-
-    def fun(entry: Data_Point) -> bool:
-        return not _filter(entry)
-
-    return fun
-
-
 def kibana_basic_filter(entry: Data_Point) -> bool:
     """
     The 'Basic Filter' from Kibana.
@@ -124,7 +133,8 @@ def kibana_basic_filter(entry: Data_Point) -> bool:
     must_filters.append(
         get_filter(
             get_predicate_on_terminal(
-                partial(op.ne, "ccm:collection_io_reference"), all
+                lambda x: x != "ccm:collection_io_reference" and x != "ccm:collection",
+                all,
             ),
             "aspects",
         )
@@ -156,6 +166,13 @@ def kibana_publicly_visible(entry: Data_Point) -> bool:
 kibana_redaktionsbuffet: Filter = get_filter_with_basic_predicate(
     predicate_fun=partial(op.eq, "Redaktionsbuffet"),
     field=Fields.COLLECTIONS_TITLE.value,
+    multi_value_semantics=any,
+)
+
+#: A filter that only accepts collections
+collections_filter: Filter = get_filter_with_basic_predicate(
+    predicate_fun=partial(op.eq, "ccm:collection"),
+    field="aspects",
     multi_value_semantics=any,
 )
 
@@ -234,7 +251,7 @@ def get_len_filter(
     :param min_lengths:
         - If a single integer, all values from all given fields have their
           length compared to this value.
-        - If a list, the first field\'s length is compared to the first value,
+        - If a list, the first field's length is compared to the first value,
           the second to the second...
 
           Note that it is assumed that ``fields`` and ``min_lengths`` are of
