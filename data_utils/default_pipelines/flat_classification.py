@@ -53,7 +53,6 @@ def generate_data(
     if use_defaults:
         dropped_values = defaults.dropped_values | dropped_values
         remapped_values = defaults.remapped_values | remapped_values
-        skos_urls = defaults.skos_urls | skos_urls
         filters = {
             filt.kibana_publicly_visible,
             filt.kibana_basic_filter,

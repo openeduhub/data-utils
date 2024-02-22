@@ -11,7 +11,6 @@ import data_utils.filters as filt
 import data_utils.transform as trans
 import numpy as np
 import pandas as pd
-from data_utils.data import Basic_Value, Basic_Value_Not_None
 from data_utils.default_pipelines.data import Data, Target_Data
 from data_utils.defaults import Fields
 
@@ -50,6 +49,7 @@ def generate_data(
     )
 
     # get data for targets
+    skos_urls = defaults.skos_urls | skos_urls
     target_data = {
         target: _values_to_target_data(
             df,
