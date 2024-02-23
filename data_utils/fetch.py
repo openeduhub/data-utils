@@ -157,6 +157,26 @@ def _dict_from_json_entry(
     return entry
 
 
+def raw_entry_generator(
+    path: Path, key_separator: str, prefix: str, max_len: Optional[int]
+) -> Iterator[Data_Point]:
+    hits = 0
+    with open(path) as f:
+        # because we are dealing with line-separated jsons,
+        # read the file one line at a time
+        for line in f:
+            if max_len is not None and hits >= max_len:
+                break
+
+            raw_entry = get_in(json.loads(line), prefix.split(key_separator))
+            if not isinstance(raw_entry, dict):
+                raise ValueError(
+                    f"The given prefix key {prefix} does not exists for all entries or does not point to a map!"
+                )
+
+            yield raw_entry
+
+
 def _dicts_from_json_file(
     path: Path,
     columns: Iterable[str] | dict[str, str],
@@ -169,32 +189,22 @@ def _dicts_from_json_file(
 ) -> Iterator[dict[str, Terminal_Value]]:
     hits = 0
     modified_fields = set(dropped_values.keys()) | set(remapped_values.keys())
-    with open(path) as f:
-        # because we are dealing with line-separated jsons,
-        # read the file one line at a time
-        for line in f:
-            if max_len is not None and hits >= max_len:
-                return
+    for raw_entry in raw_entry_generator(
+        path, key_separator=key_separator, prefix=prefix, max_len=max_len
+    ):
+        for field in modified_fields:
+            raw_entry = trans.with_changed_value(
+                raw_entry,
+                field.split(key_separator),
+                dropped_values[field],
+                remapped_values[field],
+            )
 
-            raw_entry = get_in(json.loads(line), prefix.split(key_separator))
-            if not isinstance(raw_entry, dict):
-                raise ValueError(
-                    f"The given prefix key {prefix} does not exists for all entries or does not point to a map!"
-                )
-
-            for field in modified_fields:
-                raw_entry = trans.with_changed_value(
-                    raw_entry,
-                    field.split(key_separator),
-                    dropped_values[field],
-                    remapped_values[field],
-                )
-
-            if all(fun(raw_entry) for fun in filters):
-                hits += 1
-                yield _dict_from_json_entry(
-                    raw_entry, columns=columns, key_separator=key_separator
-                )
+        if all(fun(raw_entry) for fun in filters):
+            hits += 1
+            yield _dict_from_json_entry(
+                raw_entry, columns=columns, key_separator=key_separator
+            )
 
 
 def df_from_json_file(
