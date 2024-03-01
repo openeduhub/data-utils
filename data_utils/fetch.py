@@ -14,6 +14,7 @@ from typing import Optional
 
 import pandas as pd
 import requests
+from tqdm import tqdm
 
 import data_utils.filters as filt
 import data_utils.transform as trans
@@ -157,6 +158,15 @@ def _dict_from_json_entry(
     return entry
 
 
+def num_entries(path: Path) -> int:
+    hits = 0
+    with open(path) as f:
+        for _ in f:
+            hits += 1
+
+    return hits
+
+
 def raw_entry_generator(
     path: Path, key_separator: str, prefix: str, max_len: Optional[int]
 ) -> Iterator[Data_Point]:
@@ -189,8 +199,11 @@ def _dicts_from_json_file(
 ) -> Iterator[dict[str, Terminal_Value]]:
     hits = 0
     modified_fields = set(dropped_values.keys()) | set(remapped_values.keys())
-    for raw_entry in raw_entry_generator(
-        path, key_separator=key_separator, prefix=prefix, max_len=max_len
+    for raw_entry in tqdm(
+        raw_entry_generator(
+            path, key_separator=key_separator, prefix=prefix, max_len=max_len
+        ),
+        total=num_entries(path),
     ):
         for field in modified_fields:
             raw_entry = trans.with_changed_value(
