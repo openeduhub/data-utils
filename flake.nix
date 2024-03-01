@@ -23,6 +23,7 @@
           numpy
           requests
           tqdm
+          questionary
           (self.inputs.nlprep.lib.nlprep py-pkgs)
         ];
 
@@ -121,6 +122,10 @@
           download-data = {
             type = "app";
             program = "${self.outputs.packages.${system}.data-utils}/bin/download-data";
+          };
+          find-test-data = {
+            type = "app";
+            program = "${self.outputs.packages.${system}.data-utils}/bin/find-test-data";
           };
         };
         # the development environment

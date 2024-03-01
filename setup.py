@@ -12,6 +12,7 @@ setup(
     entry_points={
         "console_scripts": [
             "download-data = data_utils.cli:main",
+            "find-test-data = data_utils.identify_test_data.cli:main",
         ]
     },
 )
