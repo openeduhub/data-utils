@@ -1,5 +1,6 @@
 from __future__ import annotations
 import csv
+from math import dist
 
 import operator as op
 from collections import Counter
@@ -249,6 +250,7 @@ class BoW_Data(Processed_Data):
 
 
 Base_Data_Subtype = TypeVar("Base_Data_Subtype", bound=_Base_Data)
+Data_Subtype = TypeVar("Data_Subtype", bound=Data)
 
 
 def _copy_with_changed_values(_obj: Base_Data_Subtype, **kwargs) -> Base_Data_Subtype:
@@ -364,6 +366,7 @@ def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path]:
 
 
 def import_published(data_file: Path, metadata_file: Path) -> Data:
+    """Read a published csv."""
     raw_data = pd.read_csv(data_file, sep=",", dtype=str)
     target_fields = set(raw_data.columns) - {"uuid", "text", "editorially_confirmed"}
     target_test_fields = {field for field in target_fields if "_test-set" in field}
@@ -405,4 +408,67 @@ def import_published(data_file: Path, metadata_file: Path) -> Data:
 
     return Data(
         raw_texts=texts, ids=ids, editor_arr=editor_arr, target_data=target_data
+    )
+
+
+def balanced_split(
+    data: Data_Subtype,
+    field: str,
+    ratio: float = 0.3,
+    randomize: bool = True,
+    seed: int = 0,
+) -> tuple[Data_Subtype, Data_Subtype]:
+    """
+    Split the data into two, keeping the overall distribution for the given
+    field.
+    """
+    if randomize:
+        indices = np.arange(data.editor_arr.shape[0])
+        rng = np.random.default_rng(seed=seed)
+        rng.shuffle(indices)
+        data = subset_data_points(data, indices)
+
+    target_arr = data.target_data[field].arr
+    # calculate the number of target docs per category
+    counts: np.ndarray = target_arr.sum(-2)
+    target_counts = np.rint(counts * ratio)
+
+    # for each target category, find the minimum number of
+    # data points such that we have selected at least the target
+    # number
+    def find_kept(
+        values: np.ndarray, target: int
+    ) -> np.ndarray[Any, np.dtypes.BoolDType]:
+        split = np.where(values)[0][target]
+        kept = np.zeros_like(values, dtype=bool)
+        kept[:split] = True
+        kept = np.logical_and(values, kept)
+
+        return kept
+
+    # naively combine all such split points, such that each category
+    # has support of at least the target
+    kept = reduce(
+        np.logical_or,
+        [
+            find_kept(target_arr[:, i], int(target_count))
+            for i, target_count in enumerate(target_counts)
+        ],
+        np.zeros_like(data.editor_arr, dtype=bool),
+    )
+
+    # because documents can belong to multiple categories, greedily
+    # try to remove each and check if all targets are still met
+    for index in np.where(kept)[0]:
+        kept[index] = False
+        selected_cats = target_arr[index]
+        if all(
+            target_arr[:, selected_cats][kept].sum(-2) >= target_counts[selected_cats]
+        ):
+            continue
+        kept[index] = True
+
+    return (
+        subset_data_points(data, np.where(~kept)[0]),
+        subset_data_points(data, np.where(kept)[0]),
     )
