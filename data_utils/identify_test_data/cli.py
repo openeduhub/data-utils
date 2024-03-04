@@ -125,11 +125,14 @@ def main() -> None:
     try:
         while i is not None:
             target_data = data.target_data[chosen_field]
-            print("Text of this material:")
+            print("".join("-" for _ in range(79)))
+            print("Processed text:")
+            print(data.processed_texts[i])
+            print("Text:")
             print(data.raw_texts[i])
-            print("URIs of assignments for this material:")
+            print("URIs of assignments:")
             print(target_data.uris[target_data.arr[i]])
-            print("Labels of assignments for this material:")
+            print("Labels of assignments:")
             print(target_data.labels[target_data.arr[i]])
 
             accept = questionary.confirm("Accept this material?").unsafe_ask()

@@ -24,7 +24,7 @@ def generate_data(
     filters: Iterable[filt.Filter] = tuple(),
     cache_dir: Optional[Path] = None,
     **kwargs,
-) -> Data:
+) -> Processed_Data:
     additional_filters: list[filt.Filter] = list()
     # only keep data that contains at least one target
     additional_filters.append(filt.get_labeled_filter([field]))
