@@ -1,4 +1,5 @@
 from __future__ import annotations
+import csv
 
 import operator as op
 from collections import Counter
@@ -9,6 +10,7 @@ from pathlib import Path
 from typing import Any, Optional, TypeVar
 
 import numpy as np
+import pandas as pd
 from nlprep import Pipeline_Generator, apply_filters, tokenize_documents
 from numpy.typing import NDArray
 
@@ -315,3 +317,92 @@ def subset_categories(
         } | {key: getattr(data, key)[indices] for key in data._category_fields}
 
     return _copy_with_changed_values(data, **changed_data)
+
+
+def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path]:
+    """Publish relevant data fields as a csv."""
+    # ensure that the parent directory exists
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    data_file = target_dir / f"{name}_data.csv"
+    metadata_file = target_dir / f"{name}_metadata.csv"
+
+    def to_binary_strings(x: np.ndarray) -> list[str]:
+        return ["".join(assignment) for assignment in x.astype(int).astype(str)]
+
+    columns = (
+        {
+            "uuid": data.ids,
+            "text": data.raw_texts,
+            "editorially_confirmed": data.editor_arr.astype(int),
+        }
+        | {key: to_binary_strings(value.arr) for key, value in data.target_data.items()}
+        | {
+            key + "_test-set": value.in_test_set.astype(int)
+            for key, value in data.target_data.items()
+        }
+    )
+
+    # export the data
+    with open(data_file, "w+") as f:
+        writer = csv.writer(f)
+        writer.writerow(columns.keys())
+        for values in zip(*list(columns.values())):
+            writer.writerow(values)
+
+    # export metadata
+    with open(metadata_file, "w+") as f:
+        writer = csv.writer(f)
+        writer.writerow(["field", "index", "uri", "label"])
+        for field, target_data in data.target_data.items():
+            for index, (uri, label) in enumerate(
+                zip(target_data.uris, target_data.labels)
+            ):
+                writer.writerow([field, index, uri, label])
+
+    return data_file, metadata_file
+
+
+def import_published(data_file: Path, metadata_file: Path) -> Data:
+    raw_data = pd.read_csv(data_file, sep=",", dtype=str)
+    target_fields = set(raw_data.columns) - {"uuid", "text", "editorially_confirmed"}
+    target_test_fields = {field for field in target_fields if "_test-set" in field}
+    target_fields = target_fields - target_test_fields
+
+    ids = raw_data["uuid"].to_numpy()
+    texts = raw_data["text"].to_numpy()
+    editor_arr = raw_data["editorially_confirmed"].to_numpy(dtype=int).astype(bool)
+
+    target_data_test_arrs = {
+        field: getattr(raw_data, field).to_numpy(dtype=int).astype(bool)
+        for field in target_test_fields
+    }
+
+    # convert binary arrays to numpy arrays
+    target_data_arr: dict[str, np.ndarray[Any, np.dtypes.BoolDType]] = dict()
+    for field in target_fields:
+        target_data_arr[field] = np.array(
+            [
+                list(bool_array) if isinstance(bool_array, Iterable) else bool_array
+                for bool_array in raw_data[field]
+            ],
+            dtype=int,
+        ).astype(bool)
+
+    # read the metadata to fill in remaining information on targets
+    raw_metadata = pd.read_csv(metadata_file, sep=",", dtype=str)
+    target_data: dict[str, Target_Data] = dict()
+    for field in target_fields:
+        relevant_metadata = raw_metadata[raw_metadata["field"] == field]
+        uris = relevant_metadata["uri"].to_numpy()
+        labels = relevant_metadata["label"].to_numpy()
+        target_data[field] = Target_Data(
+            arr=target_data_arr[field],
+            in_test_set=target_data_test_arrs[field + "_test-set"],
+            uris=uris,
+            labels=labels,
+        )
+
+    return Data(
+        raw_texts=texts, ids=ids, editor_arr=editor_arr, target_data=target_data
+    )

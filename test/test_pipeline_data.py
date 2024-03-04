@@ -1,7 +1,7 @@
 import operator as op
-
-from nlprep import Iterable
+import tempfile
 import test.strategies as myst
+from pathlib import Path
 from typing import Optional
 
 import hypothesis.strategies as st
@@ -11,10 +11,13 @@ from data_utils.default_pipelines.data import (
     Data,
     Processed_Data,
     Target_Data,
+    import_published,
+    publish,
     subset_categories,
     subset_data_points,
 )
 from hypothesis import given
+from nlprep import Iterable
 
 MAX_DATA_LEN = 10
 
@@ -34,8 +37,20 @@ def target_data_st(
         )
     )
     in_test_set = draw(st.lists(st.booleans(), min_size=n, max_size=n))
-    uris = draw(st.lists(st.text(), min_size=m, max_size=m))
-    labels = draw(st.lists(st.text(), min_size=m, max_size=m))
+    uris = draw(
+        st.lists(
+            st.text(st.characters(blacklist_categories=["Cc", "Cs"])),
+            min_size=m,
+            max_size=m,
+        )
+    )
+    labels = draw(
+        st.lists(
+            st.text(st.characters(blacklist_categories=["Cc", "Cs"])),
+            min_size=m,
+            max_size=m,
+        )
+    )
 
     return Target_Data(
         arr=np.array(arr),
@@ -59,7 +74,13 @@ def data_st(draw: st.DrawFn, n: Optional[int] = None) -> Data:
     )
     ids = draw(st.lists(st.booleans(), min_size=n, max_size=n))
     editor_arr = draw(st.lists(st.booleans(), min_size=n, max_size=n))
-    target_data = draw(st.dictionaries(st.text(), target_data_st(n=n), max_size=3))
+    target_data = draw(
+        st.dictionaries(
+            st.text(st.characters(blacklist_categories=["Cc", "Cs"]), min_size=1),
+            target_data_st(n=n),
+            max_size=3,
+        )
+    )
 
     return Data(
         raw_texts=np.array(raw_texts),
@@ -268,3 +289,36 @@ def test_internal_sets():
     assert "processed_texts" not in data._1d_data_fields
     assert "processed_texts" in processed_data._1d_data_fields
     assert "processed_texts" in bow_data._1d_data_fields
+
+
+@given(
+    data_st().filter(
+        lambda data: "" not in data.ids
+        and "" not in data.raw_texts
+        and "" not in data.target_data
+    )
+)
+def test_import_export(data: Data):
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        data_file, metadata_file = publish(data, tmp_path, "test")
+        data_imp = import_published(data_file, metadata_file)
+
+    assert np.array_equal(data.editor_arr, data_imp.editor_arr)
+    assert np.array_equal(data.ids.astype(str), data_imp.ids)
+    assert np.array_equal(data.raw_texts.astype(str), data_imp.raw_texts)
+    assert data.target_data.keys() == data_imp.target_data.keys()
+
+    for field in data.target_data:
+        target_data = data.target_data[field]
+        target_data_imp = data_imp.target_data[field]
+
+        assert np.array_equal(target_data.arr, target_data_imp.arr)
+
+        if "" not in target_data.labels:
+            assert np.array_equal(
+                target_data.labels.astype(str), target_data_imp.labels
+            )
+        if "" not in target_data.uris:
+            assert np.array_equal(target_data.uris.astype(str), target_data_imp.uris)
+        assert np.array_equal(target_data.in_test_set, target_data_imp.in_test_set)
