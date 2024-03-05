@@ -5,7 +5,7 @@ from functools import reduce
 from pathlib import Path
 from typing import Optional
 
-import data_utils.default_pipelines.flat_classification as base_pipeline
+from data_utils.default_pipelines import flat_classification
 import data_utils.filters as filt
 import numpy as np
 from data_utils.default_pipelines.data import (
@@ -14,6 +14,7 @@ from data_utils.default_pipelines.data import (
     subset_categories,
     subset_data_points,
 )
+from data_utils.default_pipelines.extra_nlp_filters import get_repetition_filter
 from data_utils.defaults import Fields
 from nlprep import pipelines
 
@@ -57,19 +58,19 @@ def generate_data(
         multi_field_semantics=any,
     )
 
-    base_data = base_pipeline.generate_data(
+    base_data = flat_classification.generate_data(
         json_file=json_file,
         target_fields=target_fields,
         filters={labeled_filter, german_filter, text_len_filter} | set(filters),
         **kwargs,
     )
 
-    # only keep a maximum number of non-editorially confirmed materials
-    base_data = subset_data_points(base_data, np.flip(np.argsort(base_data.editor_arr)))
-    editor_count = base_data.editor_arr.sum()
-    base_data = subset_data_points(
-        base_data, np.arange(min(len(base_data.editor_arr), editor_count * 3))
-    )
+    # # only keep a maximum number of non-editorially confirmed materials
+    # base_data = subset_data_points(base_data, np.flip(np.argsort(base_data.editor_arr)))
+    # editor_count = base_data.editor_arr.sum()
+    # base_data = subset_data_points(
+    #     base_data, np.arange(min(len(base_data.editor_arr), editor_count * 3))
+    # )
 
     # drop target categories with no label
     for target in target_fields:
@@ -99,10 +100,9 @@ def generate_data(
     base_data = subset_data_points(base_data, np.where(to_keep)[0])
 
     # pre-process texts
-    print("Pre-processing texts...")
-    processed_data = Processed_Data.from_data(
-        base_data,
-        pipeline_generators=pipelines.get_poc_topic_modeling_pipelines(
+    # the basic pre-processing pipeline, defined in the NLP library
+    my_pipelines = list(
+        pipelines.get_poc_topic_modeling_pipelines(
             ignored_upos_tags={
                 "PUNCT",
                 "SPACE",
@@ -122,7 +122,22 @@ def generate_data(
                 "interval_open": False,
                 "count_only_selected": True,
             },
-        ),
+        )
+    )
+
+    # add a custom pipeline that combines sequences of repeated tokens.
+    # in particular, combine sequences of at least three identical tokens into
+    # one that is only two tokens long
+    my_pipelines.append(
+        lambda docs, **kwargs: [
+            get_repetition_filter(min_rep_count=3, post_filter_count=2)
+        ]
+    )
+
+    print("Pre-processing texts...")
+    processed_data = Processed_Data.from_data(
+        base_data,
+        pipeline_generators=my_pipelines,
         cache_dir=cache_dir,
     )
     del base_data  # now redundant
@@ -133,8 +148,8 @@ def generate_data(
     del processed_data  # now redundant
 
     # drop all tokens that make up more than 0.5% of all tokens
-    keep_tokens = (bow_data.bows.sum(-2) / bow_data.bows.sum()) < 0.005
-    bow_data = subset_categories(bow_data, np.where(keep_tokens)[0], field="bows")
+    # keep_tokens = (bow_data.bows.sum(-2) / bow_data.bows.sum()) < 0.005
+    # bow_data = subset_categories(bow_data, np.where(keep_tokens)[0], field="bows")
 
     # extremely long tokens are usually invalid, so drop them
     keep_tokens = np.array([len(word) <= 30 for word in bow_data.words])
