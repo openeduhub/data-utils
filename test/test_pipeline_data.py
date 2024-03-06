@@ -67,12 +67,19 @@ def data_st(draw: st.DrawFn, n: Optional[int] = None) -> Data:
 
     raw_texts = draw(
         st.lists(
-            st.text(st.characters(blacklist_categories=["Cc", "Cs"])),
+            st.text(st.characters(blacklist_categories=["Cc", "Cs"]), min_size=1),
             min_size=n,
             max_size=n,
         )
     )
-    ids = draw(st.lists(st.booleans(), min_size=n, max_size=n))
+    ids = draw(
+        st.lists(
+            st.text(st.characters(blacklist_categories=["Cc", "Cs"]), min_size=1),
+            min_size=n,
+            max_size=n,
+            unique=True,
+        )
+    )
     editor_arr = draw(st.lists(st.booleans(), min_size=n, max_size=n))
     target_data = draw(
         st.dictionaries(
@@ -291,18 +298,12 @@ def test_internal_sets():
     assert "processed_texts" in bow_data._1d_data_fields
 
 
-@given(
-    data_st().filter(
-        lambda data: "" not in data.ids
-        and "" not in data.raw_texts
-        and "" not in data.target_data
-    )
-)
+@given(st.one_of(data_st(), processed_data_st()))
 def test_import_export(data: Data):
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        data_file, metadata_file = publish(data, tmp_path, "test")
-        data_imp = import_published(data_file, metadata_file)
+        data_file, metadata_file, processed_text_file = publish(data, tmp_path, "test")
+        data_imp = import_published(data_file, metadata_file, processed_text_file)
 
     assert np.array_equal(data.editor_arr, data_imp.editor_arr)
     assert np.array_equal(data.ids.astype(str), data_imp.ids)
@@ -322,3 +323,8 @@ def test_import_export(data: Data):
         if "" not in target_data.uris:
             assert np.array_equal(target_data.uris.astype(str), target_data_imp.uris)
         assert np.array_equal(target_data.in_test_set, target_data_imp.in_test_set)
+
+    if isinstance(data, Processed_Data):
+        assert isinstance(data_imp, Processed_Data)
+        for x, y in zip(data.processed_texts, data_imp.processed_texts):
+            assert x == y

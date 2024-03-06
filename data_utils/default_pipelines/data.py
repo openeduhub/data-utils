@@ -1,6 +1,7 @@
 from __future__ import annotations
 import csv
 from math import dist
+import ast
 
 import operator as op
 from collections import Counter
@@ -321,8 +322,21 @@ def subset_categories(
     return _copy_with_changed_values(data, **changed_data)
 
 
-def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path]:
-    """Publish relevant data fields as a csv."""
+def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path, Path | None]:
+    """
+    Publish relevant data fields as csv files.
+
+    This results in two to three files, depending on the type of ``data``:
+
+    1. The csv containing the basic data. Name: `{name}_data.csv`
+    2. The csv containing some metadata about the target categories.
+       Name: `{name}_metadata.csv`
+    3. (If applicable), the csv containing the processed texts.
+       Name: `{name}_processed_text.csv`
+
+    All assignments to targets are encoded as binary arrays; the URIs / labels
+    can be found in the metadata file.
+    """
     # ensure that the parent directory exists
     target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -362,11 +376,23 @@ def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path]:
             ):
                 writer.writerow([field, index, uri, label])
 
-    return data_file, metadata_file
+    # export processed texts, if available
+    processed_text_file = None
+    if isinstance(data, Processed_Data):
+        processed_text_file = target_dir / f"{name}_processed_text.csv"
+        with open(processed_text_file, "w+") as f:
+            writer = csv.writer(f)
+            writer.writerow(["uuid", "processed_text"])
+            for uuid, processed_text in zip(data.ids, data.processed_texts):
+                writer.writerow([uuid, processed_text])
+
+    return data_file, metadata_file, processed_text_file
 
 
-def import_published(data_file: Path, metadata_file: Path) -> Data:
-    """Read a published csv."""
+def import_published(
+    data_file: Path, metadata_file: Path, processed_text_file: Optional[Path] = None
+) -> Data | Processed_Data:
+    """Read a published set of csv files."""
     raw_data = pd.read_csv(data_file, sep=",", dtype=str)
     target_fields = set(raw_data.columns) - {"uuid", "text", "editorially_confirmed"}
     target_test_fields = {field for field in target_fields if "_test-set" in field}
@@ -406,9 +432,37 @@ def import_published(data_file: Path, metadata_file: Path) -> Data:
             labels=labels,
         )
 
-    return Data(
+    data = Data(
         raw_texts=texts, ids=ids, editor_arr=editor_arr, target_data=target_data
     )
+
+    # read the processed texts if the corresponding file was given, and
+    # integrate them
+    if processed_text_file is not None:
+        processed_texts_df = pd.read_csv(
+            processed_text_file,
+            dtype={"uuid": str},
+            # note: while this line evaluates raw strings, it is relatively
+            # "safe", because no actual code is executed; instead, the string
+            # is evaluated as a python data structure.
+            # however, a malicious actor can still cause the interpreter to
+            # crash or force high CPU usage
+            converters={"processed_text": ast.literal_eval},
+        ).set_index("uuid")
+
+        processed_texts_list = [
+            processed_texts_df["processed_text"].loc[uuid] for uuid in data.ids
+        ]
+
+        data = Processed_Data(
+            raw_texts=data.raw_texts,
+            ids=data.ids,
+            editor_arr=data.editor_arr,
+            target_data=data.target_data,
+            processed_texts=processed_texts_list,
+        )
+
+    return data
 
 
 def balanced_split(
