@@ -195,15 +195,24 @@ class BoW_Data(Processed_Data):
         return self._virtual_bow_dict["bows"].labels
 
     @classmethod
-    def from_processed_data(cls, data: Processed_Data) -> "BoW_Data":
+    def from_processed_data(
+        cls, data: Processed_Data, words: Optional[Collection[str]] = None
+    ) -> "BoW_Data":
         """
         Create bag-of-words representations from a tokenized corpus.
 
         Note that for space efficiency, word counts within one document
         are capped at 255.
+
+        :args words: If non-None, use these words instead of all unique ones
+            found in the documents. This can be useful if the documents do not
+            contain all tokens that we expect to see. Note that all tokens
+            within the documents must still be present here.
         """
-        words: list[str] = list(
-            reduce(op.or_, (set(doc) for doc in data.processed_texts), set())
+        words = (
+            list(reduce(op.or_, (set(doc) for doc in data.processed_texts), set()))
+            if words is None
+            else list(words)
         )
         word_to_id = {word: index for index, word in enumerate(words)}
 
@@ -236,7 +245,9 @@ class BoW_Data(Processed_Data):
         )
 
     @classmethod
-    def from_data(cls, data: Data, **kwargs) -> "BoW_Data":
+    def from_data(
+        cls, data: Data, words: Optional[Collection[str]] = None, **kwargs
+    ) -> "BoW_Data":
         """
         Get bag-of-words representations for unprocessed data.
 
@@ -247,7 +258,9 @@ class BoW_Data(Processed_Data):
         :param kwargs: Additional keyword-arguments to be passed onto
             :func:`data_utils.default_pipelines.data.Processed_Data.from_data`.
         """
-        return cls.from_processed_data(Processed_Data.from_data(data, **kwargs))
+        return cls.from_processed_data(
+            Processed_Data.from_data(data, **kwargs), words=words
+        )
 
 
 Base_Data_Subtype = TypeVar("Base_Data_Subtype", bound=_Base_Data)

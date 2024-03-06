@@ -234,11 +234,7 @@ def test_processed_data(data: Data):
             assert identical
 
 
-@given(data_st())
-def test_bow_data(data: Data):
-    processed_data = Processed_Data.from_data(data)
-    bow_data = BoW_Data.from_processed_data(processed_data)
-
+def run_bow_data_checks(data: Data, processed_data: Processed_Data, bow_data: BoW_Data):
     assert "processed_texts" in bow_data._1d_data_fields
 
     # unchanged
@@ -274,6 +270,40 @@ def test_bow_data(data: Data):
         words = bow_data.words[bow > 0]
         for word in words:
             assert word in doc_set
+
+
+@given(data_st())
+def test_bow_data(data: Data):
+    processed_data = Processed_Data.from_data(data)
+    bow_data = BoW_Data.from_processed_data(processed_data)
+
+    run_bow_data_checks(data, processed_data, bow_data)
+
+
+@given(processed_data_st())
+def test_bow_data_with_fixed_words(data: Processed_Data):
+    words: set[str] = set().union(*[set(x) for x in data.processed_texts])
+    words.add("foo")
+    words.add("bar")
+    # ensure we add a word that does not exists in the docs
+    i = 0
+    while True:
+        if str(i) in words:
+            i += 1
+        else:
+            words.add(str(i))
+            break
+
+    bow_data = BoW_Data.from_processed_data(data, words)
+
+    # ensure that the additional words exist in the bows
+    assert "foo" in bow_data.words
+    assert "bar" in bow_data.words
+    assert str(i) in bow_data.words
+    assert len(bow_data.words) == bow_data.bows.shape[-1]
+
+    # ensure that the generated bow data is otherwise correct
+    run_bow_data_checks(data, data, bow_data)
 
 
 def test_internal_sets():
