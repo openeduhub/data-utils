@@ -9,7 +9,7 @@ from collections.abc import Collection, Iterable, Sequence
 from dataclasses import asdict, dataclass, field
 from functools import reduce
 from pathlib import Path
-from typing import Any, Optional, TypeVar
+from typing import Any, Optional, TypeVar, overload
 
 import numpy as np
 import pandas as pd
@@ -387,6 +387,18 @@ def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path, Path |
                 writer.writerow([uuid, processed_text])
 
     return data_file, metadata_file, processed_text_file
+
+
+@overload
+def import_published(data_file: Path, metadata_file: Path) -> Data:
+    ...
+
+
+@overload
+def import_published(
+    data_file: Path, metadata_file: Path, processed_text_file: Path
+) -> Processed_Data:
+    ...
 
 
 def import_published(
