@@ -6,6 +6,7 @@ from typing import Optional
 
 import hypothesis.strategies as st
 import numpy as np
+import pytest
 from data_utils.default_pipelines.data import (
     BoW_Data,
     Data,
@@ -83,7 +84,9 @@ def data_st(draw: st.DrawFn, n: Optional[int] = None) -> Data:
     editor_arr = draw(st.lists(st.booleans(), min_size=n, max_size=n))
     target_data = draw(
         st.dictionaries(
-            st.text(st.characters(blacklist_categories=["Cc", "Cs"]), min_size=1),
+            st.text(
+                st.characters(blacklist_categories=["Cc", "Cs"]), min_size=1
+            ).filter(lambda x: x != "FORBIDDEN_FIELD"),
             target_data_st(n=n),
             max_size=3,
         )
@@ -216,6 +219,12 @@ def test_subset_categories(data: st.DataObject, data_base: Data):
             assert (
                 target_data_new is target_data_old or target_data_new == target_data_old
             )
+
+
+@given(data_st())
+def test_subset_categories_fails_with_missing_field(data: Data):
+    with pytest.raises(ValueError):
+        subset_categories(data, [], "FORBIDDEN_FIELD")
 
 
 @given(data_st())

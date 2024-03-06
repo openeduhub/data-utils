@@ -317,14 +317,27 @@ def subset_categories(
     """
 
     if field is not None:
-        changed_data = {
-            key: getattr(data, key)
-            | {
+        # if the given field is not present, raise an exception, as this is
+        # almost always an error
+        if all(
+            field not in getattr(data, nested_field)
+            for nested_field in data._nested_data_fields
+        ):
+            raise ValueError(
+                f"The field {field} could not be found! Perhaps this is a typo?"
+            )
+
+        nested_value_changes = {
+            key: {
                 nested_key: subset_categories(nested_data, indices, None)
                 for nested_key, nested_data in getattr(data, key).items()
                 if nested_key == field
             }
             for key in data._nested_data_fields
+        }
+        changed_data = {
+            key: getattr(data, key) | changes
+            for key, changes in nested_value_changes.items()
         }
 
     else:
