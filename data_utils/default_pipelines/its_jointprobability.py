@@ -101,7 +101,16 @@ def generate_data(
 
     # pre-process texts
     # the basic pre-processing pipeline, defined in the NLP library
-    my_pipelines = list(
+    my_pipelines = [
+        lambda docs, **kwargs: [
+            get_repetition_filter(min_rep_count=4, post_filter_count=2)
+        ]
+    ]
+
+    # add a custom pipeline that combines sequences of repeated tokens.
+    # in particular, combine sequences of at least three identical tokens into
+    # one that is only two tokens long
+    my_pipelines += list(
         pipelines.get_poc_topic_modeling_pipelines(
             ignored_upos_tags={
                 "PUNCT",
@@ -123,15 +132,6 @@ def generate_data(
                 "count_only_selected": True,
             },
         )
-    )
-
-    # add a custom pipeline that combines sequences of repeated tokens.
-    # in particular, combine sequences of at least three identical tokens into
-    # one that is only two tokens long
-    my_pipelines.append(
-        lambda docs, **kwargs: [
-            get_repetition_filter(min_rep_count=3, post_filter_count=2)
-        ]
     )
 
     print("Pre-processing texts...")
