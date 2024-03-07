@@ -262,6 +262,17 @@ class BoW_Data(Processed_Data):
             Processed_Data.from_data(data, **kwargs), words=words
         )
 
+    def __post_init__(self) -> None:
+        # ensure that the processed texts and the bag-of-words contain the same
+        # tokens by removing from the former all that is not contained in the
+        # latter.
+        words_set: set[str] = set(self.words)
+        # because we cannot assign to the processed texts directly, we simply
+        # change the entries in-place
+        for i, doc in enumerate(self.processed_texts):
+            new_doc = tuple(word for word in doc if word in words_set)
+            self.processed_texts[i] = new_doc
+
 
 Base_Data_Subtype = TypeVar("Base_Data_Subtype", bound=_Base_Data)
 Data_Subtype = TypeVar("Data_Subtype", bound=Data)

@@ -289,6 +289,26 @@ def test_bow_data(data: Data):
     run_bow_data_checks(data, processed_data, bow_data)
 
 
+@given(st.data(), bow_data_st())
+def test_bow_data_subset_affects_processed_texts(
+    data: st.DataObject, bow_data: BoW_Data
+):
+    indices = data.draw(
+        st.lists(st.sampled_from(list(range(bow_data.bows.shape[-1]))), unique=True)
+    )
+
+    new_data = subset_categories(bow_data, indices, "bows")
+
+    assert new_data.bows.shape[-1] == len(indices)
+
+    words_from_bows = set(new_data.words)
+    words_from_processed_texts = set().union(
+        *[set(doc) for doc in new_data.processed_texts]
+    )
+
+    assert words_from_bows == words_from_processed_texts
+
+
 @given(processed_data_st())
 def test_bow_data_with_fixed_words(data: Processed_Data):
     words: set[str] = set().union(*[set(x) for x in data.processed_texts])
