@@ -5,11 +5,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1705309234,
-        "narHash": "sha256-uNRRNRKmJyCRC/8y1RqBkqWBLM034y4qN7EprSdmgyA=",
+        "lastModified": 1709126324,
+        "narHash": "sha256-q6EQdSeUZOG26WelxqkmR7kArjgWCdw5sfJVHPH/7j8=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "1ef2e671c3b0c19053962c07dbda38332dcebf26",
+        "rev": "d465f4819400de7c8d874d50b982301f28a84605",
         "type": "github"
       },
       "original": {
@@ -68,16 +68,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1706515015,
-        "narHash": "sha256-eFfY5A7wlYy3jD/75lx6IJRueg4noE+jowl0a8lIlVo=",
+        "lastModified": 1709780214,
+        "narHash": "sha256-p4iDKdveHMhfGAlpxmkCtfQO3WRzmlD11aIcThwPqhk=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "f4a8d6d5324c327dcc2d863eb7f3cc06ad630df4",
+        "rev": "f945939fd679284d736112d3d5410eb867f3b31c",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-23.11",
+        "ref": "nixpkgs-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -91,11 +91,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1706709548,
-        "narHash": "sha256-Kcnxhezw5joPPpm2LSjWEf1AjcMYfE8xBidkz+LmsC4=",
+        "lastModified": 1709894465,
+        "narHash": "sha256-6WrHaTrYqgAmdfjne8us7L1P5/q0/HwoXGeAooBZKEI=",
         "owner": "openeduhub",
         "repo": "nlprep",
-        "rev": "2c3d0bb4c0b01897c9c709a8ee40bb5f000ad7df",
+        "rev": "d36904620f29fcc392d1c3a6029fbc16cf240d7b",
         "type": "github"
       },
       "original": {
