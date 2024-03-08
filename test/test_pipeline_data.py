@@ -362,7 +362,12 @@ def test_import_export(data: Data):
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         data_file, metadata_file, processed_text_file = publish(data, tmp_path, "test")
-        data_imp = import_published(data_file, metadata_file, processed_text_file)
+        if processed_text_file is not None:
+            data_imp: Data | Processed_Data = import_published(
+                data_file, metadata_file, processed_text_file
+            )
+        else:
+            data_imp = import_published(data_file, metadata_file)
 
     assert np.array_equal(data.editor_arr, data_imp.editor_arr)
     assert np.array_equal(data.ids.astype(str), data_imp.ids)
@@ -386,4 +391,7 @@ def test_import_export(data: Data):
     if isinstance(data, Processed_Data):
         assert isinstance(data_imp, Processed_Data)
         for x, y in zip(data.processed_texts, data_imp.processed_texts):
+            assert x == y
+
+        for x, y in zip(data.languages, data_imp.languages):
             assert x == y

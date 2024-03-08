@@ -106,6 +106,8 @@ class Processed_Data(Data):
     :param processed_texts: The tokenized representations of the texts.
     """
 
+    #: The language of each text.
+    languages: np.ndarray[Any, np.dtypes.StrDType]
     #: The tokenized representations of the texts.
     processed_texts: list[tuple[str, ...]] = field(default_factory=list)
 
@@ -161,6 +163,7 @@ class Processed_Data(Data):
             editor_arr=data.editor_arr,
             target_data=data.target_data,
             processed_texts=[doc.selected_tokens for doc in docs],
+            languages=np.array([doc.language for doc in docs]),
         )
 
 
@@ -241,6 +244,7 @@ class BoW_Data(Processed_Data):
             editor_arr=data.editor_arr,
             target_data=data.target_data,
             processed_texts=data.processed_texts,
+            languages=data.languages,
             _virtual_bow_dict={"bows": bows_data},
         )
 
@@ -419,9 +423,11 @@ def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path, Path |
         processed_text_file = target_dir / f"{name}_processed_text.csv"
         with open(processed_text_file, "w+") as f:
             writer = csv.writer(f)
-            writer.writerow(["uuid", "processed_text"])
-            for uuid, processed_text in zip(data.ids, data.processed_texts):
-                writer.writerow([uuid, processed_text])
+            writer.writerow(["uuid", "processed_text", "language"])
+            for uuid, processed_text, lang in zip(
+                data.ids, data.processed_texts, data.languages
+            ):
+                writer.writerow([uuid, processed_text, lang])
 
     return data_file, metadata_file, processed_text_file
 
@@ -490,7 +496,7 @@ def import_published(
     if processed_text_file is not None:
         processed_texts_df = pd.read_csv(
             processed_text_file,
-            dtype={"uuid": str},
+            dtype={"uuid": str, "language": str},
             # note: while this line evaluates raw strings, it is relatively
             # "safe", because no actual code is executed; instead, the string
             # is evaluated as a python data structure.
@@ -502,6 +508,7 @@ def import_published(
         processed_texts_list = [
             processed_texts_df["processed_text"].loc[uuid] for uuid in data.ids
         ]
+        languages = processed_texts_df["language"].to_numpy()
 
         data = Processed_Data(
             raw_texts=data.raw_texts,
@@ -509,6 +516,7 @@ def import_published(
             editor_arr=data.editor_arr,
             target_data=data.target_data,
             processed_texts=processed_texts_list,
+            languages=languages,
         )
 
     return data
