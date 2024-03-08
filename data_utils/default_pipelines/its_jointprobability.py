@@ -49,8 +49,6 @@ def generate_data(
     print("Reading data...")
     # only keep data that contains at least one target
     labeled_filter = filt.get_labeled_filter(target_fields, multi_field_semantics=any)
-    # only keep German data
-    german_filter = filt.get_language_filter(["de"])
     # drop materials with too little text
     text_len_filter = filt.get_len_filter(
         fields=[Fields.DESCRIPTION.value, Fields.TITLE.value],
@@ -61,16 +59,9 @@ def generate_data(
     base_data = flat_classification.generate_data(
         json_file=json_file,
         target_fields=target_fields,
-        filters={labeled_filter, german_filter, text_len_filter} | set(filters),
+        filters={labeled_filter, text_len_filter} | set(filters),
         **kwargs,
     )
-
-    # # only keep a maximum number of non-editorially confirmed materials
-    # base_data = subset_data_points(base_data, np.flip(np.argsort(base_data.editor_arr)))
-    # editor_count = base_data.editor_arr.sum()
-    # base_data = subset_data_points(
-    #     base_data, np.arange(min(len(base_data.editor_arr), editor_count * 3))
-    # )
 
     # drop target categories with no label
     for target in target_fields:
@@ -80,24 +71,6 @@ def generate_data(
         base_data = subset_categories(
             base_data, indices=np.where(label_is_not_none)[0], field=target
         )
-
-    # drop all target categories with fewer than 10 associated materials
-    for target in target_fields:
-        support = base_data.target_data[target].arr.sum(-2)
-        base_data = subset_categories(
-            base_data,
-            indices=np.where(support >= 10)[0],
-            field=target,
-        )
-
-    # drop all data that now no longer has any targets
-    to_keep = reduce(
-        np.logical_or,
-        [target_data.arr.sum(-1) > 0 for target_data in base_data.target_data.values()],
-        np.zeros_like(base_data.editor_arr, dtype=bool),
-    )
-
-    base_data = subset_data_points(base_data, np.where(to_keep)[0])
 
     # pre-process texts
     # the basic pre-processing pipeline, defined in the NLP library
@@ -141,6 +114,14 @@ def generate_data(
         cache_dir=cache_dir,
     )
     del base_data  # now redundant
+
+    # filter out any documents that are not in German.
+    # we do this here, rather than using any of the existing metadata, because
+    # the latter are of poor quality and include many texts that are not in the
+    # labeled language
+    processed_data = subset_data_points(
+        processed_data, np.where(processed_data.languages == "de")[0]
+    )
 
     # calculate bag of words
     print("Transforming into bag of words...")
