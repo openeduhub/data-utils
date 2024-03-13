@@ -123,6 +123,10 @@
             type = "app";
             program = "${self.outputs.packages.${system}.data-utils}/bin/download-data";
           };
+          publish-data = {
+            type = "app";
+            program = "${self.outputs.packages.${system}.data-utils}/bin/publish-data";
+          };
           find-test-data = {
             type = "app";
             program = "${self.outputs.packages.${system}.data-utils}/bin/find-test-data";
