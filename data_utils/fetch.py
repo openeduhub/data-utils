@@ -168,7 +168,7 @@ def num_entries(path: Path) -> int:
 
 
 def raw_entry_generator(
-    path: Path, key_separator: str, prefix: str, max_len: Optional[int]
+    path: Path, key_separator: str, prefix: Optional[str], max_len: Optional[int]
 ) -> Iterator[Data_Point]:
     hits = 0
     with open(path) as f:
@@ -178,7 +178,12 @@ def raw_entry_generator(
             if max_len is not None and hits >= max_len:
                 break
 
-            raw_entry = get_in(json.loads(line), prefix.split(key_separator))
+            # get only the sub-entry at the prefix, if a prefix was given
+            if prefix is not None:
+                raw_entry = get_in(json.loads(line), prefix.split(key_separator))
+            else:
+                raw_entry = json.loads(line)
+
             if not isinstance(raw_entry, dict):
                 raise ValueError(
                     f"The given prefix key {prefix} does not exists for all entries or does not point to a map!"
@@ -191,7 +196,7 @@ def _dicts_from_json_file(
     path: Path,
     columns: Iterable[str] | dict[str, str],
     key_separator: str,
-    prefix: str,
+    prefix: Optional[str],
     filters: Collection[Filter],
     dropped_values: dict[str, Collection[Basic_Value_Not_None]],
     remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]],
@@ -223,7 +228,7 @@ def _dicts_from_json_file(
 def df_from_json_file(
     path: Path,
     columns: Iterable[str] | dict[str, str],
-    prefix: str = "_source",
+    prefix: Optional[str] = "_source",
     key_separator: str = ".",
     filters: Collection[Filter] = tuple(),
     dropped_values: dict[str, Collection[Basic_Value_Not_None]] = dict(),
