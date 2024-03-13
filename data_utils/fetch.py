@@ -189,6 +189,7 @@ def raw_entry_generator(
                     f"The given prefix key {prefix} does not exists for all entries or does not point to a map!"
                 )
 
+            hits += 1
             yield raw_entry
 
 
@@ -202,7 +203,6 @@ def _dicts_from_json_file(
     remapped_values: dict[str, dict[Basic_Value_Not_None, Basic_Value]],
     max_len: Optional[int],
 ) -> Iterator[dict[str, Terminal_Value]]:
-    hits = 0
     modified_fields = set(dropped_values.keys()) | set(remapped_values.keys())
     for raw_entry in tqdm(
         raw_entry_generator(
@@ -219,7 +219,6 @@ def _dicts_from_json_file(
             )
 
         if all(fun(raw_entry) for fun in filters):
-            hits += 1
             yield _dict_from_json_entry(
                 raw_entry, columns=columns, key_separator=key_separator
             )
