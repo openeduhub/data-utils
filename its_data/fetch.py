@@ -16,9 +16,9 @@ import pandas as pd
 import requests
 from tqdm import tqdm
 
-import data_utils.filters as filt
-import data_utils.transform as trans
-from data_utils.data import (
+import its_data.filters as filt
+import its_data.transform as trans
+from its_data.data import (
     Basic_Value,
     Basic_Value_Not_None,
     Data_Point,
@@ -29,7 +29,7 @@ from data_utils.data import (
     get_parent_map,
     get_terminal_in,
 )
-from data_utils.filters import Filter
+from its_data.filters import Filter
 
 
 def fetch(

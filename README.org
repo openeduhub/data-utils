@@ -7,9 +7,9 @@
 A Python library that aids in retrieving and processing large data dumps from [[https://github.com/elasticsearch-dump/elasticsearch-dump][elasticdump]], primarily for the purpose of training and evaluation of AI tools for the automatic generation of metadata.
 
 There are two primary modules of this library:
-- ~data_utils.fetch~, which aids in downloading ~elasticdump~ data dumps and can turn them into ~pandas~ data frames.
+- ~its_data.fetch~, which aids in downloading ~elasticdump~ data dumps and can turn them into ~pandas~ data frames.
   Secondarily, it implements some functionality for retrieving labels or other metadata for URIs and SKOS vocabularies.
-- ~data_utils.default_pipelines~, which collects various useful pipelines, such as ~data_utils.default_pipelines.flat_classification~, that turn the data dumps into more readily usable forms whilst applying some light pre-processing.
+- ~its_data.default_pipelines~, which collects various useful pipelines, such as ~its_data.default_pipelines.flat_classification~, that turn the data dumps into more readily usable forms whilst applying some light pre-processing.
 
 For the purposes of downloading data dumps, this library also offers a CLI tool: ~download-data~.
 
@@ -74,7 +74,7 @@ To use the library as part of a bigger Python environment, e.g. to use in anothe
 # flake.nix
 {
   inputs = {
-    data-utils.url = "/home/yusu/work/ITsJointly/projects/data_utils";
+    data-utils.url = "/home/yusu/work/ITsJointly/projects/its_data";
   };
 }
 #+end_src
@@ -106,7 +106,7 @@ Just like with option A, include this ~Flake~ within your own:
 # flake.nix
 {
   inputs = {
-    data-utils.url = "/home/yusu/work/ITsJointly/projects/data_utils";
+    data-utils.url = "/home/yusu/work/ITsJointly/projects/its_data";
   };
 }
 #+end_src
@@ -159,7 +159,7 @@ nix run github:openeduhub/data-utils#download-data -- -u <USERNAME> -p <PASSWORD
 
 Alternatively, we can download the data within a Python script:
 #+begin_src python
-from data_utils.fetch import fetch
+from its_data.fetch import fetch
 
 downloaded_file_path = fetch(
     base_url=URL,
@@ -185,22 +185,22 @@ from pprint import pprint
 
 import numpy as np
 
-import data_utils.defaults as defaults
-import data_utils.filters as filters
-from data_utils.data import Data_Point, get_terminal_in
-from data_utils.default_pipelines.data import (subset_categories,
+import its_data.defaults as defaults
+import its_data.filters as filters
+from its_data.data import Data_Point, get_terminal_in
+from its_data.default_pipelines.data import (subset_categories,
                                                subset_data_points,
                                                Processed_Data,
                                                BoW_Data)
-from data_utils.default_pipelines.flat_classification import generate_data
-from data_utils.defaults import Fields
+from its_data.default_pipelines.flat_classification import generate_data
+from its_data.defaults import Fields
 #+end_src
 
 #+RESULTS: imports
 
 *** Basic Example: Non-Hierarchical Metadata
 
-The ~data_utils.default_pipelines.flat_classification.generate_data~ function is intended to obtain data together with any number of metadata fields that are not hierarchically organized (note that we can still apply it on hierarchical data, but the hierarchy will be discarded in the process).
+The ~its_data.default_pipelines.flat_classification.generate_data~ function is intended to obtain data together with any number of metadata fields that are not hierarchically organized (note that we can still apply it on hierarchical data, but the hierarchy will be discarded in the process).
 
 After having downloaded the elasticdump json file to =~/data.json= we can directly use the ~generate_data~ function:
 #+begin_src python :results silent
@@ -361,7 +361,7 @@ pprint(
  'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
 #+end_example
 
-Some controlled vocabularies are already defined in ~data_utils.defaults.skos_urls~:
+Some controlled vocabularies are already defined in ~its_data.defaults.skos_urls~:
 #+begin_src python :results output :exports results 
 pprint(defaults.skos_urls)
 #+end_src
@@ -401,7 +401,7 @@ example_remapped_values = {
 
 Additionally, specific values can be dropped entirely (but not the corresponding entry) with the =dropped_values= argument, which takes a dictionary mapping metadata field to a collection of strings that shall be dropped.
 
-Note that for some metadata fields, there already exists some defaults that may be used (see [[file:data_utils/defaults.py][defaults.py]]). These are loaded automatically when the =use_defaults= argument is set to =True= (default).
+Note that for some metadata fields, there already exists some defaults that may be used (see [[file:its_data/defaults.py][defaults.py]]). These are loaded automatically when the =use_defaults= argument is set to =True= (default).
 
 Example without defaults:
 #+begin_src python
@@ -632,7 +632,7 @@ print("Minimum text length:", min(len(text) for text in data.raw_texts))
 #+RESULTS:
 : Minimum text length: 39
 
-To simplify the process of defining such filter functions, the ~data_utils.filters~ module provides various helper functions. Especially useful here is ~get_filter_with_basic_predicate~, which creates a filter from a basic predicate function and a reference to the field to apply it to. /(Basic predicate functions are functions that map strings, floats, integers or None-values to a Boolean)./
+To simplify the process of defining such filter functions, the ~its_data.filters~ module provides various helper functions. Especially useful here is ~get_filter_with_basic_predicate~, which creates a filter from a basic predicate function and a reference to the field to apply it to. /(Basic predicate functions are functions that map strings, floats, integers or None-values to a Boolean)./
 #+begin_src python :results silent
 my_filter2 = filters.get_filter_with_basic_predicate(
     lambda x: x is not None and len(x) > 5,
@@ -656,14 +656,14 @@ print("Minimum text length:", min(len(text) for text in data.raw_texts))
 #+RESULTS:
 : Minimum text length: 39
 
-For more examples on how to define filter functions, see [[file:data_utils/filters.py][data_utils.filters]].
+For more examples on how to define filter functions, see [[file:its_data/filters.py][its_data.filters]].
 
 *** Dropping Categories and Data-Points using Global Information (e.g. Support)
 
 While the ~generate_data~ function does not directly support filtering mechanisms that rely on information that is only present once the entire data set is loaded, we provide some utility functions to easily deal with such tasks after the data has been generated.
 
-- ~data_utils.default_pipelines.data.subset_data_points~ allows for dropping or sorting data points
-- ~data_utils.default_pipelines.data.subset_categories~ allows for dropping or sorting categories
+- ~its_data.default_pipelines.data.subset_data_points~ allows for dropping or sorting data points
+- ~its_data.default_pipelines.data.subset_categories~ allows for dropping or sorting categories
 
 **** Example: Dropping Categories with low Support
 
@@ -799,7 +799,7 @@ print(
 #+RESULTS:
 : number of data points with no taxonid assignments before action: 18
 
-To ensure that we only include data that actually has assignments, we can new use the ~data_utils.data.subset_data_poins~ function.
+To ensure that we only include data that actually has assignments, we can new use the ~its_data.data.subset_data_poins~ function.
 #+begin_src python
 filtered2_data = subset_data_points(filtered_data, np.where(~empty_taxonid)[0])
 #+end_src
@@ -855,7 +855,7 @@ print("shape of test data array after filtering:", filtered2_data.target_data[Fi
 *** Sorting
 
 It may be useful to sort the data points according to some metric, for example such that all data that has been editorially confirmed is first.
-For this the ~data_utils.default_pipelines.Data.subset_data_points~ method may also be used:
+For this the ~its_data.default_pipelines.Data.subset_data_points~ method may also be used:
 
 #+begin_src python
 data = generate_data(
@@ -946,10 +946,10 @@ print(f"\nBag-of-words shape:\n{bow_data.bows.shape}")
 : Bag-of-words shape:
 : (10000, 6211)
 
-The ~data_utils.default_pipelines.its_jointprobability~ pipeline already calculates bag-of-words:
+The ~its_data.default_pipelines.its_jointprobability~ pipeline already calculates bag-of-words:
 
 #+begin_src python
-from data_utils.default_pipelines import its_jointprobability
+from its_data.default_pipelines import its_jointprobability
 bow_data = its_jointprobability.generate_data(
     json_file=Path("~/data.json"),
     target_fields=[

@@ -1,4 +1,4 @@
-from data_utils._version import __version__
+from its_data._version import __version__
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -31,7 +31,7 @@ html_static_path = ["_static"]
 autodoc_typehints = "both"
 autodoc_typehints_format = "short"
 autodoc_type_aliases = {
-    x: f"data_utils.data.{x}"
+    x: f"its_data.data.{x}"
     for x in [
         "Basic_Value_Not_None",
         "Basic_Value",
@@ -41,7 +41,7 @@ autodoc_type_aliases = {
         "Query_Result",
     ]
 } | {
-    x: f"data_utils.filters.{x}"
+    x: f"its_data.filters.{x}"
     for x in [
         "Filter",
         "Predicate",

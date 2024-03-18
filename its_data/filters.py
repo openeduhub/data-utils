@@ -4,8 +4,8 @@ from collections.abc import Callable, Collection
 from functools import partial
 from typing import Iterable
 
-from data_utils.data import Basic_Value, Data_Point, Terminal_Value, get_terminal_in
-from data_utils.defaults import Fields
+from its_data.data import Basic_Value, Data_Point, Terminal_Value, get_terminal_in
+from its_data.defaults import Fields
 
 #: A filter evaluates a particular data entry
 #: and returns True iff. it shall be kept.

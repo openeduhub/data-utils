@@ -1,10 +1,10 @@
 import argparse
 from pathlib import Path
 
-from data_utils._version import __version__
-from data_utils.default_pipelines import its_jointprobability
-from data_utils.default_pipelines.data import balanced_split, publish
-from data_utils.defaults import Fields
+from its_data._version import __version__
+from its_data.default_pipelines import its_jointprobability
+from its_data.default_pipelines.data import balanced_split, publish
+from its_data.defaults import Fields
 
 PIPELINES = {"its-jointprobability": its_jointprobability.generate_data}
 

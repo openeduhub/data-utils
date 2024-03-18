@@ -1,10 +1,10 @@
 from collections.abc import Collection, Iterable
 from pathlib import Path
 
-import data_utils.filters as filt
-from data_utils.data import Basic_Value, Basic_Value_Not_None
-from data_utils.default_pipelines import basic
-from data_utils.default_pipelines.data import Data
+import its_data.filters as filt
+from its_data.data import Basic_Value, Basic_Value_Not_None
+from its_data.default_pipelines import basic
+from its_data.default_pipelines.data import Data
 
 
 def generate_data(

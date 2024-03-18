@@ -256,11 +256,11 @@ class BoW_Data(Processed_Data):
         Get bag-of-words representations for unprocessed data.
 
         This simply applies the pre-processing step from
-        :func:`data_utils.default_pipelines.data.Processed_Data.from_data`
+        :func:`its_data.default_pipelines.data.Processed_Data.from_data`
         before calculating the bag-of-words representations.
 
         :param kwargs: Additional keyword-arguments to be passed onto
-            :func:`data_utils.default_pipelines.data.Processed_Data.from_data`.
+            :func:`its_data.default_pipelines.data.Processed_Data.from_data`.
         """
         return cls.from_processed_data(
             Processed_Data.from_data(data, **kwargs), words=words

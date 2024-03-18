@@ -7,7 +7,7 @@ from typing import Optional
 import hypothesis.strategies as st
 import numpy as np
 import pytest
-from data_utils.default_pipelines.data import (
+from its_data.default_pipelines.data import (
     BoW_Data,
     Data,
     Processed_Data,

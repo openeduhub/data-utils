@@ -1,7 +1,7 @@
 from collections.abc import Collection
 from enum import Enum
 
-from data_utils.data import Basic_Value, Basic_Value_Not_None
+from its_data.data import Basic_Value, Basic_Value_Not_None
 
 
 class Fields(Enum):

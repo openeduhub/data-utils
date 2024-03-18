@@ -4,11 +4,11 @@ import operator as op
 from collections.abc import Collection
 from pathlib import Path
 
-import data_utils.defaults as defaults
-import data_utils.filters as filt
-from data_utils.data import Basic_Value, Basic_Value_Not_None
-from data_utils.default_pipelines import basic
-from data_utils.default_pipelines.data import Data
+import its_data.defaults as defaults
+import its_data.filters as filt
+from its_data.data import Basic_Value, Basic_Value_Not_None
+from its_data.default_pipelines import basic
+from its_data.default_pipelines.data import Data
 
 
 def generate_data(
@@ -30,7 +30,7 @@ def generate_data(
     i.e. non-hierarchical structures.
 
     :param json_file: The path to the raw json file to process, e.g. from
-        :func:`data_utils.fetch.fetch`.
+        :func:`its_data.fetch.fetch`.
     :param target_fields: The data fields that shall be contained.
         Any other data (except text) will be discarded.
     :param dropped_values: Map from data field to the categories that
@@ -43,12 +43,12 @@ def generate_data(
         fields to look up in the SKOS vocabulary when looking up
         human-readable labels.
     :param filters: Additional filters to apply to drop data during importing.
-    :param use_defaults: Whether to apply defaults (:ref:`data_utils.defaults`).
+    :param use_defaults: Whether to apply defaults (:ref:`its_data.defaults`).
         If defaults and arguments given above conflict, the given arguments
         will be preferred.
     :param skip_labels: Whether to skip automatic label generation.
     :param kwargs: Additional keyword-arguments to pass onto
-        :func:`data_utils.fetch.df_from_json_file`.
+        :func:`its_data.fetch.df_from_json_file`.
     """
     if use_defaults:
         dropped_values = defaults.dropped_values | dropped_values

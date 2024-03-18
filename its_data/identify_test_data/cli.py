@@ -8,11 +8,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import questionary
-from data_utils import fetch
-from data_utils._version import __version__
-from data_utils.data import get_leaves
-from data_utils.default_pipelines import identify_potential_test_data
-from data_utils.default_pipelines.data import Data
+from its_data import fetch
+from its_data._version import __version__
+from its_data.data import get_leaves
+from its_data.default_pipelines import identify_potential_test_data
+from its_data.default_pipelines.data import Data
 from tqdm import tqdm
 
 

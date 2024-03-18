@@ -2,18 +2,18 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 from typing import Optional
 
-import data_utils.filters as filt
+import its_data.filters as filt
 import nlprep.spacy as nlp
 import numpy as np
-from data_utils import defaults, fetch
-from data_utils.default_pipelines import collections, flat_classification
-from data_utils.default_pipelines.data import (
+from its_data import defaults, fetch
+from its_data.default_pipelines import collections, flat_classification
+from its_data.default_pipelines.data import (
     Data,
     Processed_Data,
     subset_categories,
     subset_data_points,
 )
-from data_utils.defaults import Fields
+from its_data.defaults import Fields
 from nlprep import Pipeline_Generator
 import nlprep.specs.filters as nlp_filters
 

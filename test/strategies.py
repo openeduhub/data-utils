@@ -3,7 +3,7 @@ from functools import partial
 from typing import Any, Optional, TypeVar
 
 import hypothesis.strategies as st
-from data_utils.data import Basic_Value, Data_Point, Terminal_Value
+from its_data.data import Basic_Value, Data_Point, Terminal_Value
 
 # values that may be associated with any key / added to a list
 basic_values_not_none = st.one_of(

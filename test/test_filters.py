@@ -1,9 +1,9 @@
 from collections.abc import Iterable
 from test.strategies import basic_values, mutated_data_point
 
-import data_utils.filters as filt
+import its_data.filters as filt
 import hypothesis.strategies as st
-from data_utils.data import Data_Point
+from its_data.data import Data_Point
 from hypothesis import given
 
 

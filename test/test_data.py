@@ -3,13 +3,13 @@ from functools import reduce
 import test.strategies as myst
 
 import hypothesis.strategies as st
-from data_utils.data import (
+from its_data.data import (
     Basic_Value,
     Basic_Value_Not_None,
     Data_Point,
     Terminal_Value,
 )
-import data_utils.data as data
+import its_data.data as data
 from hypothesis import given, settings
 
 

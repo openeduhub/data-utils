@@ -57,8 +57,8 @@
         ++ (python-packages-docs py-pkgs);
 
       ### create the python package
-      get-data-utils = py-pkgs: py-pkgs.buildPythonPackage {
-        pname = "data_utils";
+      get-its-data = py-pkgs: py-pkgs.buildPythonPackage {
+        pname = "its-data";
         version = "0.1.0";
         /*
           only include files that are related to the application
@@ -68,7 +68,7 @@
           root = self;
           include = [
             # folders
-            "data_utils"
+            "its_data"
             "test"
             # files
             ./setup.py
@@ -85,12 +85,12 @@
     in
     {
       lib = {
-        data-utils = get-data-utils;
+        its-data = get-its-data;
       };
       overlays.default = (final: prev: {
         pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
           (python-final: python-prev: {
-            data-utils = self.outputs.lib.data-utils python-final;
+            its-data = self.outputs.lib.its-data python-final;
           })
         ];
       });
@@ -104,13 +104,13 @@
       {
         # the packages that we can build
         packages = rec {
-          data-utils = self.outputs.lib.data-utils python.pkgs;
-          default = data-utils;
+          its-data = self.outputs.lib.its-data python.pkgs;
+          default = its-data;
           docs = pkgs.runCommand "docs"
             {
               buildInputs = [
                 (python-packages-docs python.pkgs)
-                (data-utils.override { doCheck = false; })
+                (its-data.override { doCheck = false; })
               ];
             }
             (pkgs.writeShellScript "docs.sh" ''
@@ -121,15 +121,15 @@
         apps = {
           download-data = {
             type = "app";
-            program = "${self.outputs.packages.${system}.data-utils}/bin/download-data";
+            program = "${self.outputs.packages.${system}.its-data}/bin/download-data";
           };
           publish-data = {
             type = "app";
-            program = "${self.outputs.packages.${system}.data-utils}/bin/publish-data";
+            program = "${self.outputs.packages.${system}.its-data}/bin/publish-data";
           };
           find-test-data = {
             type = "app";
-            program = "${self.outputs.packages.${system}.data-utils}/bin/find-test-data";
+            program = "${self.outputs.packages.${system}.its-data}/bin/find-test-data";
           };
         };
         # the development environment

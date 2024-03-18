@@ -5,14 +5,14 @@ from collections.abc import Collection, Sequence
 from pathlib import Path
 from typing import Optional
 
-import data_utils.defaults as defaults
-import data_utils.fetch as fetch
-import data_utils.filters as filt
-import data_utils.transform as trans
+import its_data.defaults as defaults
+import its_data.fetch as fetch
+import its_data.filters as filt
+import its_data.transform as trans
 import numpy as np
 import pandas as pd
-from data_utils.default_pipelines.data import Data, Target_Data
-from data_utils.defaults import Fields
+from its_data.default_pipelines.data import Data, Target_Data
+from its_data.defaults import Fields
 
 
 def generate_data(
@@ -30,7 +30,7 @@ def generate_data(
     i.e. non-hierarchical structures.
 
     :param json_file: The path to the raw json file to process, e.g. from
-        :func:`data_utils.fetch.fetch`.
+        :func:`its_data.fetch.fetch`.
     :param target_fields: The data fields that shall be contained.
         Any other data (except text) will be discarded.
     :param skos_urls: Map from data field to the SKOS vocabulary to use
@@ -40,7 +40,7 @@ def generate_data(
         human-readable labels.
     :param skip_labels: Whether to skip automatic label generation.
     :param kwargs: Additional keyword-arguments to pass onto
-        :func:`data_utils.fetch._get_basic_df`.
+        :func:`its_data.fetch._get_basic_df`.
     """
     df = _get_basic_df(
         json_file=json_file,

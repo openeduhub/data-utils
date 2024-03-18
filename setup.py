@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="data_utils",
+    name="its_data",
     version="0.1.0",
     description="Easily get data from WLO data dumps",
     packages=find_packages(),
@@ -11,9 +11,9 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "download-data = data_utils.fetch_cli:main",
-            "publish-data = data_utils.default_pipelines.cli:main",
-            "find-test-data = data_utils.identify_test_data.cli:main",
+            "download-data = its_data.fetch_cli:main",
+            "publish-data = its_data.default_pipelines.cli:main",
+            "find-test-data = its_data.identify_test_data.cli:main",
         ]
     },
 )

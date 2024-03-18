@@ -1,8 +1,8 @@
 import argparse
 import urllib
 import urllib.error
-import data_utils.fetch as fetch
-from data_utils._version import __version__
+import its_data.fetch as fetch
+from its_data._version import __version__
 from pathlib import Path
 
 
