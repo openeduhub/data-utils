@@ -989,3 +989,65 @@ print(f"{bow_data_words_subset.bows.shape=}")
 #+RESULTS:
 : bow_data_point_subset.bows.shape=(100, 2181)
 : bow_data_words_subset.bows.shape=(2671, 100)
+
+** Evaluation predictions
+
+Finally, ~its_data.defaults.evaluation_functions~ contains some default functions for evaluating prediction results on certain metadata fields:
+
+#+begin_src python
+data = generate_data(
+    json_file=Path("~/data.json"),
+    target_fields=[
+        "properties.ccm:educationalcontext",
+        "properties.ccm:taxonid",
+    ],
+    max_len=100,
+)
+#+end_src
+
+#+RESULTS:
+
+#+begin_src python :results output
+# predict True for everything
+y_true = data.target_data[Fields.TAXONID.value].arr
+y_pred = np.ones_like(y_true, dtype=bool)
+
+from its_data.defaults import evaluation_functions
+
+evaluation_functions[Fields.TAXONID.value](
+    y_true,
+    y_pred,
+    target_names=data.target_data[Fields.TAXONID.value].labels,
+)
+#+end_src
+
+#+RESULTS:
+#+begin_example
+                            precision    recall  f1-score   support
+
+                   Deutsch       0.17      1.00      0.29         4
+        Berufliche Bildung       0.08      1.00      0.15         2
+                      MINT       0.04      1.00      0.08         1
+               Philosophie       0.08      1.00      0.15         2
+                  Biologie       0.04      1.00      0.08         1
+                Astronomie       0.04      1.00      0.08         1
+          Wirtschaftskunde       0.04      1.00      0.08         1
+             Medienbildung       0.04      1.00      0.08         1
+                     Kunst       0.04      1.00      0.08         1
+              Arbeitslehre       0.04      1.00      0.08         1
+                 Allgemein       0.04      1.00      0.08         1
+                     Sport       0.04      1.00      0.08         1
+                    Chemie       0.08      1.00      0.15         2
+                Geschichte       0.17      1.00      0.29         4
+                     Ethik       0.08      1.00      0.15         2
+                    Physik       0.33      1.00      0.50         8
+  Deutsch als Zweitsprache       0.04      1.00      0.08         1
+Open Educational Resources       0.04      1.00      0.08         1
+                   Politik       0.08      1.00      0.15         2
+                Informatik       0.04      1.00      0.08         1
+
+                 micro avg       0.08      1.00      0.15        38
+                 macro avg       0.08      1.00      0.14        38
+              weighted avg       0.14      1.00      0.23        38
+               samples avg       0.08      1.00      0.14        38
+#+end_example
