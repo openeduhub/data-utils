@@ -1,5 +1,5 @@
 import numpy as np
-from nlprep.types import Document, Filter
+from its_prep.types import Document, Filter
 
 
 def get_repetition_filter(min_rep_count: int = 3, post_filter_count: int = 1) -> Filter:

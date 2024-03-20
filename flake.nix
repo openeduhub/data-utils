@@ -5,10 +5,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
-    nlprep = {
-      url = "github:openeduhub/nlprep";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    its-prep.url = "github:openeduhub/its-prep";
   };
 
   outputs = { self, nixpkgs, flake-utils, ... }:
@@ -24,7 +21,7 @@
       requests
       tqdm
       questionary
-      (self.inputs.nlprep.lib.nlprep py-pkgs)
+      its-prep
     ];
 
     python-packages-test = py-pkgs:
@@ -88,7 +85,7 @@
       its-data = get-its-data;
     };
     overlays.default = nixpkgs.lib.composeExtensions
-    self.inputs.nlprep.overlays.default
+      self.inputs.its-prep.overlays.default
     (final: prev: {
       pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
         (python-final: python-prev: {
@@ -100,7 +97,8 @@
   flake-utils.lib.eachDefaultSystem (system:
   let
     # import the packages from nixpkgs
-    pkgs = nixpkgs.legacyPackages.${system};
+    pkgs = nixpkgs.legacyPackages.${system}.extend
+    self.inputs.its-prep.overlays.default;
     python = pkgs.python3;
   in
   {

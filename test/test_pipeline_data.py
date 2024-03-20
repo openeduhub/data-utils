@@ -18,7 +18,7 @@ from its_data.default_pipelines.data import (
     subset_data_points,
 )
 from hypothesis import given
-from nlprep import Iterable
+from its_prep import Iterable
 
 MAX_DATA_LEN = 10
 

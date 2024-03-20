@@ -13,7 +13,7 @@ from typing import Any, Optional, TypeVar, overload
 
 import numpy as np
 import pandas as pd
-from nlprep import Pipeline_Generator, apply_filters, tokenize_documents
+from its_prep import Pipeline_Generator, apply_filters, tokenize_documents
 from numpy.typing import NDArray
 
 
@@ -126,18 +126,18 @@ class Processed_Data(Data):
         """
         Turn an unprocessed corpus into a processed one.
 
-        This utilizes the nlprep library for tokenization and pre-processing.
+        This utilizes the its_prep library for tokenization and pre-processing.
         Note that this may take a long time for decently large corpuses.
 
         :param data: The text corpus to pre-process.
         :param pipeline_generators: Pipelines to iteratively apply to the
             corpus, in order to filter out unwanted tokens.
-            See the nlprep library for more details.
+            See the its_prep library for more details.
         :param cache_dir: The path to the directory that shall contain a cache
             of all the pre-processed texts. Useful when identical texts may be
             processed multiple times.
         """
-        import nlprep.spacy as nlp
+        import its_prep.spacy as nlp
 
         try:
             nlp.utils.load_caches(

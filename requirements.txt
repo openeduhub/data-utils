@@ -4,4 +4,4 @@ numpy
 requests
 tqdm
 questionary
-nlprep
+its_prep

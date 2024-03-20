@@ -239,32 +239,32 @@ print(f"{data.target_data['properties.ccm:educationalcontext'].arr.shape=}\n")
 
 #+RESULTS:
 #+begin_example
-data.raw_texts[0]='Animation zu Covid-19: Wie das Coronavirus angreift \nDieser Beitrag aus "Spektrum der Wissenschaft" erklärt in Text und Animationen, wie Sars-CoV-2 aussieht und wirkt.'
+data.raw_texts[0]='Eiszeit mit unserem neuen Freund Puck | Sport macht Spaß\nHeidewitzka, heute wird es rasant bei #SportmachtSpaß! Inga, Stefan und der Albatros laden euch in dieser Folge zum Eishockeyspielen ein, und dafür brauchen wir natürlich ein Spielgerät, nämlich den Puck. Wir zeigen euch, wie ihr den mit ein paar Materialien von zuhause selbst basteln könnt. Außerdem ist es wichtig, dass ihr ein bisschen Platz immer Zimmer schafft und gut auf Schienbeine, nackte Füße, schöne Vasen oder Haustiere aufpasst, weil die Pucks ziemlich schnell werden können. Bevor es aufs Eis geht, stärken wir uns dann erst einmal mit einem Spiel namens Bohnenfrühstück. Danach geht es aber auch schon los mit unserem Puck: Mit ihm zeichnen wir Figuren und Zahlen aufs Eis und zielen gemeinsam auf Kegel. Außerdem haben wir wieder ein Spiel fürs Wochenende im Gepäck: Es trägt den Namen Streuselkuchen und verlangt ein gutes Händchen. Seid gespannt!\n\nUnser Mitmach-Sportprogramm für Kitakinder gibt es jeden Samstag um 9 Uhr mit einer neuen Folge auf unserem YouTube-Kanal. Um 10 Uhr erscheint zudem eine Sendung „Sport macht Spaß“ für die Grundschule. \n\nWir freuen uns auf eure Ideen und Kommentare! Schreibt uns einfach eine Mail an sportmachtspass@albaberlin.de – hier könnt ihr euch auch für unseren monatlichen Newsletter mit allen Infos rund um „Sport macht Spaß“ anmelden.\n_________________ \n\nWas erwartet euch in dieser Folge? \n\n00:00 Begrüßung\n05:18 Bohnenfrühstück\n12:40 Auf die Kegel! Fertig! Schuss!\n19:54 Streuselkuchen\n__________________ \n\n„Sport macht Spaß“ ist Teil des großen digitalen Sportprogramms „Sport digital – Mehr Bewegung im Quartier“, das wir gemeinsam mit dem Bundesministerium des Innern, für Bau und Heimat (BMI) ins Leben gerufen haben. Wir bieten euch dabei kontinuierlich digitale Sportstunden für Kita- und Schulkinder hier bei YouTube an, es wird eine Mediathek mit Bildungs- und Informationsvideos aufgebaut, und es gibt Fortbildungen für pädagogische Fachkräfte im Netz und direkt in den Kiezen. Unter https://www.albaberlin.de/jugend/kita-schule-uni/sport-digital/ und https://www.miteinander-im-quartier.de/ findet ihr alle Infos zu unserem Modellprojekt, das im Rahmen der ressortübergreifenden Strategie „Soziale Stadt – Nachbarschaften stärken, miteinander im Quartier“ gefördert wird.\n\nRedaktion: Lena Flöttmann, Christoph Nicol & das ALBA-Kitateam | Kamera: Kai Rostásy & Andreas Reuther | Regie: Jörg Diernberger | Schnitt: Marcus Wojatschke\n\n#ALBA #Sportstunde #Sport #Bewegung #Zuhause #Kita #Kitasport #Kindersport #Mitmachsport #Laufspiel #Einführung #Sportgerät #Schläger #Zielen #Eishockey #Puck'
 
-data.ids[:5]=array(['42b412c5-6aa6-45ac-bb6a-da23f231bb15',
-       '48b63221-904f-4438-a6c0-37f37d98947a',
-       '91aba013-36f2-4306-9b0b-540b525520f4',
-       'd76d5429-efbb-4736-8c9c-25bd6569a145',
-       '819a87fb-87aa-4785-aff2-c0a79c4bb2ce'], dtype=object)
+data.ids[:5]=array(['7932dcd4-5d9e-4c24-bbcc-efdfa47d2d78',
+       'fa74d4b0-49eb-4525-8be6-8f7af9916285',
+       'da1213d8-4f30-4a18-b54d-61f057e32f22',
+       'a7467ea5-21b2-4449-adf1-80b7dbdaca92',
+       'b1aa975c-352f-447c-9f1d-704dcbfbf423'], dtype=object)
 
-data.editor_arr.shape=(1000,)
+data.editor_arr.shape=(924,)
 
 data.target_data.keys()=dict_keys(['properties.ccm:educationalcontext', 'properties.ccm:taxonid'])
 
-data.target_data['properties.ccm:taxonid'].uris[:5]=array(['http://w3id.org/openeduhub/vocabs/discipline/020',
-       'http://w3id.org/openeduhub/vocabs/discipline/040',
-       'http://w3id.org/openeduhub/vocabs/discipline/04002',
-       'http://w3id.org/openeduhub/vocabs/discipline/04003',
-       'http://w3id.org/openeduhub/vocabs/discipline/04006'], dtype='<U50')
+data.target_data['properties.ccm:taxonid'].uris[:5]=array(['http://w3id.org/openeduhub/vocabs/discipline/46014',
+       'http://w3id.org/openeduhub/vocabs/discipline/48005',
+       'http://w3id.org/openeduhub/vocabs/discipline/320',
+       'http://w3id.org/openeduhub/vocabs/discipline/240',
+       'http://w3id.org/openeduhub/vocabs/discipline/28002'], dtype='<U50')
 
-data.target_data['properties.ccm:taxonid'].labels[:5]=array(['Arbeitslehre', 'Berufliche Bildung', 'Bautechnik', 'MINT',
-       'Ernährung und Hauswirtschaft'], dtype='<U30')
+data.target_data['properties.ccm:taxonid'].labels[:5]=array(['Astronomie', 'Gesellschaftskunde', 'Informatik', 'Geschichte',
+       'Deutsch als Zweitsprache'], dtype='<U28')
 
-data.target_data['properties.ccm:taxonid'].arr.shape=(1000, 46)
+data.target_data['properties.ccm:taxonid'].arr.shape=(924, 39)
 
-data.target_data['properties.ccm:taxonid'].in_test_set.shape=(1000,)
+data.target_data['properties.ccm:taxonid'].in_test_set.shape=(924,)
 
-data.target_data['properties.ccm:educationalcontext'].arr.shape=(1000, 10)
+data.target_data['properties.ccm:educationalcontext'].arr.shape=(924, 10)
 #+end_example
 
 In the long run, typing the full identifiers for the metadata fields can be error prone and tiring. Thus, we provide an ~Enum~ that contains the most common fields:
@@ -273,12 +273,7 @@ print(f"{data.target_data[Fields.EDUCATIONAL_CONTEXT.value].uris[:5]=}\n")
 #+end_src
 
 #+RESULTS:
-: data.target_data[Fields.EDUCATIONAL_CONTEXT.value].uris[:5]=array(['http://w3id.org/openeduhub/vocabs/educationalContext/berufliche_bildung',
-:        'http://w3id.org/openeduhub/vocabs/educationalContext/elementarbereich',
-:        'http://w3id.org/openeduhub/vocabs/educationalContext/erwachsenenbildung',
-:        'http://w3id.org/openeduhub/vocabs/educationalContext/fernunterricht',
-:        'http://w3id.org/openeduhub/vocabs/educationalContext/foerderschule'],
-:       dtype='<U71')
+: ced189fc459540b0a24f05711edcaea1
 
 *** Getting Readable Category Labels
 
@@ -309,16 +304,16 @@ pprint(
 
 #+RESULTS:
 #+begin_example
-{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
- 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
- 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
- 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und Hauswirtschaft',
- 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
- 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
- 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
- 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
+{'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/160': 'Ethik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/20002': 'Französisch',
+ 'http://w3id.org/openeduhub/vocabs/discipline/240': 'Geschichte',
+ 'http://w3id.org/openeduhub/vocabs/discipline/260': 'Gesundheit',
+ 'http://w3id.org/openeduhub/vocabs/discipline/28002': 'Deutsch als Zweitsprache',
+ 'http://w3id.org/openeduhub/vocabs/discipline/320': 'Informatik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/46014': 'Astronomie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/48005': 'Gesellschaftskunde',
+ 'http://w3id.org/openeduhub/vocabs/discipline/900': 'Medienbildung'}
 #+end_example
 
 Additionally, we can provide a map from metadata field to SKOS vocabulary. For all fields where this is provided, this vocabulary will be used instead of dynamically looking up the label.
@@ -349,16 +344,16 @@ pprint(
 
 #+RESULTS:
 #+begin_example
-{'http://w3id.org/openeduhub/vocabs/discipline/020': 'Arbeitslehre',
- 'http://w3id.org/openeduhub/vocabs/discipline/040': 'Berufliche Bildung',
- 'http://w3id.org/openeduhub/vocabs/discipline/04002': 'Bautechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/04003': 'MINT',
- 'http://w3id.org/openeduhub/vocabs/discipline/04006': 'Ernährung und Hauswirtschaft',
- 'http://w3id.org/openeduhub/vocabs/discipline/04009': 'Holztechnik',
- 'http://w3id.org/openeduhub/vocabs/discipline/060': 'Kunst',
- 'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
- 'http://w3id.org/openeduhub/vocabs/discipline/100': 'Chemie',
- 'http://w3id.org/openeduhub/vocabs/discipline/120': 'Deutsch'}
+{'http://w3id.org/openeduhub/vocabs/discipline/080': 'Biologie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/160': 'Ethik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/20002': 'Französisch',
+ 'http://w3id.org/openeduhub/vocabs/discipline/240': 'Geschichte',
+ 'http://w3id.org/openeduhub/vocabs/discipline/260': 'Gesundheit',
+ 'http://w3id.org/openeduhub/vocabs/discipline/28002': 'Deutsch als Zweitsprache',
+ 'http://w3id.org/openeduhub/vocabs/discipline/320': 'Informatik',
+ 'http://w3id.org/openeduhub/vocabs/discipline/46014': 'Astronomie',
+ 'http://w3id.org/openeduhub/vocabs/discipline/48005': 'Gesellschaftskunde',
+ 'http://w3id.org/openeduhub/vocabs/discipline/900': 'Medienbildung'}
 #+end_example
 
 Some controlled vocabularies are already defined in ~its_data.defaults.skos_urls~:
@@ -367,8 +362,11 @@ pprint(defaults.skos_urls)
 #+end_src
 
 #+RESULTS:
-: {'properties.ccm:educationalcontext': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json',
+: {'properties.ccm:curriculum': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/oeh-topics/5e40e372-735c-4b17-bbf7-e827a5702b57.json',
+:  'properties.ccm:educationalcontext': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/educationalContext/index.json',
+:  'properties.ccm:educationalintendedenduserrole': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/intendedEndUserRole/index.json',
 :  'properties.ccm:fskRating': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/fskRating/index.json',
+:  'properties.ccm:oeh_lrt': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/new_lrt/index.json',
 :  'properties.ccm:taxonid': 'https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json'}
 
 *** Fixing Inconsistent Categories
@@ -421,92 +419,95 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
 
 #+RESULTS:
 #+begin_example
-(295105, 86)
-array(['', 'http://w3id.org/openeduhub/vocabs/discipline/020',
-       'http://w3id.org/openeduhub/vocabs/discipline/040',
-       'http://w3id.org/openeduhub/vocabs/discipline/04001',
-       'http://w3id.org/openeduhub/vocabs/discipline/04002',
-       'http://w3id.org/openeduhub/vocabs/discipline/04003',
-       'http://w3id.org/openeduhub/vocabs/discipline/04005',
-       'http://w3id.org/openeduhub/vocabs/discipline/04006',
-       'http://w3id.org/openeduhub/vocabs/discipline/04007',
-       'http://w3id.org/openeduhub/vocabs/discipline/04009',
-       'http://w3id.org/openeduhub/vocabs/discipline/04011',
-       'http://w3id.org/openeduhub/vocabs/discipline/04012',
-       'http://w3id.org/openeduhub/vocabs/discipline/04013',
-       'http://w3id.org/openeduhub/vocabs/discipline/04014',
-       'http://w3id.org/openeduhub/vocabs/discipline/060',
-       'http://w3id.org/openeduhub/vocabs/discipline/080',
-       'http://w3id.org/openeduhub/vocabs/discipline/100',
-       'http://w3id.org/openeduhub/vocabs/discipline/120',
-       'http://w3id.org/openeduhub/vocabs/discipline/12002',
-       'http://w3id.org/openeduhub/vocabs/discipline/160',
-       'http://w3id.org/openeduhub/vocabs/discipline/20001',
-       'http://w3id.org/openeduhub/vocabs/discipline/20002',
-       'http://w3id.org/openeduhub/vocabs/discipline/20003',
-       'http://w3id.org/openeduhub/vocabs/discipline/20004',
-       'http://w3id.org/openeduhub/vocabs/discipline/20005',
-       'http://w3id.org/openeduhub/vocabs/discipline/20006',
-       'http://w3id.org/openeduhub/vocabs/discipline/20007',
-       'http://w3id.org/openeduhub/vocabs/discipline/20008',
-       'http://w3id.org/openeduhub/vocabs/discipline/20009',
+(295814, 86)
+array(['http://w3id.org/openeduhub/vocabs/discipline/640', '',
        'http://w3id.org/openeduhub/vocabs/discipline/20041',
-       'http://w3id.org/openeduhub/vocabs/discipline/220',
+       'https://w3id.org/openeduhub/vocabs/discipline/720',
+       'http://w3id.org/openeduhub/vocabs/discipline/48005',
+       'http://w3id.org/openeduhub/vocabs/discipline/28002',
+       'http://w3id.org/openeduhub/vocabs/discipline/900',
+       'http://w3id.org/openeduhub/vocabs/discipline/04014',
+       'http://w3id.org/openeduhub/vocabs/discipline/080',
+       'http://w3id.org/openeduhub/vocabs/discipline/120',
+       'http://w3id.org/openeduhub/vocabs/discipline/450',
+       'http://w3id.org/openeduhub/vocabs/discipline/720',
+       'http://w3id.org/openeduhub/vocabs/discipline/060',
+       'http://w3id.org/openeduhub/vocabs/discipline/420',
+       'http://w3id.org/openeduhub/vocabs/discipline/44007',
+       'http://w3id.org/openeduhub/vocabs/discipline/niederdeutsch',
+       'http://w3id.org/openeduhub/vocabs/discipline/Inhalte',
+       'http://w3id.org/openeduhub/vocabs/discipline/460',
+       'http://w3id.org/openeduhub/vocabs/discipline/oeh04010',
+       'http://w3id.org/openeduhub/vocabs/discipline/???',
+       'http://w3id.org/openeduhub/vocabs/discipline/400',
+       'http://w3id.org/openeduhub/vocabs/discipline/340',
+       'http://w3id.org/openeduhub/vocabs/discipline/20009',
+       'http://w3id.org/openeduhub/vocabs/discipline/Spanisch',
+       'http://w3id.org/openeduhub/vocabs/discipline/020',
+       'http://w3id.org/openeduhub/vocabs/discipline/Religion',
+       'http://w3id.org/openeduhub/vocabs/discipline/Geschichte',
+       'http://w3id.org/openeduhub/vocabs/discipline/04011',
+       'http://w3id.org/openeduhub/vocabs/discipline/50005',
+       'http://w3id.org/openeduhub/vocabs/discipline/560',
+       'http://w3id.org/openeduhub/vocabs/discipline/Physik',
+       'http://w3id.org/openeduhub/vocabs/discipline/Deutsch',
+       'http://w3id.org/openeduhub/vocabs/discipline/04013',
+       'http://w3id.org/openeduhub/vocabs/discipline/999',
+       'http://w3id.org/openeduhub/vocabs/discipline/04012',
+       'https://w3id.org/openeduhub/vocabs/discipline/320',
+       'http://w3id.org/openeduhub/vocabs/discipline/04003',
+       'http://w3id.org/openeduhub/vocabs/discipline/44006',
+       'http://w3id.org/openeduhub/vocabs/discipline/510',
+       'http://w3id.org/openeduhub/vocabs/discipline/28010',
+       'http://w3id.org/openeduhub/vocabs/discipline/Englisch',
+       'http://w3id.org/openeduhub/vocabs/discipline/46014',
+       'http://w3id.org/openeduhub/vocabs/discipline/320',
        'http://w3id.org/openeduhub/vocabs/discipline/240',
        'http://w3id.org/openeduhub/vocabs/discipline/260',
-       'http://w3id.org/openeduhub/vocabs/discipline/28002',
-       'http://w3id.org/openeduhub/vocabs/discipline/28010',
-       'http://w3id.org/openeduhub/vocabs/discipline/320',
-       'http://w3id.org/openeduhub/vocabs/discipline/340',
-       'http://w3id.org/openeduhub/vocabs/discipline/380',
-       'http://w3id.org/openeduhub/vocabs/discipline/400',
-       'http://w3id.org/openeduhub/vocabs/discipline/420',
-       'http://w3id.org/openeduhub/vocabs/discipline/440',
-       'http://w3id.org/openeduhub/vocabs/discipline/44006',
-       'http://w3id.org/openeduhub/vocabs/discipline/44007',
-       'http://w3id.org/openeduhub/vocabs/discipline/44099',
-       'http://w3id.org/openeduhub/vocabs/discipline/450',
-       'http://w3id.org/openeduhub/vocabs/discipline/460',
-       'http://w3id.org/openeduhub/vocabs/discipline/46014',
-       'http://w3id.org/openeduhub/vocabs/discipline/480',
-       'http://w3id.org/openeduhub/vocabs/discipline/48005',
-       'http://w3id.org/openeduhub/vocabs/discipline/50001',
-       'http://w3id.org/openeduhub/vocabs/discipline/50005',
-       'http://w3id.org/openeduhub/vocabs/discipline/510',
-       'http://w3id.org/openeduhub/vocabs/discipline/520',
-       'http://w3id.org/openeduhub/vocabs/discipline/560',
-       'http://w3id.org/openeduhub/vocabs/discipline/600',
-       'http://w3id.org/openeduhub/vocabs/discipline/640',
-       'http://w3id.org/openeduhub/vocabs/discipline/64018',
-       'http://w3id.org/openeduhub/vocabs/discipline/660',
+       'http://w3id.org/openeduhub/vocabs/discipline/160',
        'http://w3id.org/openeduhub/vocabs/discipline/680',
-       'http://w3id.org/openeduhub/vocabs/discipline/700',
-       'http://w3id.org/openeduhub/vocabs/discipline/720',
-       'http://w3id.org/openeduhub/vocabs/discipline/72001',
-       'http://w3id.org/openeduhub/vocabs/discipline/900',
-       'http://w3id.org/openeduhub/vocabs/discipline/999',
-       'http://w3id.org/openeduhub/vocabs/discipline/???',
+       'http://w3id.org/openeduhub/vocabs/discipline/20003',
+       'http://w3id.org/openeduhub/vocabs/discipline/04009',
+       'http://w3id.org/openeduhub/vocabs/discipline/20002',
+       'http://w3id.org/openeduhub/vocabs/discipline/20008',
        'http://w3id.org/openeduhub/vocabs/discipline/Darstellendes-Spiel',
-       'http://w3id.org/openeduhub/vocabs/discipline/Deutsch',
-       'http://w3id.org/openeduhub/vocabs/discipline/Deutsch als Zweitsprache',
-       'http://w3id.org/openeduhub/vocabs/discipline/Englisch',
-       'http://w3id.org/openeduhub/vocabs/discipline/Geografie',
-       'http://w3id.org/openeduhub/vocabs/discipline/Geschichte',
-       'http://w3id.org/openeduhub/vocabs/discipline/Informatik',
-       'http://w3id.org/openeduhub/vocabs/discipline/Inhalte',
-       'http://w3id.org/openeduhub/vocabs/discipline/Mathematik',
-       'http://w3id.org/openeduhub/vocabs/discipline/Physik',
-       'http://w3id.org/openeduhub/vocabs/discipline/Pädagogik',
-       'http://w3id.org/openeduhub/vocabs/discipline/Religion',
-       'http://w3id.org/openeduhub/vocabs/discipline/Spanisch',
-       'http://w3id.org/openeduhub/vocabs/discipline/niederdeutsch',
+       'http://w3id.org/openeduhub/vocabs/discipline/20001',
+       'http://w3id.org/openeduhub/vocabs/discipline/04006',
        'http://w3id.org/openeduhub/vocabs/discipline/oeh01',
-       'http://w3id.org/openeduhub/vocabs/discipline/oeh04010',
-       'https://w3id.org/openeduhub/vocabs/discipline/120',
-       'https://w3id.org/openeduhub/vocabs/discipline/320',
+       'http://w3id.org/openeduhub/vocabs/discipline/Deutsch als Zweitsprache',
+       'http://w3id.org/openeduhub/vocabs/discipline/220',
+       'http://w3id.org/openeduhub/vocabs/discipline/480',
+       'http://w3id.org/openeduhub/vocabs/discipline/20006',
+       'http://w3id.org/openeduhub/vocabs/discipline/380',
+       'http://w3id.org/openeduhub/vocabs/discipline/700',
+       'http://w3id.org/openeduhub/vocabs/discipline/20005',
+       'http://w3id.org/openeduhub/vocabs/discipline/04007',
+       'http://w3id.org/openeduhub/vocabs/discipline/600',
+       'http://w3id.org/openeduhub/vocabs/discipline/04002',
+       'http://w3id.org/openeduhub/voca
+
+
+bs/discipline/12002',
+       'http://w3id.org/openeduhub/vocabs/discipline/100',
+       'http://w3id.org/openeduhub/vocabs/discipline/Mathematik',
+       'http://w3id.org/openeduhub/vocabs/discipline/Pädagogik',
+       'http://w3id.org/openeduhub/vocabs/discipline/44099',
+       'http://w3id.org/openeduhub/vocabs/discipline/440',
+       'http://w3id.org/openeduhub/vocabs/discipline/04005',
+       'http://w3id.org/openeduhub/vocabs/discipline/660',
        'https://w3id.org/openeduhub/vocabs/discipline/380',
+       'http://w3id.org/openeduhub/vocabs/discipline/04001',
+       'http://w3id.org/openeduhub/vocabs/discipline/Informatik',
        'https://w3id.org/openeduhub/vocabs/discipline/460',
-       'https://w3id.org/openeduhub/vocabs/discipline/720'], dtype='<U69')
+       'http://w3id.org/openeduhub/vocabs/discipline/040',
+       'http://w3id.org/openeduhub/vocabs/discipline/520',
+       'https://w3id.org/openeduhub/vocabs/discipline/120',
+       'http://w3id.org/openeduhub/vocabs/discipline/20007',
+       'http://w3id.org/openeduhub/vocabs/discipline/Geografie',
+       'http://w3id.org/openeduhub/vocabs/discipline/72001',
+       'http://w3id.org/openeduhub/vocabs/discipline/50001',
+       'http://w3id.org/openeduhub/vocabs/discipline/20004',
+       'http://w3id.org/openeduhub/vocabs/discipline/64018'], dtype='<U69')
 #+end_example
 
 Example with defaults:
@@ -527,74 +528,73 @@ pprint(data.target_data[Fields.TAXONID.value].uris)
 
 #+RESULTS:
 #+begin_example
-(158292, 66)
-array(['http://w3id.org/openeduhub/vocabs/discipline/020',
-       'http://w3id.org/openeduhub/vocabs/discipline/040',
-       'http://w3id.org/openeduhub/vocabs/discipline/04001',
-       'http://w3id.org/openeduhub/vocabs/discipline/04002',
-       'http://w3id.org/openeduhub/vocabs/discipline/04003',
-       'http://w3id.org/openeduhub/vocabs/discipline/04005',
-       'http://w3id.org/openeduhub/vocabs/discipline/04006',
-       'http://w3id.org/openeduhub/vocabs/discipline/04007',
-       'http://w3id.org/openeduhub/vocabs/discipline/04009',
-       'http://w3id.org/openeduhub/vocabs/discipline/04011',
-       'http://w3id.org/openeduhub/vocabs/discipline/04012',
-       'http://w3id.org/openeduhub/vocabs/discipline/04013',
-       'http://w3id.org/openeduhub/vocabs/discipline/04014',
-       'http://w3id.org/openeduhub/vocabs/discipline/060',
-       'http://w3id.org/openeduhub/vocabs/discipline/080',
-       'http://w3id.org/openeduhub/vocabs/discipline/100',
-       'http://w3id.org/openeduhub/vocabs/discipline/120',
-       'http://w3id.org/openeduhub/vocabs/discipline/12002',
-       'http://w3id.org/openeduhub/vocabs/discipline/160',
-       'http://w3id.org/openeduhub/vocabs/discipline/20001',
-       'http://w3id.org/openeduhub/vocabs/discipline/20002',
-       'http://w3id.org/openeduhub/vocabs/discipline/20003',
-       'http://w3id.org/openeduhub/vocabs/discipline/20004',
-       'http://w3id.org/openeduhub/vocabs/discipline/20005',
-       'http://w3id.org/openeduhub/vocabs/discipline/20006',
-       'http://w3id.org/openeduhub/vocabs/discipline/20007',
-       'http://w3id.org/openeduhub/vocabs/discipline/20008',
-       'http://w3id.org/openeduhub/vocabs/discipline/20009',
+(158404, 66)
+array(['http://w3id.org/openeduhub/vocabs/discipline/640',
        'http://w3id.org/openeduhub/vocabs/discipline/20041',
-       'http://w3id.org/openeduhub/vocabs/discipline/220',
+       'http://w3id.org/openeduhub/vocabs/discipline/48005',
+       'http://w3id.org/openeduhub/vocabs/discipline/28002',
+       'http://w3id.org/openeduhub/vocabs/discipline/900',
+       'http://w3id.org/openeduhub/vocabs/discipline/04014',
+       'http://w3id.org/openeduhub/vocabs/discipline/080',
+       'http://w3id.org/openeduhub/vocabs/discipline/120',
+       'http://w3id.org/openeduhub/vocabs/discipline/450',
+       'http://w3id.org/openeduhub/vocabs/discipline/720',
+       'http://w3id.org/openeduhub/vocabs/discipline/060',
+       'http://w3id.org/openeduhub/vocabs/discipline/420',
+       'http://w3id.org/openeduhub/vocabs/discipline/44007',
+       'http://w3id.org/openeduhub/vocabs/discipline/niederdeutsch',
+       'http://w3id.org/openeduhub/vocabs/discipline/460',
+       'http://w3id.org/openeduhub/vocabs/discipline/oeh04010',
+       'http://w3id.org/openeduhub/vocabs/discipline/400',
+       'http://w3id.org/openeduhub/vocabs/discipline/340',
+       'http://w3id.org/openeduhub/vocabs/discipline/20009',
+       'http://w3id.org/openeduhub/vocabs/discipline/020',
+       'http://w3id.org/openeduhub/vocabs/discipline/04011',
+       'http://w3id.org/openeduhub/vocabs/discipline/50005',
+       'http://w3id.org/openeduhub/vocabs/discipline/560',
+       'http://w3id.org/openeduhub/vocabs/discipline/04013',
+       'http://w3id.org/openeduhub/vocabs/discipline/999',
+       'http://w3id.org/openeduhub/vocabs/discipline/04012',
+       'http://w3id.org/openeduhub/vocabs/discipline/04003',
+       'http://w3id.org/openeduhub/vocabs/discipline/44006',
+       'http://w3id.org/openeduhub/vocabs/discipline/510',
+       'http://w3id.org/openeduhub/vocabs/discipline/28010',
+       'http://w3id.org/openeduhub/vocabs/discipline/46014',
+       'http://w3id.org/openeduhub/vocabs/discipline/320',
        'http://w3id.org/openeduhub/vocabs/discipline/240',
        'http://w3id.org/openeduhub/vocabs/discipline/260',
-       'http://w3id.org/openeduhub/vocabs/discipline/28002',
-       'http://w3id.org/openeduhub/vocabs/discipline/28010',
-       'http://w3id.org/openeduhub/vocabs/discipline/320',
-       'http://w3id.org/openeduhub/vocabs/discipline/340',
-       'http://w3id.org/openeduhub/vocabs/discipline/380',
-       'http://w3id.org/openeduhub/vocabs/discipline/400',
-       'http://w3id.org/openeduhub/vocabs/discipline/420',
-       'http://w3id.org/openeduhub/vocabs/discipline/440',
-       'http://w3id.org/openeduhub/vocabs/discipline/44006',
-       'http://w3id.org/openeduhub/vocabs/discipline/44007',
-       'http://w3id.org/openeduhub/vocabs/discipline/44099',
-       'http://w3id.org/openeduhub/vocabs/discipline/450',
-       'http://w3id.org/openeduhub/vocabs/discipline/460',
-       'http://w3id.org/openeduhub/vocabs/discipline/46014',
-       'http://w3id.org/openeduhub/vocabs/discipline/480',
-       'http://w3id.org/openeduhub/vocabs/discipline/48005',
-       'http://w3id.org/openeduhub/vocabs/discipline/50001',
-       'http://w3id.org/openeduhub/vocabs/discipline/50005',
-       'http://w3id.org/openeduhub/vocabs/discipline/510',
-       'http://w3id.org/openeduhub/vocabs/discipline/520',
-       'http://w3id.org/openeduhub/vocabs/discipline/560',
-       'http://w3id.org/openeduhub/vocabs/discipline/600',
-       'http://w3id.org/openeduhub/vocabs/discipline/640',
-       'http://w3id.org/openeduhub/vocabs/discipline/64018',
-       'http://w3id.org/openeduhub/vocabs/discipline/660',
+       'http://w3id.org/openeduhub/vocabs/discipline/160',
        'http://w3id.org/openeduhub/vocabs/discipline/680',
-       'http://w3id.org/openeduhub/vocabs/discipline/700',
-       'http://w3id.org/openeduhub/vocabs/discipline/720',
-       'http://w3id.org/openeduhub/vocabs/discipline/72001',
-       'http://w3id.org/openeduhub/vocabs/discipline/900',
-       'http://w3id.org/openeduhub/vocabs/discipline/999',
-       'http://w3id.org/openeduhub/vocabs/discipline/niederdeutsch',
+       'http://w3id.org/openeduhub/vocabs/discipline/20003',
+       'http://w3id.org/openeduhub/vocabs/discipline/04009',
+       'http://w3id.org/openeduhub/vocabs/discipline/20002',
+       'http://w3id.org/openeduhub/vocabs/discipline/20008',
+       'http://w3id.org/openeduhub/vocabs/discipline/20001',
+       'http://w3id.org/openeduhub/vocabs/discipline/04006',
        'http://w3id.org/openeduhub/vocabs/discipline/oeh01',
-       'http://w3id.org/openeduhub/vocabs/discipline/oeh04010'],
-      dtype='<U58')
+       'http://w3id.org/openeduhub/vocabs/discipline/220',
+       'http://w3id.org/openeduhub/vocabs/discipline/480',
+       'http://w3id.org/openeduhub/vocabs/discipline/20006',
+       'http://w3id.org/openeduhub/vocabs/discipline/380',
+       'http://w3id.org/openeduhub/vocabs/discipline/700',
+       'http://w3id.org/openeduhub/vocabs/discipline/20005',
+       'http://w3id.org/openeduhub/vocabs/discipline/04007',
+       'http://w3id.org/openeduhub/vocabs/discipline/600',
+       'http://w3id.org/openeduhub/vocabs/discipline/04002',
+       'http://w3id.org/openeduhub/vocabs/discipline/12002',
+       'http://w3id.org/openeduhub/vocabs/discipline/100',
+       'http://w3id.org/openeduhub/vocabs/discipline/44099',
+       'http://w3id.org/openeduhub/vocabs/discipline/440',
+       'http://w3id.org/openeduhub/vocabs/discipline/04005',
+       'http://w3id.org/openeduhub/vocabs/discipline/660',
+       'http://w3id.org/openeduhub/vocabs/discipline/04001',
+       'http://w3id.org/openeduhub/vocabs/discipline/040',
+       'http://w3id.org/openeduhub/vocabs/discipline/520',
+       'http://w3id.org/openeduhub/vocabs/discipline/20007',
+       'http://w3id.org/openeduhub/vocabs/discipline/72001',
+       'http://w3id.org/openeduhub/vocabs/discipline/50001',
+       'http://w3id.org/openeduhub/vocabs/discipline/20004',
+       'http://w3id.org/openeduhub/vocabs/discipline/64018'], dtype='<U58')
 #+end_example
 
 *** Filtering out Entries
@@ -630,7 +630,7 @@ print("Minimum text length:", min(len(text) for text in data.raw_texts))
 #+end_src
 
 #+RESULTS:
-: Minimum text length: 39
+: Minimum text length: 19
 
 To simplify the process of defining such filter functions, the ~its_data.filters~ module provides various helper functions. Especially useful here is ~get_filter_with_basic_predicate~, which creates a filter from a basic predicate function and a reference to the field to apply it to. /(Basic predicate functions are functions that map strings, floats, integers or None-values to a Boolean)./
 #+begin_src python :results silent
@@ -654,7 +654,7 @@ print("Minimum text length:", min(len(text) for text in data.raw_texts))
 #+end_src
 
 #+RESULTS:
-: Minimum text length: 39
+: Minimum text length: 19
 
 For more examples on how to define filter functions, see [[file:its_data/filters.py][its_data.filters]].
 
@@ -689,52 +689,45 @@ pprint({label: value for label, value in zip(data.target_data[Fields.TAXONID.val
 
 #+RESULTS:
 #+begin_example
-{'Allgemein': 60,
- 'Arbeitslehre': 1,
- 'Astronomie': 3,
- 'Bautechnik': 1,
- 'Berufliche Bildung': 2,
- 'Biologie': 47,
- 'Chemie': 77,
- 'Darstellendes Spiel': 22,
- 'Deutsch': 61,
- 'Deutsch als Zweitsprache': 126,
- 'Englisch': 73,
- 'Ernährung und Hauswirtschaft': 2,
- 'Ethik': 19,
- 'Französisch': 26,
- 'Geografie': 18,
- 'Geschichte': 120,
+{'Allgemein': 64,
+ 'Arbeitslehre': 4,
+ 'Astronomie': 36,
+ 'Berufliche Bildung': 4,
+ 'Biologie': 43,
+ 'Chemie': 183,
+ 'Darstellendes Spiel': 38,
+ 'Deutsch': 70,
+ 'Deutsch als Zweitsprache': 22,
+ 'Elektrotechnik': 1,
+ 'Englisch': 62,
+ 'Ernährung und Hauswirtschaft': 4,
+ 'Ethik': 29,
+ 'Französisch': 47,
+ 'Geografie': 24,
+ 'Geschichte': 121,
  'Gesellschaftskunde': 7,
- 'Gesundheit': 4,
- 'Holztechnik': 2,
- 'Informatik': 27,
- 'Interkulturelle Bildung': 2,
- 'Kunst': 55,
- 'MINT': 6,
- 'Mathematik': 28,
- 'Medienbildung': 35,
- 'Mediendidaktik': 2,
- 'Musik': 5,
- 'Nachhaltigkeit': 42,
- 'Open Educational Resources': 12,
- 'Philosophie': 18,
- 'Physik': 89,
- 'Politik': 57,
- 'Pädagogik': 8,
- 'Religion': 15,
- 'Sachunterricht': 9,
- 'Sonderpädagogik': 2,
- 'Sozialpädagogik': 1,
- 'Spanisch': 152,
+ 'Gesundheit': 2,
+ 'Informatik': 78,
+ 'Kunst': 77,
+ 'MINT': 52,
+ 'Mathematik': 30,
+ 'Medienbildung': 63,
+ 'Mediendidaktik': 6,
+ 'Metalltechnik': 2,
+ 'Musik': 2,
+ 'Nachhaltigkeit': 9,
+ 'Open Educational Resources': 9,
+ 'Philosophie': 29,
+ 'Physik': 205,
+ 'Politik': 104,
+ 'Pädagogik': 6,
+ 'Religion': 18,
+ 'Sachunterricht': 13,
+ 'Spanisch': 4,
  'Sport': 17,
- 'Türkisch': 8,
- 'Umweltgefährdung, Umweltschutz': 1,
- 'Weiterbildung': 1,
- 'Werken': 1,
- 'Wirtschaft und Verwaltung': 1,
- 'Wirtschaftskunde': 15,
- 'Zeitgemäße Bildung': 8}
+ 'Türkisch': 5,
+ 'Wirtschaftskunde': 12,
+ 'Zeitgemäße Bildung': 1}
 #+end_example
 
 Only keep categories that have support of at least 10:
@@ -754,30 +747,30 @@ pprint({label: value for label, value in zip(filtered_data.target_data[Fields.TA
 
 #+RESULTS:
 #+begin_example
-{'Allgemein': 60,
- 'Biologie': 47,
- 'Chemie': 77,
- 'Darstellendes Spiel': 22,
- 'Deutsch': 61,
- 'Deutsch als Zweitsprache': 126,
- 'Englisch': 73,
- 'Ethik': 19,
- 'Französisch': 26,
- 'Geografie': 18,
- 'Geschichte': 120,
- 'Informatik': 27,
- 'Kunst': 55,
- 'Mathematik': 28,
- 'Medienbildung': 35,
- 'Nachhaltigkeit': 42,
- 'Open Educational Resources': 12,
- 'Philosophie': 18,
- 'Physik': 89,
- 'Politik': 57,
- 'Religion': 15,
- 'Spanisch': 152,
+{'Allgemein': 64,
+ 'Astronomie': 36,
+ 'Biologie': 43,
+ 'Chemie': 183,
+ 'Darstellendes Spiel': 38,
+ 'Deutsch': 70,
+ 'Deutsch als Zweitsprache': 22,
+ 'Englisch': 62,
+ 'Ethik': 29,
+ 'Französisch': 47,
+ 'Geografie': 24,
+ 'Geschichte': 121,
+ 'Informatik': 78,
+ 'Kunst': 77,
+ 'MINT': 52,
+ 'Mathematik': 30,
+ 'Medienbildung': 63,
+ 'Philosophie': 29,
+ 'Physik': 205,
+ 'Politik': 104,
+ 'Religion': 18,
+ 'Sachunterricht': 13,
  'Sport': 17,
- 'Wirtschaftskunde': 15}
+ 'Wirtschaftskunde': 12}
 #+end_example
 
 **** Example: Dropping Data with not Categories
@@ -797,7 +790,7 @@ print(
 #+end_src
 
 #+RESULTS:
-: number of data points with no taxonid assignments before action: 18
+: number of data points with no taxonid assignments before action: 12
 
 To ensure that we only include data that actually has assignments, we can new use the ~its_data.data.subset_data_poins~ function.
 #+begin_src python
@@ -842,15 +835,15 @@ print("shape of test data array after filtering:", filtered2_data.target_data[Fi
 #+end_src
 
 #+RESULTS:
-: shape of taxonid array before filtering: (1000, 46)
-: shape of educational context array before filtering: (1000, 10)
-: shape of ids array before filtering: (1000,)
-: shape of test data array before filtering: (1000,)
+: shape of taxonid array before filtering: (924, 39)
+: shape of educational context array before filtering: (924, 10)
+: shape of ids array before filtering: (924,)
+: shape of test data array before filtering: (924,)
 : -----------------------------------------
-: shape of taxonid array after filtering: (982, 24)
-: shape of educational context array after filtering: (982, 10)
-: shape of ids array after filtering: (982,)
-: shape of test data array after filtering: (982,)
+: shape of taxonid array after filtering: (912, 24)
+: shape of educational context array after filtering: (912, 10)
+: shape of ids array after filtering: (912,)
+: shape of test data array after filtering: (912,)
 
 *** Sorting
 
@@ -879,12 +872,12 @@ print("Index of first non-confirmed entry after sorting:", np.where(~data_sorted
 #+end_src
 
 #+RESULTS:
-: Index of first non-confirmed entry before sorting: 16
-: Index of first non-confirmed entry after sorting: 967
+: Index of first non-confirmed entry before sorting: 25
+: Index of first non-confirmed entry after sorting: 870
 
 *** Natural Language Pre-Processing and Bag of Words
 
-The texts of generated data can additionally be pre-processed (using the [[https://github.com/openeduhub/nlprep][nlprep]] library) and transformed into bag-of-words representations:
+The texts of generated data can additionally be pre-processed (using the [[https://github.com/openeduhub/its-prep][its_prep]] library) and transformed into bag-of-words representations:
 
 #+begin_src python
 data = generate_data(
@@ -910,19 +903,19 @@ print(f"Bag-of-words shape:\n{bow_data.bows.shape}")
 
 #+RESULTS:
 : Raw texts:
-: ['Animation zu Covid-19: Wie das Coronavirus angreift \nDieser Beitrag aus "Spektrum der Wissenschaft" erklärt in Text und Animationen, wie Sars-CoV-2 aussieht und wirkt.'
-:  'La guerra civil en la última ficción narrativa española\nSeit der Veröffentlichung von Javier Cercas Roman "Soldados de Salamina" beschäftigen sich immer mehr Autor*innen mit dem Spanischen Bürgerkrieg. Fernando Larraz versucht die  Romane des 21. Jahrhunderts nach verschiedenen Gesichtpunkten zu klassifizieren.']
+: ['Eiszeit mit unserem neuen Freund Puck | Sport macht Spaß\nHeidewitzka, heute wird es rasant bei #SportmachtSpaß! Inga, Stefan und der Albatros laden euch in dieser Folge zum Eishockeyspielen ein, und dafür brauchen wir natürlich ein Spielgerät, nämlich den Puck. Wir zeigen euch, wie ihr den mit ein paar Materialien von zuhause selbst basteln könnt. Außerdem ist es wichtig, dass ihr ein bisschen Platz immer Zimmer schafft und gut auf Schienbeine, nackte Füße, schöne Vasen oder Haustiere aufpasst, weil die Pucks ziemlich schnell werden können. Bevor es aufs Eis geht, stärken wir uns dann erst einmal mit einem Spiel namens Bohnenfrühstück. Danach geht es aber auch schon los mit unserem Puck: Mit ihm zeichnen wir Figuren und Zahlen aufs Eis und zielen gemeinsam auf Kegel. Außerdem haben wir wieder ein Spiel fürs Wochenende im Gepäck: Es trägt den Namen Streuselkuchen und verlangt ein gutes Händchen. Seid gespannt!\n\nUnser Mitmach-Sportprogramm für Kitakinder gibt es jeden Samstag um 9 Uhr mit einer neuen Folge auf unserem YouTube-Kanal. Um 10 Uhr erscheint zudem eine Sendung „Sport macht Spaß“ für die Grundschule. \n\nWir freuen uns auf eure Ideen und Kommentare! Schreibt uns einfach eine Mail an sportmachtspass@albaberlin.de – hier könnt ihr euch auch für unseren monatlichen Newsletter mit allen Infos rund um „Sport macht Spaß“ anmelden.\n_________________ \n\nWas erwartet euch in dieser Folge? \n\n00:00 Begrüßung\n05:18 Bohnenfrühstück\n12:40 Auf die Kegel! Fertig! Schuss!\n19:54 Streuselkuchen\n__________________ \n\n„Sport macht Spaß“ ist Teil des großen digitalen Sportprogramms „Sport digital – Mehr Bewegung im Quartier“, das wir gemeinsam mit dem Bundesministerium des Innern, für Bau und Heimat (BMI) ins Leben gerufen haben. Wir bieten euch dabei kontinuierlich digitale Sportstunden für Kita- und Schulkinder hier bei YouTube an, es wird eine Mediathek mit Bildungs- und Informationsvideos aufgebaut, und es gibt Fortbildungen für pädagogische Fachkräfte im Netz und direkt in den Kiezen. Unter https://www.albaberlin.de/jugend/kita-schule-uni/sport-digital/ und https://www.miteinander-im-quartier.de/ findet ihr alle Infos zu unserem Modellprojekt, das im Rahmen der ressortübergreifenden Strategie „Soziale Stadt – Nachbarschaften stärken, miteinander im Quartier“ gefördert wird.\n\nRedaktion: Lena Flöttmann, Christoph Nicol & das ALBA-Kitateam | Kamera: Kai Rostásy & Andreas Reuther | Regie: Jörg Diernberger | Schnitt: Marcus Wojatschke\n\n#ALBA #Sportstunde #Sport #Bewegung #Zuhause #Kita #Kitasport #Kindersport #Mitmachsport #Laufspiel #Einführung #Sportgerät #Schläger #Zielen #Eishockey #Puck'
+:  'Sachtexte zusammenfassen I musstewissen Deutsch\nWie fasse ich einen Sachtext zusammen? Lisa erklärt dir Schritt für Schritt, wie du dich auf die Analyse eines Sachtextes vorbereitest. \n\nWarum in die Einleitung die berühmten „W-Fragen“ gehören, der Hauptteil aus der sachlichen Wiedergabe des Textes mit eigenen Worten und ohne Wertung besteht und weshalb man im Schlussteil nochmal den Hauptgedanken aufgreift. Hat dir das Video gefallen? Dann lass gerne ein Kanal-Abo da: http://bit.ly/Deutsch_Abo \n\xa0 \nWir gehören auch zu #funk. Schaut’ da unbedingt rein:\n\nYouTube: https://youtube.com/funkofficial\nFunk Web-App: https://go.funk.net\nFacebook: https://facebook.com/funk\n\nhttps://go.funk.net/impressum']
 : 
 : Pre-processed texts:
-: [('Animation', 'zu', 'Covid-19', '--', 'wie', 'der', 'Coronavirus', 'angreifen', '\n', 'dieser', 'Beitrag', 'aus', '--', 'Spektrum', 'der', 'Wissenschaft', '--', 'erklären', 'in', 'Text', 'und', 'Animation', '--', 'wie', 'Sars-CoV-2', 'aussehen', 'und', 'wirken', '--'), ('La', 'guerra', 'civil', '--', '--', 'última', 'ficción', 'narrativa', 'española', '\n', 'seit', 'der', 'Veröffentlichung', 'von', 'Javier', 'Cerca', 'Roman', '--', 'Soldados', 'de', 'Salamina', '--', 'beschäftigen', 'sich', 'immer', 'mehr', 'Autor*in', 'mit', 'der', 'spanisch', 'Bürgerkrieg', '--', 'Fernando', 'Larraz', 'versuchen', 'der', ' ', 'Roman', 'der', '21.', 'Jahrhundert', 'nach', 'verschieden', 'Gesichtpunkt', 'zu', 'klassifizieren', '--')]
+: [('Eiszeit', 'mit', 'unser', 'neu', 'Freund', 'Puck', '|', 'Sport', 'machen', 'Spaß', '\n', 'Heidewitzka', '--', 'heute', 'werden', 'es', 'rasant', 'bei', '#', 'SportmachtSpaß', '--', 'Inga', '--', 'Stefan', 'und', 'der', 'Albatros', 'laden', 'euch', 'in', 'dieser', 'Folge', 'zu', 'Eishockeyspiele', 'ein', '--', 'und', 'dafür', 'brauchen', 'wir', 'natürlich', 'ein', 'Spielgerät', '--', 'nämlich', 'der', 'Puck', '--', 'wir', 'zeigen', 'euch', '--', 'wie', 'ihr', 'der', 'mit', 'ein', 'paar', 'Material', 'von', 'zuhause', 'selbst', 'basteln', 'können', '--', 'außerdem', 'sein', 'es', 'wichtig', '--', 'dass', 'ihr', 'ein', 'bisschen', 'Platz', 'immer', 'Zimmer', 'schaffen', 'und', 'gut', 'auf', 'Schienbein', '--', 'nackt', 'Fuß', '--', 'schön', 'Vase', 'oder', 'Haustier', 'aufpassen', '--', 'weil', 'der', 'Puck', 'ziemlich', 'schnell', 'werden', 'können', '--', 'bevor', 'es', 'auf', 'Eis', 'gehen', '--', 'stärken', 'wir', 'sich', 'dann', 'erst', 'einmal', 'mit', 'ein', 'Spiel', 'namens', 'Bohnenfrühstück', '--', 'danach', 'gehen', 'es', 'aber', 'auch', 'schon', 'los', 'mit', 'unser', 'Puck', '--', 'mit', 'ihm', 'zeichnen', 'wir', 'Figur', 'und', 'Zahl', 'auf', 'Eis', 'und', 'zielen', 'gemeinsam', 'auf', 'Kegel', '--', 'außerdem', 'haben', 'wir', 'wieder', 'ein', 'Spiel', 'für', 'Wochenende', 'in', 'Gepäck', '--', 'es', 'tragen', 'der', 'Name', 'Streuselkuchen', 'und', 'verlangen', 'ein', 'gut', 'Händchen', '--', 'Seid', 'gespannt', '--', '\n\n', 'Unser', 'Mitmach-Sportprogramm', 'für', 'Kitakinder', 'geben', 'es', 'jeder', 'Samstag', 'um', '9', 'Uhr', 'mit', 'ein', 'neu', 'Folge', 'auf', 'unser', 'YouTube-Kanal', '--', 'um', '10', 'Uhr', 'erscheinen', 'zudem', 'ein', 'Sendung', '--', 'Sport', 'machen', 'Spaß', '--', 'für', 'der', 'Grundschule', '--', '\n\n', 'wir', 'freuen', 'sich', 'auf', 'eur', 'Idee', 'und', 'Kommentar', '--', 'schreiben', 'uns', 'einfach', 'ein', 'Mail', 'an', 'sportmachtspass@albaberlin.de', '--', 'hier', 'können', 'ihr', 'euch', 'auch', 'für', 'unser', 'monatlich', 'Newsletter', 'mit', 'aller', 'Infos', 'rund', 'um', '--', 'Sport', 'machen', 'Spaß', '--', 'anmelden', '--', '\n', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '\n\n', 'was', 'erwarten', 'euch', 'in', 'dieser', 'Folge', '--', '\n\n', '00:00', 'Begrüßung', '\n', '05:18', 'Bohnenfrühstück', '\n', '12:40', 'auf', 'der', 'Kegel', '--', 'Fertig', '--', 'Schuss', '--', '\n', '19:54', 'Streuselkuchen', '\n', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '\n\n', '--', 'Sport', 'machen', 'Spaß', '--', 'sein', 'Teil', 'der', 'groß', 'digital', 'Sportprogramm', '--', 'Sport', 'digital', '--', 'mehr', 'Bewegung', 'in', 'Quartier', '--', '--', 'der', 'wir', 'gemeinsam', 'mit', 'der', 'Bundesministerium', 'der', 'innere', '--', 'für', 'Bau', 'und', 'Heimat', '--', 'BMI', '--', 'in', 'Leben', 'rufen', 'haben', '--', 'wir', 'bieten', 'euch', 'dabei', 'kontinuierlich', 'digital', 'Sportstunde', 'für', 'Kita', 'und', 'Schulkind', 'hier', 'bei', 'YouTube', 'an', '--', 'es', 'werden', 'ein', 'Mediathek', 'mit', 'Bildung', 'und', 'Informationsvideo', 'aufbauen', '--', 'und', 'es', 'geben', 'Fortbildung', 'für', 'pädagogisch', 'Fachkraft', 'in', 'Netz', 'und', 'direkt', 'in', 'der', 'Kiez', '--', 'unter', 'https://www.albaberlin.de/jugend/kita-schule-uni/sport-digital', '--', 'und', 'https://www.miteinander-im-quartier.de', '--', 'finden', 'ihr', 'aller', 'Infos', 'zu', 'unser', 'Modellprojekt', '--', 'der', 'in', 'Rahmen', 'der', 'ressortübergreifend', 'Strategie', '--', 'sozial', 'Stadt', '--', 'Nachbarschafte', 'stärken', '--', 'miteinander', 'in', 'Quartier', '--', 'fördern', 'werden', '--', '\n\n', 'Redaktion', '--', 'Lena', 'Flöttmann', '--', 'Christoph', 'Nicol', '&', 'der', 'ALBA-Kitateam', '|', 'Kamera', '--', 'Kai', 'Rostásy', '&', 'Andreas', 'Reuther', '|', 'Regie', '--', 'Jörg', 'Diernberger', '|', 'Schnitt', '--', 'Marcus', 'Wojatschke', '\n\n', '#', 'ALBA', '#', 'Sportstunde', '#', 'Sport', '#', 'Bewegung', '#', 'Zuhause', '#', 'Kita', '#', 'Kitasport', '#', 'Kindersport', '#', 'Mitmachsport', '#', 'Laufspiel', '#', 'Einführung', '#', 'Sportgerät', '#', 'Schläger', '#', 'Ziel', '#', 'Eishockey', '#', 'Puck'), ('Sachtext', 'zusammenfassen', 'I', 'musstewiss', 'Deutsch', '\n', 'Wie', 'fassen', 'ich', 'ein', 'Sachtext', 'zusammen', '--', 'Lisa', 'erklären', 'dir', 'Schritt', 'für', 'Schritt', '--', 'wie', 'du', 'dich', 'auf', 'der', 'Analyse', 'ein', 'Sachtext', 'vorbereitesen', '--', '\n\n', 'warum', 'in', 'der', 'Einleitung', 'der', 'berühmt', '--', 'W-Frage', '--', 'gehören', '--', 'der', 'Hauptteil', 'aus', 'der', 'sachlich', 'Wiedergabe', 'der', 'Text', 'mit', 'eigen', 'Wort', 'und', 'ohne', 'Wertung', 'bestehen', 'und', 'weshalb', 'man', 'in', 'Schlussteil', 'nochmal', 'der', 'Hauptgedanken', 'aufgreifen', '--', 'haben', 'dir', 'der', 'Video', 'fallen', '--', 'dann', 'lass', 'gerne', 'ein', 'Kanal-Abo', 'da', '--', 'http://bit.ly/Deutsch_Abo', '\n\xa0 \n', 'wir', 'gehören', 'auch', 'zu', '#', 'Funk', '--', 'Schaut', '’', 'da', 'unbedingt', 'rein', '--', '\n\n', 'YouTube', '--', 'https://youtube.com/funkofficial', '\n', 'Funk', 'Web-App', '--', 'https://go.funk.net', '\n', 'Facebook', '--', 'Https://facebook.com/funk', '\n\n', 'https://go.funk.net/impressum')]
 : 
 : Bag-of-words shape:
-: (10000, 47432)
+: (9343, 49911)
 
-You may note that barely any pre-processing has occurred. This is because we did not provide any additional pre-processing pipelines. Here, we have the full flexibility of the ~nlprep~ library:
+You may note that barely any pre-processing has occurred. This is because we did not provide any additional pre-processing pipelines. Here, we have the full flexibility of the ~its_prep~ library:
 
 #+begin_src python
-from nlprep import pipelines
+from its_prep import pipelines
 
 more_processed_data = Processed_Data.from_data(
     data,
@@ -941,10 +934,10 @@ print(f"\nBag-of-words shape:\n{bow_data.bows.shape}")
 
 #+RESULTS:
 : More heavily pre-processed texts:
-: [('Animation', 'Coronavirus', 'Beitrag', 'Spektrum', 'Wissenschaft', 'erklären', 'Text', 'Animation', 'aussehen', 'wirken'), ('La', 'versuchen', 'Roman', '21.', 'española', 'Jahrhundert', 'verschieden', 'Veröffentlichung', 'Roman', 'beschäftigen', 'spanisch', 'Bürgerkrieg')]
+: [('unser', 'Freund', 'Sport', 'Spaß', 'rasant', '#', 'SportmachtSpaß', 'Inga', 'Stefan', 'laden', 'Folge', 'brauchen', 'nämlich', 'paar', 'zuhause', 'basteln', 'wichtig', 'bisschen', 'Platz', 'Zimmer', 'schaffen', 'Fuß', 'schön', 'Haustier', 'ziemlich', 'schnell', 'bevor', 'auf', 'Eis', 'stärken', 'unser', 'zeichnen', 'Figur', 'Zahl', 'auf', 'Eis', 'gemeinsam', 'für', 'tragen', 'Name', 'verlangen', 'gespannt', 'Mitmach-Sportprogramm', 'Samstag', '9', 'Folge', 'unser', 'YouTube-Kanal', '10', 'erscheinen', 'zudem', 'Sendung', 'Sport', 'Spaß', 'Grundschule', 'freuen', 'eur', 'Idee', 'Kommentar', 'schreiben', 'Mail', 'sportmachtspass@albaberlin.de', 'unser', 'monatlich', 'Newsletter', 'Infos', 'Sport', 'Spaß', 'anmelden', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 'erwarten', 'Folge', '00:00', 'Begrüßung', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', '_', 'Sport', 'Spaß', 'digital', 'Sportprogramm', 'Sport', 'digital', 'Bewegung', 'Quartier', 'gemeinsam', 'Bundesministerium', 'innere', 'Bau', 'Heimat', 'BMI', 'Leben', 'rufen', 'bieten', 'kontinuierlich', 'digital', 'Sportstunde', 'Kita', 'Schulkind', 'Mediathek', 'Bildung', 'Informationsvideo', 'aufbauen', 'Fortbildung', 'pädagogisch', 'Fachkraft', 'Netz', 'direkt', 'Kiez', 'https://www.albaberlin.de/jugend/kita-schule-uni/sport-digital', 'finden', 'Infos', 'unser', 'Modellprojekt', 'Rahmen', 'ressortübergreifend', 'Strategie', 'sozial', 'Stadt', 'Nachbarschafte', 'stärken', 'miteinander', 'Quartier', 'fördern', 'Redaktion', 'Lena', 'Flöttmann', 'Christoph', 'Nicol', 'ALBA-Kitateam', 'Kamera', 'Kai', 'Rostásy', 'Andreas', 'Reuther', 'Regie', 'Jörg', 'Schnitt', '#', 'ALBA', '#', 'Sportstunde', '#', 'Sport', '#', 'Bewegung', '#', 'Zuhause', '#', 'Kita', '#', '#', '#', '#', '#', 'Einführung', '#', '#', '#', 'Ziel', '#', '#'), ('Sachtext', 'zusammenfassen', 'I', 'musstewiss', 'Deutsch', 'fassen', 'Sachtext', 'Lisa', 'erklären', 'Analyse', 'Sachtext', 'Einleitung', 'berühmt', 'gehören', 'Hauptteil', 'Text', 'Wort', 'bestehen', 'weshalb', 'nochmal', 'aufgreifen', 'fallen', 'lass', 'gerne', 'Kanal-Abo', 'http://bit.ly/Deutsch_Abo', 'gehören', '#', 'Funk', 'Schaut', '’', 'unbedingt', 'rein', 'https://youtube.com/funkofficial', 'Funk', 'Web-App', 'https://go.funk.net', 'Facebook', 'Https://facebook.com/funk')]
 : 
 : Bag-of-words shape:
-: (10000, 6211)
+: (9343, 6716)
 
 The ~its_data.default_pipelines.its_jointprobability~ pipeline already calculates bag-of-words:
 
@@ -970,14 +963,14 @@ print(f"Bag-of-words shape:\n{bow_data.bows.shape}")
 
 #+RESULTS:
 : Raw texts:
-: ['Nie wieder keine Ahnung! Malerei — Die Zeit\nDas erste Bild wurde auf Stein gemalt, an die Wand einer Höhle bei Lascaux in Frankreich. Faszinierend sich vorzustellen, wie Menschen im Schein von flackernden Holzscheiten mit Holzkohle, Rötel und Manganerde Tiere mit einem so genauen Blick für Bewegungsabläufe und Körperproportionen abbildeten, dass man die Vorstellung von unseren Vorfahren als primitiven Keulenschwingern sofort revidieren muss. (Online-Signatur Medienzentren: 4983038)'
-:  'Wie spricht man den Buchstaben Z richtig aus? | fröhlich Deutsch\nKlingen die Wörter "kurz" und "Kurs" eigentlich gleich? Viele, die den Buchstaben Z falsch aussprechen, haben in Wirklichkeit gar kein Problem mit der Aussprache. Warum, erfahrt ihr in diesem Video!']
+: ['Getrennt oder zusammen geschrieben? Lisas Deutsch-Quiz\nGetrennt- und Zusammenschreibung - für viele ein Thema zum Verzweifeln. Aber wie sieht es bei dir aus? Teste in unserem Quiz dein Wissen zur Getrennt- und Zusammenschreibung und lerne einfach die Regeln der deutschen Grammatik dazu. '
+:  'Diklusive Lernwelten - Buch, Links, Beispiele, Ideen, Erfahrungen\nEin Buch über die Chancen digitaler Medien für die Inklusion wirklich aller Schülerinnen und Schüler im Unterricht.\nDen Sommer 2021 über haben 51 Autor:innen sich über die Sozialen Medien vernetzt und ein Buch über Diklusion (digitale Medien und Inklusion) geschrieben. Eingebettet in einen wissenschaftlichen Hintergrund steht es als Open Educational Ressources (OER) kostenfrei zum Download.\n\nEs ist für alle Lehrkräfte und pädagogischen Fachkräfte geeignet, die sich mit digitalen Medien im inklusiven Einsatz beschäftigen oder zukünftig befassen wollen.\n\nNoch mehr Menschen für digitale Bildung und Inklusion begeistern und damit die Chancengleichheit in der Schule unterstützen!']
 : 
 : Pre-processed texts:
-: [('Mensch', 'sofort', 'Malerei', 'Online-Signatur', 'Medienzentr', 'Bild', 'Tier', 'faszinierend', 'Stein', 'malen', 'genau', 'Blick', 'Wand', 'Frankreich', 'Vorstellung', 'vorstellen'), ('falsch', 'sprechen', 'Buchstabe', 'Wirklichkeit', 'Problem', 'deutsch', 'Aussprache', 'Wort', 'Kurs', 'Buchstabe')]
+: [('Wissen', 'schreiben', 'Lisa', 'lernen', 'Regel', 'deutsch', 'Grammatik', 'sehen', 'Test', 'Quiz'), ('Buch', 'links', 'Idee', 'Erfahrung', 'Buch', 'Chance', 'digital', 'Medium', 'Inklusion', 'Schülerin', 'Sommer', '2021', 'Autor', 'sozial', 'Medium', 'Buch', 'digital', 'Medium', 'Inklusion', 'schreiben', 'wissenschaftlich', 'Hintergrund', 'stehen', 'Educational', 'OER', 'kostenfrei', 'Download', 'Lehrkraft', 'pädagogisch', 'Fachkraft', 'eignen', 'digital', 'Medium', 'Einsatz', 'beschäftigen', 'zukünftig', 'befassen', 'Mensch', 'digital', 'Bildung', 'Inklusion', 'Schule', 'unterstützen')]
 : 
 : Bag-of-words shape:
-: (5097, 3483)
+: (2671, 2181)
 
 The ~subset_data_points~ and ~subset_categories~ functions still work on ~Processed_Data~ and ~BoW_Data~. For the latter, ~subset_categories~ can even be used to modify the words included in the bag-of-words representation:
 
@@ -994,5 +987,5 @@ print(f"{bow_data_words_subset.bows.shape=}")
 #+end_src
 
 #+RESULTS:
-: bow_data_point_subset.bows.shape=(100, 3483)
-: bow_data_words_subset.bows.shape=(5097, 100)
+: bow_data_point_subset.bows.shape=(100, 2181)
+: bow_data_words_subset.bows.shape=(2671, 100)

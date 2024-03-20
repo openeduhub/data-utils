@@ -36,6 +36,26 @@
         "type": "github"
       }
     },
+    "its-prep": {
+      "inputs": {
+        "flake-utils": "flake-utils_2",
+        "nix-filter": "nix-filter",
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1710857552,
+        "narHash": "sha256-MeRthrJFanW82KPWF09ovXxgjyUlqvHA4AtUmqyzrUk=",
+        "owner": "openeduhub",
+        "repo": "its-prep",
+        "rev": "95c3f336bcd2e1610fac157f853de8b1d62b5717",
+        "type": "github"
+      },
+      "original": {
+        "owner": "openeduhub",
+        "repo": "its-prep",
+        "type": "github"
+      }
+    },
     "nix-filter": {
       "locked": {
         "lastModified": 1705332318,
@@ -82,34 +102,28 @@
         "type": "github"
       }
     },
-    "nlprep": {
-      "inputs": {
-        "flake-utils": "flake-utils_2",
-        "nix-filter": "nix-filter_2",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
+    "nixpkgs_2": {
       "locked": {
-        "lastModified": 1709894465,
-        "narHash": "sha256-6WrHaTrYqgAmdfjne8us7L1P5/q0/HwoXGeAooBZKEI=",
-        "owner": "openeduhub",
-        "repo": "nlprep",
-        "rev": "d36904620f29fcc392d1c3a6029fbc16cf240d7b",
+        "lastModified": 1709780214,
+        "narHash": "sha256-p4iDKdveHMhfGAlpxmkCtfQO3WRzmlD11aIcThwPqhk=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "f945939fd679284d736112d3d5410eb867f3b31c",
         "type": "github"
       },
       "original": {
-        "owner": "openeduhub",
-        "repo": "nlprep",
+        "owner": "nixos",
+        "ref": "nixpkgs-unstable",
+        "repo": "nixpkgs",
         "type": "github"
       }
     },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nix-filter": "nix-filter",
-        "nixpkgs": "nixpkgs",
-        "nlprep": "nlprep"
+        "its-prep": "its-prep",
+        "nix-filter": "nix-filter_2",
+        "nixpkgs": "nixpkgs_2"
       }
     },
     "systems": {

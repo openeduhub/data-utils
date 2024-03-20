@@ -16,7 +16,7 @@ from its_data.default_pipelines.data import (
 )
 from its_data.default_pipelines.extra_nlp_filters import get_repetition_filter
 from its_data.defaults import Fields
-from nlprep import pipelines
+from its_prep import pipelines
 
 
 def generate_data(

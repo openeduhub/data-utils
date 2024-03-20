@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import its_data.filters as filt
-import nlprep.spacy as nlp
+import its_prep.spacy as nlp
 import numpy as np
 from its_data import defaults, fetch
 from its_data.default_pipelines import collections, flat_classification
@@ -14,8 +14,8 @@ from its_data.default_pipelines.data import (
     subset_data_points,
 )
 from its_data.defaults import Fields
-from nlprep import Pipeline_Generator
-import nlprep.specs.filters as nlp_filters
+from its_prep import Pipeline_Generator
+import its_prep.specs.filters as nlp_filters
 
 
 def generate_data(
