@@ -990,7 +990,7 @@ print(f"{bow_data_words_subset.bows.shape=}")
 : bow_data_point_subset.bows.shape=(100, 2181)
 : bow_data_words_subset.bows.shape=(2671, 100)
 
-** Evaluation predictions
+** Evaluating predictions
 
 Finally, ~its_data.defaults.evaluation_functions~ contains some default functions for evaluating prediction results on certain metadata fields:
 
@@ -1007,7 +1007,7 @@ data = generate_data(
 
 #+RESULTS:
 
-#+begin_src python :results output
+#+begin_src python :results output :exports both
 # predict True for everything
 y_true = data.target_data[Fields.TAXONID.value].arr
 y_pred = np.ones_like(y_true, dtype=bool)
