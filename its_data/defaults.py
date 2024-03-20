@@ -2,6 +2,7 @@ from collections.abc import Collection
 from enum import Enum
 
 from its_data.data import Basic_Value, Basic_Value_Not_None
+from its_data.evaluation import eval_classification, Evaluation
 
 
 class Fields(Enum):
@@ -89,4 +90,19 @@ skos_urls: dict[str, str] = {
     Fields.LRT.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/new_lrt/index.json",
     Fields.TAXONID.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/discipline/index.json",
     Fields.TOPIC.value: "https://vocabs.openeduhub.de/w3id.org/openeduhub/vocabs/oeh-topics/5e40e372-735c-4b17-bbf7-e827a5702b57.json",
+}
+
+#: Default evaluation functions that are relevant to the particular metadata field.
+evaluation_functions: dict[str, Evaluation] = {
+    field.value: eval_classification
+    for field in [
+        Fields.COURSE_MODE,
+        Fields.EDUCATIONAL_CONTEXT,
+        Fields.FSK_RATING,
+        Fields.INTENDED_ENDUSER,
+        Fields.KEYWORDS_CONTROLLED,
+        Fields.TAXONID,
+        Fields.TAXONID_UNIVERSITY,
+        Fields.LANGUAGE,
+    ]
 }

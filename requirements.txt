@@ -5,3 +5,4 @@ requests
 tqdm
 questionary
 its_prep
+scikit-learn

@@ -22,6 +22,7 @@
       tqdm
       questionary
       its-prep
+      scikit-learn
     ];
 
     python-packages-test = py-pkgs:
