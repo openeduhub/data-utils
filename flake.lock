@@ -43,11 +43,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1710857552,
-        "narHash": "sha256-MeRthrJFanW82KPWF09ovXxgjyUlqvHA4AtUmqyzrUk=",
+        "lastModified": 1711448222,
+        "narHash": "sha256-DBMKAHCUoWaAq0WhsXSRCRhGifBZxZ6YrBvTHmRbOvQ=",
         "owner": "openeduhub",
         "repo": "its-prep",
-        "rev": "95c3f336bcd2e1610fac157f853de8b1d62b5717",
+        "rev": "a3c5dfb2b5fa65d4af97b7df4f3c7e45fb33ea15",
         "type": "github"
       },
       "original": {
