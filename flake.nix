@@ -82,70 +82,67 @@
 
   in
   {
-    lib = {
-      its-data = get-its-data;
-    };
     overlays.default = nixpkgs.lib.composeExtensions
       self.inputs.its-prep.overlays.default
-    (final: prev: {
-      pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
-        (python-final: python-prev: {
-          its-data = self.outputs.lib.its-data python-final;
-        })
-      ];
-    });
+      (final: prev: {
+        pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+          (python-final: python-prev: {
+            its-data = get-its-data python-final;
+          })
+        ];
+      });
   } //
   flake-utils.lib.eachDefaultSystem (system:
-  let
-    # import the packages from nixpkgs
-    pkgs = nixpkgs.legacyPackages.${system}.extend
-    self.inputs.its-prep.overlays.default;
-    python = pkgs.python3;
-  in
-  {
-    # the packages that we can build
-    packages = rec {
-      its-data = self.outputs.lib.its-data python.pkgs;
-      default = its-data;
-      docs = pkgs.runCommand "docs"
+    let
+      # import the packages from nixpkgs
+      pkgs = nixpkgs.legacyPackages.${system}.extend
+        self.inputs.its-prep.overlays.default;
+      python = pkgs.python3;
+    in
       {
-        buildInputs = [
-          (python-packages-docs python.pkgs)
-          (its-data.override { doCheck = false; })
-        ];
-      }
-      (pkgs.writeShellScript "docs.sh" ''
-        sphinx-build -b html ${ ./docs} $out
-      '');
+        # the packages that we can build
+        packages = rec {
+          its-data = get-its-data python.pkgs;
+          default = its-data;
+          docs = pkgs.runCommand "docs"
+            {
+              buildInputs = [
+                (python-packages-docs python.pkgs)
+                (its-data.override { doCheck = false; })
+              ];
+            }
+            (pkgs.writeShellScript "docs.sh" ''
+               sphinx-build -b html ${ ./docs} $out
+             '');
 
-    };
-    apps = {
-      download-data = {
-        type = "app";
-        program = "${self.outputs.packages.${system}.its-data}/bin/download-data";
-      };
-      publish-data = {
-        type = "app";
-        program = "${self.outputs.packages.${system}.its-data}/bin/publish-data";
-      };
-      find-test-data = {
-        type = "app";
-        program = "${self.outputs.packages.${system}.its-data}/bin/find-test-data";
-      };
-    };
-    # the development environment
-    devShells.default = pkgs.mkShell {
-      buildInputs = [
-        # the development installation of python
-        (python.withPackages python-packages-devel)
-        # python lsp server
-        pkgs.nodePackages.pyright
-        # for automatically generating nix expressions, e.g. from PyPi
-        pkgs.nix-template
-        pkgs.nix-init
-      ];
-    };
-  }
+        };
+        apps = {
+          download-data = {
+            type = "app";
+            program = "${self.outputs.packages.${system}.its-data}/bin/download-data";
+          };
+          publish-data = {
+            type = "app";
+            program = "${self.outputs.packages.${system}.its-data}/bin/publish-data";
+          };
+          find-test-data = {
+            type = "app";
+            program = "${self.outputs.packages.${system}.its-data}/bin/find-test-data";
+          };
+        };
+        # the development environment
+        devShells.default = pkgs.mkShell {
+          buildInputs = [
+            # the development installation of python
+            (python.withPackages python-packages-devel)
+            # python lsp server
+            pkgs.nodePackages.pyright
+            # for automatically generating nix expressions, e.g. from PyPi
+            pkgs.nix-template
+            pkgs.nix-init
+          ];
+        };
+      }
   );
 }
-
+  
