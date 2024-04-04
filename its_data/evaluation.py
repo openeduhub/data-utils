@@ -18,7 +18,7 @@ class Evaluation(Protocol):
         self,
         y_true: Sequence[T] | Sequence[Sequence[bool]],
         y_pred: Sequence[T] | Sequence[Sequence[bool]],
-        labels: Optional[Sequence[str]],
+        target_names: Optional[Sequence[str]],
         **kwargs
     ) -> dict[str, dict[str, float]]:
         ...
