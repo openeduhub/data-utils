@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import operator as op
 from collections.abc import Collection, Sequence
 from pathlib import Path
 from typing import Optional
 
 import its_data.defaults as defaults
 import its_data.fetch as fetch
-import its_data.filters as filt
 import its_data.transform as trans
 import numpy as np
 import pandas as pd

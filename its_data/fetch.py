@@ -16,7 +16,6 @@ import pandas as pd
 import requests
 from tqdm import tqdm
 
-import its_data.filters as filt
 import its_data.transform as trans
 from its_data.data import (
     Basic_Value,
@@ -386,42 +385,22 @@ def labels_from_skos(
         return [fun_single(id) for id in ids]
 
 
-def _get_label_dict(
-    schema: Data_Point, label_seq: Sequence[str], id_seq: Sequence[str]
-) -> dict[Basic_Value, Basic_Value]:
-    labels: dict[Basic_Value, Basic_Value] = defaultdict(lambda: None)
-    for leaf in get_leaves(schema):
-        n = len(label_seq)
-        if len(leaf) < len(label_seq) or leaf[-n:] != label_seq:
-            continue
-
-        hit_label = get_terminal_in(schema, leaf)
-        hit_id = get_terminal_in(schema, leaf[:-n] + tuple(id_seq))
-
-        # we found nested sub-trees
-        if isinstance(hit_label, list):
-            if isinstance(hit_id, list):
-                labels = labels | {id: label for id, label in zip(hit_id, hit_label)}
-            else:
-                labels = labels | {hit_id: label for label in hit_label}
-
-            continue
-
-        if isinstance(hit_id, list):
-            labels = labels | {id: hit_label for id in hit_id}
-        else:
-            labels = labels | {hit_id: hit_label}
-
-    return labels
-
-
 def hierarchy_from_skos(
     url: str,
     id_seq: Sequence[str] = ("id",),
     label_seq: Sequence[str] = ("prefLabel", "de"),
-    subcategory_fields: Iterable[str] = frozenset({"narrower", "hasTopConcept"}),
+    subcategory_fields: Collection[str] = frozenset({"narrower", "hasTopConcept"}),
 ) -> list[dict[str, Basic_Value]]:
-    """Get the map from IDs to children for a remote schema."""
+    """
+    Get the map from IDs to parent for a remote schema.
+
+    :param id_seq: The sequence of fields to look up the ID in the schema
+        in order to link to the given IDs.
+    :param label_seq: The sequence of fields to look up in the schema
+        in order to get to the label to return.
+    :param subcategory_fields: The possible fields in the schema
+        that contain a parent's children.
+    """
     with requests.get(url) as request:
         schema = request.json()
 
@@ -435,3 +414,33 @@ def hierarchy_from_skos(
         {"name": label, "key": key, "parent": parent_map[key]}
         for key, label in labels.items()
     ]
+
+
+def _get_label_dict(
+    schema: Data_Point, label_seq: Sequence[str], id_seq: Sequence[str]
+) -> dict[Basic_Value, Basic_Value]:
+    """Get a map from id's to labels, from the given schema"""
+    labels: dict[Basic_Value, Basic_Value] = defaultdict(lambda: None)
+    for leaf in get_leaves(schema):
+        n = len(label_seq)
+        if len(leaf) < len(label_seq) or leaf[-n:] != label_seq:
+            continue
+
+        hit_label = get_terminal_in(schema, leaf)
+        hit_id = get_terminal_in(schema, leaf[:-n] + tuple(id_seq))
+
+        # we found nested sub-trees
+        if isinstance(hit_label, list):
+            if isinstance(hit_id, list):
+                labels.update({id: label for id, label in zip(hit_id, hit_label)})
+            else:
+                labels.update({hit_id: label for label in hit_label})
+
+            continue
+
+        if isinstance(hit_id, list):
+            labels.update({id: hit_label for id in hit_id})
+        else:
+            labels.update({hit_id: hit_label})
+
+    return labels

@@ -2,7 +2,6 @@ from collections.abc import Collection, Iterable
 from pathlib import Path
 
 import its_data.filters as filt
-from its_data.data import Basic_Value, Basic_Value_Not_None
 from its_data.default_pipelines import basic
 from its_data.default_pipelines.data import Data
 
@@ -16,6 +15,7 @@ def generate_data(
     filters: Iterable[filt.Filter] = tuple(),
     **kwargs,
 ) -> Data:
+    """A basic pipeline that only returns collections."""
     filters = list(filters)
     # only include collections, obviously
     filters.append(filt.collections_filter)

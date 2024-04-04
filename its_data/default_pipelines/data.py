@@ -1,6 +1,5 @@
 from __future__ import annotations
 import csv
-from math import dist
 import ast
 
 import operator as op
@@ -26,9 +25,18 @@ class _Base_Data:
     so that they can detect which fields to act on and in what way.
     """
 
+    #: names of fields that contain dicts mapping to more data objects
     _nested_data_fields: frozenset[str] = field(init=False, repr=False)
+    #: names of fields that contain information about the categories
+    #: (so their shape is [m], where m is the number of categories for the
+    #:  given target)
     _category_fields: frozenset[str] = field(init=False, repr=False)
+    #: names of fields that contain per-datum information
+    #: (so their shape is [n], where n is the number of data points)
     _1d_data_fields: frozenset[str] = field(init=False, repr=False)
+    #: names of fields that contain per-datum, per-category information
+    #: (so their shape is [n, m], where n is the number of data points and m is
+    #:  the number of categories for the given target)
     _2d_data_fields: frozenset[str] = field(init=False, repr=False)
 
 
@@ -174,6 +182,7 @@ class BoW_Data(Processed_Data):
     its bag-of-words representation.
     """
 
+    #: represent the bows as 2d nested target data
     _virtual_bow_dict: dict[str, Target_Data] = field(default_factory=dict, repr=False)
 
     _nested_data_fields = Processed_Data._nested_data_fields | {"_virtual_bow_dict"}
@@ -297,7 +306,7 @@ def subset_data_points(
     data: Base_Data_Subtype, indices: Sequence[int] | NDArray[np.intp]
 ) -> Base_Data_Subtype:
     """
-    Return a subset of the given corpus that only contains data points
+    Return a subset of the given corpus that only contains certain data points,
     as indicated by the given sequence of indices.
     """
 
@@ -327,8 +336,8 @@ def subset_categories(
     field: Optional[str],
 ) -> Base_Data_Subtype:
     """
-    Return a modified version of the corpus such that the data field,
-    will only contain the categories as determined by the given indices.
+    Return a modified version of the corpus such that the given data field will
+    only contain categories, as determined by the given indices.
     """
 
     if field is not None:
@@ -369,7 +378,8 @@ def publish(data: Data, target_dir: Path, name: str) -> tuple[Path, Path, Path |
 
     This results in two to three files, depending on the type of ``data``:
 
-    1. The csv containing the basic data. Name: `{name}_data.csv`
+    1. The csv containing the basic data.
+       Name: `{name}_data.csv`
     2. The csv containing some metadata about the target categories.
        Name: `{name}_metadata.csv`
     3. (If applicable), the csv containing the processed texts.

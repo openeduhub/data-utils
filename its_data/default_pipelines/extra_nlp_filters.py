@@ -4,7 +4,7 @@ from its_prep.types import Document, Filter
 
 def get_repetition_filter(min_rep_count: int = 3, post_filter_count: int = 1) -> Filter:
     """
-    Filter out repeated tokens (e.g. "abc abc abc" -> "abc")
+    Filter out repeated tokens (e.g. "abc abc abc foo abc" -> "abc foo abc")
     """
 
     if min_rep_count < 2:

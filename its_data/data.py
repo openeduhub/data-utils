@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import operator as op
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Sequence, Mapping, Collection
 from functools import reduce
 from typing import TypeVar, Union
 
@@ -67,18 +67,24 @@ def get_terminal_in(
 def get_children_map(
     full_schema: Data_Point,
     id_seq: Sequence[str],
-    subcategory_fields: Iterable[str],
+    subcategory_fields: Collection[str],
 ) -> dict[Basic_Value, tuple[Basic_Value, ...]]:
     """
     Take a nested schema and turn it into a flat map from id to children ids.
+
+    :param id_seq: The sequence of fields to look up the ID in the schema
+        in order to link to the given IDs.
+    :param subcategory_fields: The possible fields in the schema that contain a
+        node's children.
     """
     entries: dict[Basic_Value, tuple[Basic_Value, ...]] = dict()
     nodes: list[Data_Point] = [full_schema]
     while len(nodes) > 0:
         node = nodes.pop()
         node_id: Basic_Value = get_terminal_in(node, id_seq)  # type: ignore
-        node_children: list[str] = list()
 
+        # find all children of the current node
+        node_children: list[str] = list()
         for subcategory_field in subcategory_fields:
             if subcategory_field not in node:
                 continue
@@ -99,7 +105,8 @@ _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
 
 
-def get_parent_map(children_map: dict[_KT, tuple[_VT, ...]]) -> dict[_VT, _KT]:
+def get_parent_map(children_map: Mapping[_KT, Iterable[_VT]]) -> dict[_VT, _KT]:
+    """Invert the mapping from parent -> children to child -> parent."""
     entries: dict[_VT, _KT] = dict()
     for parent_id, children in children_map.items():
         for child in children:
@@ -113,6 +120,7 @@ def _get_leaves(
     current_keys: tuple[str, ...],
     current_leaves: set[tuple[str, ...]],
 ) -> set[tuple[str, ...]]:
+    """Main recursion for :func:`get_leaves`"""
     if isinstance(data_point, Basic_Value):
         return current_leaves | {current_keys}
 
@@ -138,6 +146,7 @@ def _get_in(
     keys: Sequence[str],
     catch_errors: Iterable[type[Exception]] = tuple(),
 ) -> Query_Result:
+    """Main recursion for :func:`get_in`"""
     if not keys:
         return data_point
 
@@ -157,6 +166,7 @@ def _get_in(
 
 
 def _to_terminal(result: Query_Result) -> Terminal_Value:
+    """Convert a :any:`Query_Result` to a :any:`Terminal_Value`"""
     if isinstance(result, dict):
         return None
 

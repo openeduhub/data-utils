@@ -24,7 +24,8 @@ def generate_data(
     **kwargs,
 ) -> Data:
     """
-    Turn the raw json data into a representation more suitable for classification tasks.
+    Turn the raw json data into a representation more suitable for
+    classification tasks.
 
     Currently, this only supports \"flat\" categorical data,
     i.e. non-hierarchical structures.
