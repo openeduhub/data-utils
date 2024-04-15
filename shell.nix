@@ -19,6 +19,7 @@ mkShell {
         isort
         pytest
         pytest-cov
+        hypothesis
         mypy
         types-requests
       ]
