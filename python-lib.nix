@@ -56,4 +56,10 @@ buildPythonPackage {
     pytestCheckHook
     hypothesis
   ];
+
+  # use the specific build configuration for hypothesis, which is more
+  # reproducible
+  pytestFlagsArray = [
+    "--hypothesis-profile=build"
+  ];
 }
