@@ -1,9 +1,9 @@
-{ lib, nix-filter }:
+{ lib, nix-filter, its-prep-overlay }:
 rec {
   default = its-data;
   python-lib = its-data;
 
-  its-data = (
+  its-data = lib.composeExtensions its-prep-overlay (
     final: prev: {
       pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
         (python-final: python-prev: {

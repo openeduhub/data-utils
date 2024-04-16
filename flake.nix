@@ -19,6 +19,7 @@
       overlays = import ./overlays.nix {
         inherit (nixpkgs) lib;
         nix-filter = self.inputs.nix-filter.lib;
+        its-prep-overlay = self.inputs.its-prep.overlays.default;
       };
     }
     // flake-utils.lib.eachDefaultSystem (
@@ -27,7 +28,7 @@
         # import the packages from nixpkgs, adding additional dependencies and
         # its-data
         pkgs =
-          (nixpkgs.legacyPackages.${system}.extend self.inputs.its-prep.overlays.default).extend
+          nixpkgs.legacyPackages.${system}.extend
             self.outputs.overlays.default;
       in
       {
