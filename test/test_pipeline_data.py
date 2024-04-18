@@ -1,3 +1,4 @@
+from logging import addLevelName
 import operator as op
 import tempfile
 import test.strategies as myst
@@ -395,3 +396,39 @@ def test_import_export(data: Data):
 
         for x, y in zip(data.languages, data_imp.languages):
             assert x == y
+
+
+@given(processed_data_st())
+def test_bow_creation_partial_vocab(data: Processed_Data):
+    words: set[str] = set().union(*[set(text) for text in data.processed_texts])
+    # remove the first word from the vocabulary
+    words.pop()
+
+    bow_data = BoW_Data.from_processed_data(data, words=words)
+
+    # ensure that indeed, the word we just removed is missing
+    assert set(bow_data.words) == words
+    assert bow_data.bows.shape[-1] == len(words)
+
+
+@given(st.data(), processed_data_st())
+def test_bow_creation_extended_vocab(
+    data: st.DataObject, processed_data: Processed_Data
+):
+    words: set[str] = set().union(
+        *[set(text) for text in processed_data.processed_texts]
+    )
+    # add a word that is not already present
+    new_word = data.draw(st.text().filter(lambda x: x not in words))
+    words.add(new_word)
+
+    bow_data = BoW_Data.from_processed_data(processed_data, words=words)
+
+    # ensure that indeed, the additional word we just added is present
+    assert new_word in set(bow_data.words)
+    assert set(bow_data.words) == words
+    assert bow_data.bows.shape[-1] == len(words)
+
+    # the new word should not be present in any bows
+    new_word_id = np.where(bow_data.words == new_word)[0][0]
+    assert (bow_data.bows[:, new_word_id] == 0).all()

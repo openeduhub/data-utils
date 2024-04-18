@@ -231,9 +231,13 @@ class BoW_Data(Processed_Data):
         def doc_to_bow(doc: Collection[str]):
             res = np.zeros(len(words), dtype=np.uint8)
             for word, count in Counter(doc).items():
-                index = word_to_id[word]
-                # avoid overflows, as we are using bytes here
-                res[index] = min(count, 255)
+                # because we can optionally provide a vocabulary, some of the
+                # the words in the document may not actually be mapped to an
+                # id.
+                if word in word_to_id:
+                    index = word_to_id[word]
+                    # avoid overflows, as we are using bytes here
+                    res[index] = min(count, 255)
 
             return res
 
