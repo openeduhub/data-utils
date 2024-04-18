@@ -419,7 +419,11 @@ def test_bow_creation_extended_vocab(
         *[set(text) for text in processed_data.processed_texts]
     )
     # add a word that is not already present
-    new_word = data.draw(st.text().filter(lambda x: x not in words))
+    new_word = data.draw(
+        st.text(st.characters(blacklist_categories=["Cc", "Cs"])).filter(
+            lambda x: x not in words
+        )
+    )
     words.add(new_word)
 
     bow_data = BoW_Data.from_processed_data(processed_data, words=words)
